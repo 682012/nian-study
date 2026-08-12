@@ -1,0 +1,16 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "morning-bar-1aa6",
+  "compatibility_date": "2026-08-12",
+  "workers_dev": true,
+  "routes": [
+    {
+      "pattern": "nian.682012ysh.top",
+      "custom_domain": true
+    }
+  ],
+  "assets": {
+    "directory": "./public",
+    "not_found_handling": "single-page-application"
+  }
+}

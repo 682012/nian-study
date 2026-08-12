@@ -1,0 +1,3 @@
+Cloudflare Pages direct-upload package recovered from the live V7 site on 2026-08-12.
+Custom domain intended: nian.682012ysh.top
+Important: eight lazy-loaded character state WebP files were not present in the wget snapshot, so this recovery package temporarily aliases them to welcome.webp to avoid broken images. Core app logic/data are intact in NianStudyApp-YImpRfNC.js.

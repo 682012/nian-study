@@ -1,0 +1,1 @@
+V7 character image fix: 9 user-supplied poses converted from opaque black-background PNG to true-alpha WebP and mapped to existing state paths. Study data and logic unchanged.
