@@ -3,6 +3,7 @@
   "private": true,
   "version": "7.0.0",
   "scripts": {
+    "check": "bash ./verify.sh",
     "deploy": "wrangler deploy",
     "dev": "wrangler dev"
   },

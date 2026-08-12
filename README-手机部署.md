@@ -6,6 +6,18 @@
 - 正式域名：`https://nian.682012ysh.top/`
 - 静态站目录：`public/`
 
+## 当前正式发布链
+
+日常维护以本 GitHub 仓库的 `main` 分支为唯一基线。提交并推送到 `main` 后，由现有 Cloudflare Workers Builds 自动部署到同一个 `morning-bar-1aa6`；不新建 Worker、不迁移项目，也不重新绑定域名。
+
+`deploy.sh` 保留为 Termux 下的应急手动发布方式，不替代 GitHub 自动部署链。
+
+## Android App 同步说明
+
+`public/downloads/nian-study-android-v1.1.0.apk` 是轻量 WebView 壳：先显示 APK 内置启动页，再打开正式网站。因此网页功能和样式发布后，APK 主界面会自动使用同一版；只有安装包内的启动页、图标和壳版本号需要重新打包才会变化。
+
+本版额外加载 `public/assets/nian-lively-v2.css` 与 `nian-lively-v2.js`，只增强视觉和交互反馈，不改题库、学习奖励或存档结构。
+
 ## 第一次在 Termux 使用
 
 把本 ZIP 解压到 Termux 主目录后：
