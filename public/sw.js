@@ -34,7 +34,14 @@ self.addEventListener('fetch', event => {
     }).catch(async () => (await caches.match(req)) || (await caches.match('/index.html')) || caches.match('/offline.html')));
     return;
   }
-  if (/\.(?:js|css|png|webp|svg|webmanifest)$/.test(url.pathname)) {
+  if (/\.(?:js|css|webmanifest)$/.test(url.pathname)) {
+    event.respondWith(fetch(req).then(res => {
+      if (res.ok) caches.open(STATIC_CACHE).then(c => c.put(req, res.clone()));
+      return res;
+    }).catch(async () => (await caches.match(req)) || Response.error()));
+    return;
+  }
+  if (/\.(?:png|webp|svg)$/.test(url.pathname)) {
     event.respondWith(caches.match(req).then(hit => hit || fetch(req).then(res => {
       if (res.ok) caches.open(STATIC_CACHE).then(c => c.put(req, res.clone()));
       return res;
