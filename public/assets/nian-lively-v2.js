@@ -139,11 +139,27 @@
     sections.forEach((section) => observer.observe(section));
   }
 
+  function loadArcade() {
+    if (!document.querySelector('link[href="/assets/nian-arcade-v3.css"]')) {
+      const style = document.createElement("link");
+      style.rel = "stylesheet";
+      style.href = "/assets/nian-arcade-v3.css";
+      document.head.appendChild(style);
+    }
+    if (!document.querySelector('script[src="/assets/nian-arcade-v3.js"]')) {
+      const script = document.createElement("script");
+      script.src = "/assets/nian-arcade-v3.js";
+      script.defer = true;
+      document.head.appendChild(script);
+    }
+  }
+
   function start() {
     document.body.classList.add("nian-lively-ready");
     addAtmosphere();
     watchScene();
     revealSections();
+    loadArcade();
     document.addEventListener("pointerdown", createTapBloom, { passive: true });
   }
 

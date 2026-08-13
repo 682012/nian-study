@@ -1,12 +1,13 @@
-const STATIC_CACHE = 'nian-static-cf-v4-lively';
-const PAGE_CACHE = 'nian-pages-cf-v4-lively';
+const STATIC_CACHE = 'nian-static-cf-v5-arcade';
+const PAGE_CACHE = 'nian-pages-cf-v5-arcade';
 const CORE = [
   '/', '/index.html', '/offline.html', '/manifest.webmanifest', '/favicon.svg',
   '/icons/app-icon-192.png', '/icons/app-icon-512.png', '/icons/app-icon-maskable-512.png',
   '/assets/index-B65g4y4e.css', '/assets/index-Dm1zMWhb.js', '/assets/framework-CXnKph_e.js',
   '/assets/layout-segment-context-B6a3SPWX.js', '/assets/rolldown-runtime-S-ySWqyJ.js',
   '/assets/NianStudyApp-YImpRfNC.js', '/assets/nian-lively-v2.css',
-  '/assets/nian-lively-v2.js', '/assets/nian-song/welcome.webp',
+  '/assets/nian-lively-v2.js', '/assets/nian-arcade-v3.css',
+  '/assets/nian-arcade-v3.js', '/assets/nian-song/welcome.webp',
   '/assets/nian-song/idle.webp', '/assets/nian-song/teaching.webp',
   '/assets/nian-song/thinking.webp', '/assets/nian-song/correct.webp',
   '/assets/nian-song/break.webp', '/assets/nian-song/celebrate.webp',
