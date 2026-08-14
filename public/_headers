@@ -1,10 +1,42 @@
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: SAMEORIGIN
+  Permissions-Policy: camera=(), geolocation=(), microphone=(self)
+
 /index.html
   Cache-Control: no-cache
 /sw.js
   Cache-Control: no-cache
 /manifest.webmanifest
   Cache-Control: no-cache
-/assets/*
+/assets/index-B65g4y4e.css
+  Cache-Control: no-cache
+/assets/index-Dm1zMWhb.js
+  Cache-Control: no-cache
+/assets/framework-CXnKph_e.js
+  Cache-Control: no-cache
+/assets/layout-segment-context-B6a3SPWX.js
+  Cache-Control: no-cache
+/assets/rolldown-runtime-S-ySWqyJ.js
+  Cache-Control: no-cache
+/assets/NianStudyApp-YImpRfNC.js
+  Cache-Control: no-cache
+/assets/nian-song/*
   Cache-Control: public, max-age=86400
+/assets/nian-lively-v2.js
+  Cache-Control: no-cache
+/assets/nian-lively-v2.css
+  Cache-Control: no-cache
+/assets/nian-arcade-v3.js
+  Cache-Control: no-cache
+/assets/nian-arcade-v3.css
+  Cache-Control: no-cache
+/assets/nian-content-v8.js
+  Cache-Control: no-cache
+/assets/nian-companion-v1.js
+  Cache-Control: no-cache
+/assets/nian-companion-v1.css
+  Cache-Control: no-cache
 /downloads/*
   Cache-Control: public, max-age=3600

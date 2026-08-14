@@ -248,6 +248,24 @@
 
 body.nian-arcade-open { overflow: hidden !important; }
 
+.nian-arcade-storage-warning {
+  position: fixed;
+  z-index: 190;
+  left: 50%;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  width: min(520px, calc(100vw - 28px));
+  padding: 12px 16px;
+  border: 1px solid rgba(168, 88, 64, .36);
+  border-radius: 14px;
+  color: #5e342b;
+  background: rgba(255, 247, 236, .97);
+  box-shadow: 0 16px 42px rgba(44, 24, 19, .24);
+  transform: translateX(-50%);
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.55;
+}
+
 @keyframes nian-sheet-arrive {
   from { opacity: 0; transform: translateY(22px) scale(.97); }
   to { opacity: 1; transform: translateY(0) scale(1); }
@@ -294,8 +312,18 @@ body.nian-arcade-open { overflow: hidden !important; }
 }
 .nian-audio-orb span { display: grid; place-items: center; width: 37px; height: 37px; padding-left: 3px; border-radius: 50%; color: #fff; background: #347363; font-size: 14px; }
 .nian-audio-orb strong { margin-top: 7px; font-size: 12px; }
-.nian-audio-orb small { color: rgba(20, 55, 57, .55); font-size: 9px; }
+.nian-audio-orb small { max-width: 94px; color: rgba(20, 55, 57, .55); font-size: 9px; line-height: 1.35; }
 .nian-audio-orb:active { transform: scale(.96); }
+.nian-audio-orb[data-speech-state="pending"] span,
+.nian-audio-orb[data-speech-state="playing"] span { animation: nian-audio-pulse .72s ease-in-out infinite alternate; }
+.nian-audio-orb[data-speech-state="error"] { border-color: rgba(187, 91, 70, .36); background: radial-gradient(circle at 35% 25%, #fff, #f5e3dc 55%, #ebcfc4); }
+.nian-audio-orb[data-speech-state="error"] span { background: #a65e4c; }
+.nian-audio-orb[data-speech-state="error"] small { color: #8d4d3d; font-weight: 750; }
+@keyframes nian-audio-pulse { to { transform: scale(1.08); box-shadow: 0 0 0 7px rgba(52, 115, 99, .12); } }
+
+.nian-audio-tools { display: grid; gap: 8px; justify-items: center; }
+.nian-audio-slow { padding: 7px 12px; border: 1px solid rgba(40, 95, 86, .18); border-radius: 99px; color: #2d6259; background: rgba(255, 255, 255, .66); font-size: 10px; font-weight: 850; }
+.nian-reading-passage { max-width: 720px; margin: 12px auto 22px; padding: 17px 19px; border: 1px solid rgba(126, 87, 48, .14); border-radius: 17px; color: #4e4639; text-align: left; background: rgba(255, 249, 235, .74); box-shadow: inset 3px 0 0 rgba(184, 126, 75, .28); font-family: "Noto Serif SC", serif; font-size: 14px; line-height: 1.9; }
 
 .nian-choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; max-width: 690px; margin: 28px auto 0; }
 .nian-choice-grid button { display: flex; gap: 13px; align-items: center; min-height: 68px; padding: 13px 16px; border: 1px solid rgba(20, 55, 57, .14); border-radius: 17px; color: var(--arcade-ink); text-align: left; background: rgba(255, 255, 255, .67); box-shadow: 0 6px 17px rgba(30, 65, 61, .04); }
@@ -388,6 +416,7 @@ body.nian-arcade-open { overflow: hidden !important; }
   .nian-question-card { min-height: 530px; padding: 28px 14px 42px; }
   .nian-question-card h3 { font-size: 25px; }
   .nian-audio-orb { width: 104px; height: 104px; }
+  .nian-reading-passage { max-height: 190px; overflow-y: auto; margin-top: 4px; padding: 13px 14px; font-size: 13px; line-height: 1.75; }
   .nian-choice-grid { grid-template-columns: 1fr; gap: 8px; margin-top: 22px; }
   .nian-choice-grid button { min-height: 57px; padding: 10px 12px; border-radius: 14px; }
   .nian-choice-grid button span { font-size: 13px; }

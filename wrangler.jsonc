@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "morning-bar-1aa6",
+  "main": "src/worker.js",
   "compatibility_date": "2026-08-12",
   "workers_dev": true,
   "routes": [
@@ -11,6 +12,7 @@
   ],
   "assets": {
     "directory": "./public",
+    "binding": "ASSETS",
     "not_found_handling": "single-page-application"
   }
 }

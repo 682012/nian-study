@@ -1,9 +1,11 @@
 {
   "name": "nian-worker-maintainable",
   "private": true,
-  "version": "7.0.0",
+  "type": "module",
+  "version": "8.0.0",
   "scripts": {
     "check": "bash ./verify.sh",
+    "test": "node tests/content-v8.test.mjs && node tests/worker-api.test.mjs",
     "deploy": "wrangler deploy",
     "dev": "wrangler dev"
   },

@@ -5,13 +5,16 @@
   const ARCADE_KEY = "arcadeV1";
   const DAY_MS = 86_400_000;
   const MODES = {
+    adaptive: { seal: "安", title: "念安私塾", note: "按你最近的薄处，临场配一卷", count: 12, tone: "jade" },
     listen: { seal: "听", title: "听音辨词", note: "只给发音，四选一辨义", count: 12, tone: "jade" },
+    listening: { seal: "闻", title: "听句寻意", note: "句子、通知与短对话听后取意", count: 10, tone: "blue" },
     dictation: { seal: "写", title: "听写巡夜", note: "听见什么，就完整写出来", count: 10, tone: "blue" },
     sentence: { seal: "句", title: "句阵重排", note: "点词成句，练语序与语感", count: 8, tone: "peach" },
     math: { seal: "算", title: "算学千变", note: "十类题型，每次参数都不同", count: 12, tone: "gold" },
     chinese: { seal: "文", title: "经史百问", note: "诗文、成语、语用与阅读策略", count: 12, tone: "rose" },
+    reading: { seal: "阅", title: "短章取证", note: "读真实短文，回到原文找证据", count: 8, tone: "rose" },
     mixed: { seal: "巡", title: "三馆巡考", note: "英语、数学、语文混合十五题", count: 15, tone: "ink" },
-    daily: { seal: "日", title: "今日长卷", note: "每天一套固定二十题", count: 20, tone: "sun" },
+    daily: { seal: "日", title: "念安今日卷", note: "按近期薄弱点生成的固定二十题", count: 20, tone: "sun" },
     endless: { seal: "百", title: "百连闯关", note: "三颗心，看看能走多远", count: 100, tone: "night" },
     mistakes: { seal: "追", title: "错题追击", note: "只追本馆里真正答错的题", count: 12, tone: "ember" },
   };
@@ -72,6 +75,11 @@
     ["The purpose of the plan is to save time", "计划的目的是节省时间", "不定式作表语"],
     ["Only then did I understand the reason", "直到那时我才明白原因", "only 置前引起部分倒装"],
   ].map(([sentence, meaning, rule], index) => ({ id: `sentence-${index + 1}`, sentence, meaning, rule }));
+
+  const V8_CONTENT = globalThis.NIAN_V8_CONTENT || {};
+  if (Array.isArray(V8_CONTENT.sentences)) SENTENCES.push(...V8_CONTENT.sentences);
+  const LISTENING_QUESTIONS = Array.isArray(V8_CONTENT.listening) ? V8_CONTENT.listening : [];
+  const READING_QUESTIONS = Array.isArray(V8_CONTENT.readings) ? V8_CONTENT.readings : [];
 
   const CHINESE_QUESTIONS = [
     ["成语", "“他做事总能提前考虑风险，真是____。”填入最恰当的一项。", ["未雨绸缪", "临渴掘井", "画蛇添足", "守株待兔"], 0, "未雨绸缪比喻事先做好准备。"],
@@ -144,7 +152,13 @@
     seconds: 0,
     dirty: false,
     rng: Math.random,
+    questionCycle: [],
   };
+  const speechSupported = typeof window.speechSynthesis?.speak === "function"
+    && typeof window.SpeechSynthesisUtterance === "function";
+  let activeUtterance = null;
+  let speechSequence = 0;
+  let englishVoices = [];
 
   const $ = (selector, root = document) => root.querySelector(selector);
   const esc = (value) => String(value ?? "").replace(/[&<>"]/g, (char) => ({
@@ -173,6 +187,17 @@
     };
   };
   const pick = (items, rng = state.rng) => items[Math.floor(rng() * items.length)];
+  const pickWeighted = (items, getWeight, rng = state.rng) => {
+    if (!items.length) return undefined;
+    const weighted = items.map((item) => ({ item, weight: Math.max(0.01, Number(getWeight(item)) || 0.01) }));
+    const total = weighted.reduce((sum, entry) => sum + entry.weight, 0);
+    let cursor = rng() * total;
+    for (const entry of weighted) {
+      cursor -= entry.weight;
+      if (cursor <= 0) return entry.item;
+    }
+    return weighted.at(-1).item;
+  };
   const shuffle = (items, rng = state.rng) => {
     const copy = [...items];
     for (let index = copy.length - 1; index > 0; index -= 1) {
@@ -182,25 +207,39 @@
     return copy;
   };
   const normalize = (value) => String(value ?? "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-  const getArcade = () => {
-    try {
-      const base = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-      return base[ARCADE_KEY] || {};
-    } catch {
-      return {};
-    }
+  const asRecord = (value) => value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  const asNumber = (value) => {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : 0;
   };
+  const getArcade = () => loadProgress()[ARCADE_KEY];
+
+  function pickAdaptiveWord(rng = state.rng) {
+    const progress = loadProgress();
+    const now = Date.now();
+    return pickWeighted(state.words, (word) => {
+      const record = asRecord(progress.words[String(word.id)]);
+      const mastery = Math.max(0, Math.min(5, asNumber(record.mastery)));
+      const wrong = asNumber(record.wrong);
+      const due = asNumber(record.due);
+      const unseen = !record.last && !record.correct && !record.wrong;
+      const overdue = due > 0 && due <= now;
+      return 1 + (5 - mastery) * 1.2 + Math.min(wrong, 5) * 1.8 + Number(unseen) * 2.2 + Number(overdue) * 7;
+    }, rng) || pick(state.words, rng);
+  }
 
   async function loadWordBank() {
     try {
-      const response = await fetch("/assets/NianStudyApp-YImpRfNC.js", { cache: "force-cache" });
+      const response = await fetch("/assets/NianStudyApp-YImpRfNC.js", { cache: "no-cache" });
       if (!response.ok) return;
       const source = await response.text();
       const pattern = /\{id:(\d+),word:`([^`]*)`,phonetic:`([^`]*)`,meaning:`([^`]*)`\}/g;
       const words = [];
+      const seen = new Set();
       for (const match of source.matchAll(pattern)) {
         const id = Number(match[1]);
-        if (id < 1 || id > 822 || words.some((item) => item.id === id)) continue;
+        if (id < 1 || id > 822 || seen.has(id)) continue;
+        seen.add(id);
         words.push({ id, word: match[2], phonetic: match[3], meaning: match[4] });
       }
       if (words.length >= 800) state.words = words.sort((a, b) => a.id - b.id);
@@ -210,13 +249,13 @@
   }
 
   function makeChoices(answer, candidates, rng = state.rng) {
-    const alternatives = shuffle(candidates.filter((item) => item !== answer), rng).slice(0, 3);
+    const alternatives = shuffle([...new Set(candidates.filter((item) => item !== answer))], rng).slice(0, 3);
     const choices = shuffle([answer, ...alternatives], rng);
     return { choices, answer: choices.indexOf(answer) };
   }
 
   function wordQuestion(kind, rng = state.rng) {
-    const word = pick(state.words, rng);
+    const word = pickAdaptiveWord(rng);
     const others = state.words.filter((item) => item.id !== word.id);
     if (kind === "listen") {
       const options = makeChoices(word.meaning, others.map((item) => item.meaning), rng);
@@ -255,6 +294,28 @@
       tokens: shuffle(tokens.map((label, index) => ({ label, index })), rng),
       expected: normalize(item.sentence),
       explanation: `${item.sentence}. ${item.rule}。`,
+    };
+  }
+
+  function listeningQuestion(rng = state.rng) {
+    const item = pick(LISTENING_QUESTIONS, rng);
+    if (!item) return wordQuestion("listen", rng);
+    return {
+      id: item.id, subject: "english", type: "choice", kind: "listening",
+      eyebrow: `听句寻意 · ${item.skill || "关键信息"}`, prompt: item.prompt,
+      speech: item.speech, choices: [...item.choices], answer: item.answer,
+      explanation: item.explanation,
+    };
+  }
+
+  function readingQuestion(rng = state.rng) {
+    const item = pick(READING_QUESTIONS, rng);
+    if (!item) return chineseQuestion(rng);
+    return {
+      id: item.id, subject: "chinese", type: "choice", kind: "reading",
+      eyebrow: `短章取证 · ${item.skill || "阅读"}`, passage: item.passage,
+      prompt: item.prompt, choices: [...item.choices], answer: item.answer,
+      explanation: item.explanation,
     };
   }
 
@@ -328,6 +389,50 @@
       const answer = total * (total - 1) / 2, options = numberChoices(answer, total - 2, rng);
       return { topic: "排列组合", prompt: `从 ${total} 人中任选 ${chosen} 人，有多少种选法？`, ...options, explanation: `组合数 C(${total},2)=${total}×${total - 1}÷2=${answer}。` };
     },
+    (rng) => {
+      const a = 1 + Math.floor(rng() * 5), b = a + 1 + Math.floor(rng() * 5);
+      const correct = `x=${a} 或 x=${b}`;
+      const choices = shuffle([correct, `x=${a + b}`, `x=${a * b}`, `x=${b - a}`], rng);
+      return { topic: "二次方程", prompt: `解方程：(x-${a})(x-${b})=0`, choices, answer: choices.indexOf(correct), explanation: `两个因式至少一个为 0，所以 x=${a} 或 x=${b}。` };
+    },
+    (rng) => {
+      const a1 = 1 + Math.floor(rng() * 6), d = 1 + Math.floor(rng() * 5), n = 5 + Math.floor(rng() * 6);
+      const last = a1 + (n - 1) * d, answer = n * (a1 + last) / 2;
+      const options = numberChoices(answer, n, rng);
+      return { topic: "数列求和", prompt: `等差数列首项 ${a1}、公差 ${d}，前 ${n} 项和为？`, ...options, explanation: `第 ${n} 项为 ${last}，Sₙ=${n}×(${a1}+${last})÷2=${answer}。` };
+    },
+    (rng) => {
+      const base = (4 + Math.floor(rng() * 9)) * 10, rate = pick([10, 20, 25, 50], rng);
+      const answer = base * (1 + rate / 100), options = numberChoices(answer, 10, rng);
+      return { topic: "增长率", prompt: `某数为 ${base}，增长 ${rate}% 后是多少？`, ...options, explanation: `${base}×(1+${rate}%)=${answer}。` };
+    },
+    (rng) => {
+      const start = 2 + Math.floor(rng() * 7), values = [start, start + 2, start + 4, start + 6];
+      const answer = start + 3, options = numberChoices(answer, 1, rng);
+      return { topic: "平均数", prompt: `数据 ${values.join("、")} 的平均数是？`, ...options, explanation: `总和为 ${values.reduce((sum, value) => sum + value, 0)}，除以 4 得 ${answer}。` };
+    },
+    (rng) => {
+      const x1 = Math.floor(rng() * 6), y1 = Math.floor(rng() * 6), x2 = x1 + 2 * (1 + Math.floor(rng() * 4)), y2 = y1 + 2 * (1 + Math.floor(rng() * 4));
+      const correct = `(${(x1 + x2) / 2}, ${(y1 + y2) / 2})`;
+      const choices = shuffle([correct, `(${x1 + x2}, ${y1 + y2})`, `(${x2 - x1}, ${y2 - y1})`, `(${x1}, ${y2})`], rng);
+      return { topic: "坐标中点", prompt: `A(${x1}, ${y1})、B(${x2}, ${y2}) 的中点坐标是？`, choices, answer: choices.indexOf(correct), explanation: `横、纵坐标分别取平均，得到 ${correct}。` };
+    },
+    (rng) => {
+      const base = pick([2, 3, 5], rng), exponent = 2 + Math.floor(rng() * 4), value = base ** exponent;
+      const options = numberChoices(exponent, 1, rng);
+      return { topic: "对数", prompt: `log${sup(base)} ${value} = ?`, ...options, explanation: `因为 ${base}${sup(exponent)}=${value}，所以 log${sup(base)} ${value}=${exponent}。` };
+    },
+    (rng) => {
+      const x = 2 + Math.floor(rng() * 6), y = 1 + Math.floor(rng() * 5), sum = x + y, difference = x - y;
+      const correct = `x=${x}, y=${y}`;
+      const choices = shuffle([correct, `x=${y}, y=${x}`, `x=${sum}, y=${difference}`, `x=${sum / 2}, y=${difference / 2}`], rng);
+      return { topic: "方程组", prompt: `已知 x+y=${sum}，x-y=${difference}，则？`, choices, answer: choices.indexOf(correct), explanation: `两式相加得 2x=${sum + difference}，所以 x=${x}，再得 y=${y}。` };
+    },
+    (rng) => {
+      const values = shuffle([3, 5, 7, 9].map((step) => step + Math.floor(rng() * 4)), rng);
+      const answer = Math.max(...values) - Math.min(...values), options = numberChoices(answer, 1, rng);
+      return { topic: "极差", prompt: `数据 ${values.join("、")} 的极差是？`, ...options, explanation: `极差=最大值 ${Math.max(...values)}-最小值 ${Math.min(...values)}=${answer}。` };
+    },
   ];
 
   function sup(value) {
@@ -348,20 +453,63 @@
     return { ...pick(CHINESE_QUESTIONS, rng), kind: "chinese", eyebrow: "经史百问" };
   }
 
+  function subjectStats(progress, subject) {
+    const records = subject === "math" ? progress.mathQuestions
+      : subject === "chinese" ? progress.chineseQuestions : progress.englishQuestions;
+    const values = Object.entries(asRecord(records)).filter(([key]) => !key.startsWith("arcade:")).map(([, value]) => asRecord(value));
+    let attempts = values.reduce((sum, record) => sum + asNumber(record.attempts), 0);
+    let correct = values.reduce((sum, record) => sum + asNumber(record.correct), 0);
+    for (const [key, value] of Object.entries(asRecord(progress[ARCADE_KEY]?.skills))) {
+      if (!key.startsWith(`${subject}:`)) continue;
+      const record = asRecord(value);
+      attempts += asNumber(record.attempts);
+      correct += asNumber(record.correct);
+    }
+    return { attempts, correct, rate: attempts ? correct / attempts : 0.58 };
+  }
+
+  function adaptiveCycle(progress) {
+    const ordered = ["english", "math", "chinese"]
+      .map((subject) => ({ subject, ...subjectStats(progress, subject) }))
+      .sort((a, b) => a.rate - b.rate || a.attempts - b.attempts);
+    const pools = {
+      english: ["listening", "dictation", "sentence", "listen", "meaning"],
+      math: ["math"],
+      chinese: ["reading", "chinese"],
+    };
+    const positions = [0, 1, 0, 2, 0, 1, 0, 2, 1, 0];
+    const offsets = { english: 0, math: 0, chinese: 0 };
+    return positions.map((rank) => {
+      const subject = ordered[rank].subject;
+      const pool = pools[subject];
+      const type = pool[offsets[subject] % pool.length];
+      offsets[subject] += 1;
+      return type;
+    });
+  }
+
+  function questionForType(type, rng) {
+    if (type === "math") return mathQuestion(rng);
+    if (type === "chinese") return chineseQuestion(rng);
+    if (type === "reading") return readingQuestion(rng);
+    if (type === "sentence") return sentenceQuestion(rng);
+    if (type === "listening") return listeningQuestion(rng);
+    return wordQuestion(type, rng);
+  }
+
   function createQuestion(mode, index, rng = state.rng) {
     if (mode === "listen") return wordQuestion("listen", rng);
+    if (mode === "listening") return listeningQuestion(rng);
     if (mode === "dictation") return wordQuestion("dictation", rng);
     if (mode === "sentence") return sentenceQuestion(rng);
     if (mode === "math") return mathQuestion(rng);
     if (mode === "chinese") return chineseQuestion(rng);
-    const cycle = mode === "daily"
-      ? ["listen", "math", "chinese", "dictation", "math", "chinese", "sentence"]
-      : ["listen", "math", "chinese", "meaning", "math", "chinese", "sentence", "dictation"];
+    if (mode === "reading") return readingQuestion(rng);
+    const cycle = ["daily", "adaptive"].includes(mode)
+      ? (state.questionCycle.length ? state.questionCycle : adaptiveCycle(loadProgress()))
+      : ["listen", "math", "reading", "meaning", "math", "chinese", "listening", "sentence", "dictation"];
     const type = cycle[index % cycle.length];
-    if (type === "math") return mathQuestion(rng);
-    if (type === "chinese") return chineseQuestion(rng);
-    if (type === "sentence") return sentenceQuestion(rng);
-    return wordQuestion(type, rng);
+    return questionForType(type, rng);
   }
 
   function defaultToday(date = todayKey()) {
@@ -370,32 +518,93 @@
 
   function loadProgress() {
     try {
-      const progress = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-      progress.version = Number(progress.version) || 4;
-      progress.xp = Number(progress.xp) || 0;
-      progress.words ||= {};
-      progress.totals = { english: 0, reviewed: 0, math: 0, chinese: 0, focus: 0, ...(progress.totals || {}) };
-      progress.englishQuestions ||= {};
-      progress.mathQuestions ||= {};
-      progress.chineseQuestions ||= {};
-      progress.history ||= {};
-      progress.today ||= defaultToday();
+      const progress = asRecord(JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"));
+      progress.version = asNumber(progress.version) || 4;
+      progress.xp = asNumber(progress.xp);
+      progress.words = asRecord(progress.words);
+      progress.totals = { english: 0, reviewed: 0, math: 0, chinese: 0, focus: 0, ...asRecord(progress.totals) };
+      for (const field of ["english", "reviewed", "math", "chinese", "focus"]) {
+        progress.totals[field] = asNumber(progress.totals[field]);
+      }
+      progress.englishQuestions = asRecord(progress.englishQuestions);
+      progress.mathQuestions = asRecord(progress.mathQuestions);
+      progress.chineseQuestions = asRecord(progress.chineseQuestions);
+      progress.history = asRecord(progress.history);
+      const storedToday = asRecord(progress.today);
+      progress.today = { ...defaultToday(storedToday.date || todayKey()), ...storedToday };
+      if (typeof progress.today.date !== "string") progress.today.date = todayKey();
       if (progress.today.date !== todayKey()) {
         if (progress.today.date) progress.history[progress.today.date] = { ...progress.today };
         progress.today = defaultToday();
       }
+      for (const field of ["english", "attempts", "reviewed", "math", "chinese", "focus", "boss", "ticketMilestones"]) {
+        progress.today[field] = asNumber(progress.today[field]);
+      }
+      const storedArcade = asRecord(progress[ARCADE_KEY]);
       progress[ARCADE_KEY] = {
         attempts: 0, correct: 0, bestCombo: 0, bestEndless: 0, runs: 0,
-        modes: {}, mistakes: {}, daily: {}, badges: [],
-        ...(progress[ARCADE_KEY] || {}),
+        modes: {}, mistakes: {}, daily: {}, badges: [], skills: {}, recent: [],
+        ...storedArcade,
       };
+      const arcade = progress[ARCADE_KEY];
+      for (const field of ["attempts", "correct", "bestCombo", "bestEndless", "runs"]) {
+        arcade[field] = asNumber(arcade[field]);
+      }
+      arcade.modes = asRecord(arcade.modes);
+      for (const [mode, storedMode] of Object.entries(arcade.modes)) {
+        const modeProgress = asRecord(storedMode);
+        arcade.modes[mode] = {
+          ...modeProgress,
+          attempts: asNumber(modeProgress.attempts),
+          correct: asNumber(modeProgress.correct),
+          best: asNumber(modeProgress.best),
+        };
+      }
+      arcade.mistakes = asRecord(arcade.mistakes);
+      arcade.daily = asRecord(arcade.daily);
+      arcade.badges = Array.isArray(arcade.badges) ? arcade.badges.filter((badge) => typeof badge === "string") : [];
+      arcade.skills = asRecord(arcade.skills);
+      for (const [key, storedSkill] of Object.entries(arcade.skills)) {
+        const skill = asRecord(storedSkill);
+        arcade.skills[key] = {
+          attempts: asNumber(skill.attempts), correct: asNumber(skill.correct),
+          wrongStreak: asNumber(skill.wrongStreak), correctStreak: asNumber(skill.correctStreak),
+          last: asNumber(skill.last), due: asNumber(skill.due),
+        };
+      }
+      arcade.recent = Array.isArray(arcade.recent) ? arcade.recent.filter((item) => item && typeof item === "object").slice(-80) : [];
+      arcade.mistakes = Object.fromEntries(Object.entries(arcade.mistakes)
+        .sort(([, a], [, b]) => asNumber(b?.wrongAt) - asNumber(a?.wrongAt)).slice(0, 120));
+      arcade.daily = Object.fromEntries(Object.entries(arcade.daily).sort(([a], [b]) => b.localeCompare(a)).slice(0, 60));
       return progress;
     } catch {
       return {
         version: 4, xp: 0, words: {}, totals: { english: 0, reviewed: 0, math: 0, chinese: 0, focus: 0 },
         englishQuestions: {}, mathQuestions: {}, chineseQuestions: {}, history: {}, today: defaultToday(),
-        [ARCADE_KEY]: { attempts: 0, correct: 0, bestCombo: 0, bestEndless: 0, runs: 0, modes: {}, mistakes: {}, daily: {}, badges: [] },
+        [ARCADE_KEY]: { attempts: 0, correct: 0, bestCombo: 0, bestEndless: 0, runs: 0, modes: {}, mistakes: {}, daily: {}, badges: [], skills: {}, recent: [] },
       };
+    }
+  }
+
+  function showStorageWarning() {
+    let warning = $("#nian-arcade-storage-warning");
+    if (!warning) {
+      warning = document.createElement("div");
+      warning.id = "nian-arcade-storage-warning";
+      warning.className = "nian-arcade-storage-warning";
+      warning.setAttribute("role", "alert");
+      warning.textContent = "本轮可以继续，但浏览器暂时无法保存学习记录。请检查无痕模式或存储权限。";
+      document.body.appendChild(warning);
+    }
+  }
+
+  function saveProgress(progress) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+      return true;
+    } catch {
+      showStorageWarning();
+      return false;
     }
   }
 
@@ -421,6 +630,12 @@
     arcade.badges = [...earned];
   }
 
+  function skillKeyFor(question) {
+    if (question.subject === "math") return `math:${question.topic || "综合"}`;
+    if (question.subject === "chinese") return `chinese:${question.skill || question.category || question.kind || "综合"}`;
+    return `english:${question.skill || question.kind || "综合"}`;
+  }
+
   function recordAnswer(question, correct) {
     const progress = loadProgress();
     const arcade = progress[ARCADE_KEY];
@@ -428,10 +643,13 @@
     arcade.attempts += 1;
     arcade.correct += Number(correct);
     arcade.bestCombo = Math.max(arcade.bestCombo || 0, state.combo);
-    arcade.modes[state.mode] ||= { attempts: 0, correct: 0, best: 0 };
-    arcade.modes[state.mode].attempts += 1;
-    arcade.modes[state.mode].correct += Number(correct);
-    arcade.modes[state.mode].best = Math.max(arcade.modes[state.mode].best || 0, state.score);
+    const storedMode = asRecord(arcade.modes[state.mode]);
+    arcade.modes[state.mode] = {
+      ...storedMode,
+      attempts: asNumber(storedMode.attempts) + 1,
+      correct: asNumber(storedMode.correct) + Number(correct),
+      best: Math.max(asNumber(storedMode.best), state.score),
+    };
     progress.today.attempts = (Number(progress.today.attempts) || 0) + 1;
 
     const points = correct ? 10 + Math.min(state.combo, 8) : 2;
@@ -441,20 +659,46 @@
     const recordKey = `arcade:${question.id}`;
     const records = question.subject === "math" ? progress.mathQuestions
       : question.subject === "chinese" ? progress.chineseQuestions : progress.englishQuestions;
-    const previousRecord = records[recordKey] || { attempts: 0, correct: 0 };
+    const previousRecord = asRecord(records[recordKey]);
     records[recordKey] = {
-      attempts: previousRecord.attempts + 1,
-      correct: previousRecord.correct + Number(correct),
+      ...previousRecord,
+      attempts: asNumber(previousRecord.attempts) + 1,
+      correct: asNumber(previousRecord.correct) + Number(correct),
       last: Date.now(),
       lastCorrect: correct,
     };
+
+    const skillKey = skillKeyFor(question);
+    const previousSkill = asRecord(arcade.skills[skillKey]);
+    const correctStreak = correct ? asNumber(previousSkill.correctStreak) + 1 : 0;
+    const wrongStreak = correct ? 0 : asNumber(previousSkill.wrongStreak) + 1;
+    arcade.skills[skillKey] = {
+      attempts: asNumber(previousSkill.attempts) + 1,
+      correct: asNumber(previousSkill.correct) + Number(correct),
+      correctStreak,
+      wrongStreak,
+      last: Date.now(),
+      due: correct
+        ? Date.now() + [DAY_MS, 3 * DAY_MS, 7 * DAY_MS, 14 * DAY_MS][Math.min(3, Math.max(0, correctStreak - 1))]
+        : Date.now() + 10 * 60 * 1000,
+    };
+    arcade.recent.push({ id: question.id, skill: skillKey, subject: question.subject, correct, at: Date.now() });
+    arcade.recent = arcade.recent.slice(-80);
 
     if (question.subject === "english") {
       progress.today.english += Number(correct);
       progress.totals.english += Number(correct);
       if (question.wordId) {
         const wordKey = String(question.wordId);
-        const wordRecord = { mastery: 0, wrong: 0, correct: 0, due: 0, last: 0, ...(progress.words[wordKey] || {}) };
+        const storedWord = asRecord(progress.words[wordKey]);
+        const wordRecord = {
+          ...storedWord,
+          mastery: asNumber(storedWord.mastery),
+          wrong: asNumber(storedWord.wrong),
+          correct: asNumber(storedWord.correct),
+          due: asNumber(storedWord.due),
+          last: asNumber(storedWord.last),
+        };
         wordRecord.last = Date.now();
         if (correct) {
           wordRecord.correct += 1;
@@ -490,27 +734,86 @@
       };
     }
     awardBadges(arcade);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
-    state.dirty = true;
+    state.dirty = saveProgress(progress) || state.dirty;
+    document.dispatchEvent(new CustomEvent("nian:study-result", { detail: {
+      correct, points, mode: state.mode, subject: question.subject, skill: skillKey,
+      combo: state.combo, score: state.score, attempts: arcade.attempts, totalCorrect: arcade.correct,
+    } }));
     return points;
   }
 
-  function speak(text) {
-    if (!("speechSynthesis" in window) || !text) return;
-    window.speechSynthesis.cancel();
+  function refreshEnglishVoices() {
+    if (!speechSupported) return [];
+    englishVoices = window.speechSynthesis.getVoices().filter((voice) => /^en(?:-|$)/i.test(voice.lang));
+    return englishVoices;
+  }
+
+  function setSpeechStatus(message, status = "idle") {
+    const label = $("[data-nian-speech-status]");
+    if (!label) return;
+    label.textContent = message;
+    label.closest(".nian-audio-orb")?.setAttribute("data-speech-state", status);
+  }
+
+  function speak(text, rate = 0.82) {
+    if (!text) return false;
+    if (!speechSupported) {
+      setSpeechStatus("当前浏览器没有系统朗读", "error");
+      return false;
+    }
+
+    const synthesis = window.speechSynthesis;
+    const requestId = ++speechSequence;
+    if (synthesis.speaking || synthesis.pending || synthesis.paused) synthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "en-US";
-    utterance.rate = 0.82;
+    utterance.rate = rate;
     utterance.pitch = 1;
-    const voices = window.speechSynthesis.getVoices();
-    utterance.voice = voices.find((voice) => /^en-(US|GB)/i.test(voice.lang)) || voices.find((voice) => /^en/i.test(voice.lang)) || null;
-    window.speechSynthesis.speak(utterance);
+    const voices = refreshEnglishVoices();
+    utterance.voice = voices.find((voice) => /^en-US$/i.test(voice.lang))
+      || voices.find((voice) => /^en-GB$/i.test(voice.lang))
+      || voices[0]
+      || null;
+    utterance.onstart = () => {
+      if (requestId === speechSequence) setSpeechStatus("正在播放 · 点此可重播", "playing");
+    };
+    utterance.onend = () => {
+      if (requestId !== speechSequence) return;
+      activeUtterance = null;
+      setSpeechStatus("播放完毕 · 点此重播", "idle");
+    };
+    utterance.onerror = (event) => {
+      if (requestId !== speechSequence || ["canceled", "interrupted"].includes(event.error)) return;
+      activeUtterance = null;
+      setSpeechStatus("系统朗读失败，请检查英语语音包", "error");
+    };
+
+    activeUtterance = utterance;
+    setSpeechStatus("正在唤起系统朗读…", "pending");
+    try {
+      synthesis.resume();
+      synthesis.speak(utterance);
+    } catch {
+      activeUtterance = null;
+      setSpeechStatus("系统朗读不可用，请检查媒体音量", "error");
+      return false;
+    }
+
+    window.setTimeout(() => {
+      if (requestId !== speechSequence || !activeUtterance) return;
+      if (!synthesis.speaking && !synthesis.pending) {
+        activeUtterance = null;
+        setSpeechStatus("没有检测到朗读，请点此重试", "error");
+      }
+    }, 1500);
+    return true;
   }
 
   function modeQueue(mode) {
     const config = MODES[mode];
-    const rng = seeded(mode === "daily" ? `${todayKey()}-daily-v3` : `${mode}-${Date.now()}-${Math.random()}`);
+    const rng = seeded(mode === "daily" ? `${todayKey()}-daily-v8` : `${mode}-${Date.now()}-${Math.random()}`);
     state.rng = rng;
+    state.questionCycle = ["daily", "adaptive"].includes(mode) ? adaptiveCycle(loadProgress()) : [];
     if (mode === "mistakes") {
       const stored = Object.values(getArcade().mistakes || {}).map((item) => item.question).filter(Boolean);
       return shuffle(stored, rng).slice(0, config.count);
@@ -539,7 +842,7 @@
     section.innerHTML = `
       <div class="nian-arcade-heading">
         <div><span class="nian-arcade-kicker">清晖书院 · 百戏楼新开</span><h2>不只翻词笺，今天换一种赢法。</h2><p>听、写、拼、排、算、读都能真的作答；题目按词库、日期与参数轮换，不再刷两轮就见底。</p></div>
-        <button type="button" class="nian-arcade-main" data-arcade-mode="daily"><span>今日长卷</span><strong>20 题</strong><i>开卷 →</i></button>
+        <button type="button" class="nian-arcade-main" data-arcade-mode="daily"><span>念安今日卷</span><strong>自适应 20 题</strong><i>开卷 →</i></button>
       </div>
       <div class="nian-arcade-ledger" aria-label="闯关进度">
         <span><b>${Number(arcade.correct) || 0}</b> 累计答对</span>
@@ -548,10 +851,10 @@
         <span><b>${(arcade.badges || []).length}</b> 枚闯关印记</span>
       </div>
       <div class="nian-arcade-grid">
-        ${["listen", "dictation", "sentence", "math", "chinese", "mixed", "endless"].map((mode) => modeCard(mode)).join("")}
+        ${["adaptive", "listen", "listening", "dictation", "sentence", "math", "chinese", "reading", "mixed", "endless"].map((mode) => modeCard(mode)).join("")}
       </div>
       <div class="nian-arcade-foot">
-        <span>英语：822 词 × 听辨 / 听写 / 句阵</span><span>数学：10 类参数变式</span><span>语文：48 道新增专项</span>
+        <span>英语：822 词 × 单词 / 句子 / 对话听力</span><span>数学：${MATH_BUILDERS.length} 类参数变式</span><span>语文：专项题 + ${READING_QUESTIONS.length} 篇短章</span>
         <button type="button" data-arcade-mode="mistakes" ${Object.keys(arcade.mistakes || {}).length ? "" : "disabled"}>追击错题 ${Object.keys(arcade.mistakes || {}).length}</button>
       </div>`;
     anchor.insertAdjacentElement("afterend", section);
@@ -580,13 +883,13 @@
 
   function modeCard(mode) {
     const item = MODES[mode];
-    const bank = mode === "listen" ? "822 词发音"
-      : mode === "dictation" ? "822 词听写"
-        : mode === "sentence" ? `${SENTENCES.length} 组句阵`
-          : mode === "math" ? "参数无限变式"
-            : mode === "chinese" ? `${CHINESE_QUESTIONS.length} 道新增`
-              : mode === "mixed" ? "三科轮换"
-                : "三心百关";
+    const banks = {
+      adaptive: "按薄弱点配卷", listen: "822 词发音", listening: `${LISTENING_QUESTIONS.length} 组句段`,
+      dictation: "822 词听写", sentence: `${SENTENCES.length} 组句阵`, math: `${MATH_BUILDERS.length} 类变式`,
+      chinese: `${CHINESE_QUESTIONS.length} 道专项`, reading: `${READING_QUESTIONS.length} 篇短章`,
+      mixed: "三科轮换", endless: "三心百关",
+    };
+    const bank = banks[mode] || "随学录变化";
     return `<button type="button" class="nian-mode-card tone-${item.tone}" data-arcade-mode="${mode}"><span>${item.seal}</span><small>${bank}</small><strong>${item.title}</strong><p>${item.note}</p><i>入楼挑战 →</i></button>`;
   }
 
@@ -639,14 +942,15 @@
       <div class="nian-arcade-status"><i style="width:${Math.min(100, ((state.index + 1) / state.queue.length) * 100)}%"></i></div>
       <div class="nian-arcade-scorebar"><span>答对 <b>${state.score}</b></span><span>最佳连击 <b>${state.bestCombo}</b></span>${state.mode === "endless" ? `<span>余心 <b>${"♥".repeat(state.lives)}${"♡".repeat(3 - state.lives)}</b></span>` : ""}</div>
       <main class="nian-question-card" aria-live="polite">
-        ${question.speech ? `<button type="button" class="nian-audio-orb" data-arcade-action="speak" aria-label="播放英文发音"><span>▶</span><strong>播放发音</strong><small>${question.kind === "listen" ? "英文暂不显示" : `/${esc(question.phonetic)}/`}</small></button>` : ""}
+        ${question.speech ? `<div class="nian-audio-tools"><button type="button" class="nian-audio-orb" data-arcade-action="speak" data-speech-state="${speechSupported ? "idle" : "error"}" aria-label="播放英文发音"><span>▶</span><strong>播放发音</strong><small data-nian-speech-status>${speechSupported ? (question.kind === "listen" ? "英文暂不显示" : question.phonetic ? `/${esc(question.phonetic)}/` : "先听完整内容") : "当前浏览器没有系统朗读"}</small></button>${question.kind === "listening" ? `<button type="button" class="nian-audio-slow" data-arcade-action="speak-slow">慢速再听</button>` : ""}</div>` : ""}
         <span class="nian-question-eyebrow">${esc(question.eyebrow || "本题")}</span>
+        ${question.passage ? `<blockquote class="nian-reading-passage">${esc(question.passage)}</blockquote>` : ""}
         <h3>${esc(question.prompt)}</h3>
         ${question.subprompt ? `<p class="nian-question-sub">${esc(question.subprompt)}</p>` : ""}
         ${question.hint ? `<p class="nian-question-hint">提示：${esc(question.hint)}</p>` : ""}
         ${questionBody(question)}
       </main>`;
-    if (question.speech) window.setTimeout(() => speak(question.speech), 260);
+    if (question.speech) speak(question.speech);
     if (question.type === "input") window.setTimeout(() => $("#nian-arcade-answer")?.focus(), 120);
   }
 
@@ -693,6 +997,7 @@
     feedback.className = `nian-answer-feedback ${correct ? "is-correct" : "is-wrong"}`;
     feedback.innerHTML = `<span>${correct ? (state.combo >= 5 ? `${state.combo} 连！` : "落笔准确") : "这一处先收进拾遗"}</span><strong>${correct ? `+${points} 学识` : "答案已经拆开"}</strong><p>${esc(question.explanation)}</p><button type="button" data-arcade-action="next">${nextLabel()}</button>`;
     card.appendChild(feedback);
+    document.dispatchEvent(new CustomEvent("nian:sound", { detail: { type: correct ? "correct" : "wrong" } }));
   }
 
   function nextLabel() {
@@ -723,21 +1028,31 @@
     if (state.mode === "endless") arcade.bestEndless = Math.max(arcade.bestEndless || 0, state.score);
     if (state.mode === "daily") arcade.daily[todayKey()] = { score: state.score, total: state.queue.length, finishedAt: Date.now() };
     awardBadges(arcade);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
-    state.dirty = true;
+    state.dirty = saveProgress(progress) || state.dirty;
     const config = MODES[state.mode];
-    const total = state.mode === "endless" ? Math.max(state.index, state.score) : state.queue.length;
+    const total = state.mode === "endless" ? Math.max(state.index + 1, state.score) : state.queue.length;
     const rate = total ? Math.round((state.score / total) * 100) : 0;
+    const weakest = Object.entries(asRecord(arcade.skills))
+      .map(([key, value]) => ({ key, value: asRecord(value), rate: asNumber(value?.attempts) ? asNumber(value?.correct) / asNumber(value?.attempts) : 1 }))
+      .filter((item) => asNumber(item.value.attempts) >= 2)
+      .sort((a, b) => a.rate - b.rate)[0];
+    const nextAdvice = weakest
+      ? `下一卷先补“${weakest.key.split(":").slice(1).join(":")}”，我已经把它往前排了。`
+      : "再完成一卷，我就能更准确地判断下一处该补哪里。";
     $("#nian-arcade-stage").innerHTML = `
       <div class="nian-session-result tone-${config.tone}">
         <button type="button" class="nian-arcade-close" data-arcade-action="close" aria-label="退出闯关">×</button>
         <span class="nian-result-seal">${config.seal}</span><small>${config.title} · 结卷</small>
         <h2>${rate >= 85 ? "这一卷，赢得很漂亮。" : rate >= 60 ? "路已经走通，薄处也照出来了。" : "先不硬撑，错处已经排好队。"}</h2>
         <div class="nian-result-numbers"><span><b>${state.score}</b>答对</span><span><b>${state.bestCombo}</b>最高连击</span><span><b>${rate}%</b>正确率</span></div>
-        <p>${rate >= 85 ? "念安把卷角压平了：这次不是手感，是你真的听清、想过、算对了。" : "答错的题已自动放进“错题追击”，下次只补薄处，不用整卷重刷。"}</p>
+        <p>${rate >= 85 ? "念安把卷角压平了：这次不是手感，是你真的听清、想过、算对了。" : "答错的题已自动放进“错题追击”，下次只补薄处，不用整卷重刷。"} ${esc(nextAdvice)}</p>
         <div class="nian-result-actions"><button type="button" data-arcade-mode="${state.mode}">再开一卷</button><button type="button" data-arcade-action="close" class="primary">带战果回书院</button></div>
         <div class="nian-badge-strip">${(arcade.badges || []).length ? arcade.badges.map((badge) => `<span>${esc(badge)}</span>`).join("") : "<span>再过几关，第一枚闯关印记就会出现。</span>"}</div>
       </div>`;
+    document.dispatchEvent(new CustomEvent("nian:session-finished", { detail: {
+      mode: state.mode, score: state.score, total, rate, bestCombo: state.bestCombo,
+      weakestSkill: weakest?.key || "",
+    } }));
   }
 
   function updateTokens() {
@@ -754,7 +1069,9 @@
 
   function closeArcade() {
     clearInterval(state.timer);
+    speechSequence += 1;
     window.speechSynthesis?.cancel();
+    activeUtterance = null;
     const modal = $("#nian-arcade-modal");
     if (modal) modal.hidden = true;
     document.body.classList.remove("nian-arcade-open");
@@ -762,6 +1079,7 @@
   }
 
   function handleClick(event) {
+    if (!(event.target instanceof Element)) return;
     const target = event.target.closest("button, [data-arcade-action]");
     if (!target) return;
     const mode = target.dataset.arcadeMode;
@@ -787,6 +1105,7 @@
     const action = target.dataset.arcadeAction;
     if (action === "close") closeArcade();
     if (action === "speak") speak(currentQuestion()?.speech);
+    if (action === "speak-slow") speak(currentQuestion()?.speech, 0.64);
     if (action === "next") nextQuestion();
     if (action === "submit-tokens") evaluateAnswer(state.chosenTokens);
   }
@@ -798,6 +1117,10 @@
   }
 
   async function start() {
+    if (speechSupported) {
+      refreshEnglishVoices();
+      window.speechSynthesis.addEventListener?.("voiceschanged", refreshEnglishVoices);
+    }
     await loadWordBank();
     if (mount()) return;
     const observer = new MutationObserver(() => {
