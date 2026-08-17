@@ -28,6 +28,8 @@
   Cache-Control: no-cache
 /assets/nian-lively-v2.css
   Cache-Control: no-cache
+/assets/nian-voice-v1.js
+  Cache-Control: no-cache
 /assets/nian-arcade-v3.js
   Cache-Control: no-cache
 /assets/nian-arcade-v3.css

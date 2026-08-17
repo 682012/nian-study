@@ -436,3 +436,52 @@ body.nian-arcade-open { overflow: hidden !important; }
   .nian-mode-card,
   .nian-arcade-main { transition: none; }
 }
+
+/* V8+ 动态数学图像与主观采分样式 */
+.nian-math-figure {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-width: 320px;
+  margin: 10px auto 16px;
+  padding: 8px 12px;
+  border: 1px solid rgba(20, 55, 57, .13);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .75);
+  box-shadow: 0 6px 18px rgba(20, 55, 57, .05);
+}
+.nian-math-svg {
+  width: 100%;
+  height: auto;
+  max-height: 120px;
+  display: block;
+}
+.nian-rubric-box {
+  margin: 12px 0 10px;
+  padding: 12px 14px;
+  border: 1px dashed rgba(181, 109, 88, .35);
+  border-radius: 14px;
+  background: rgba(255, 246, 238, .85);
+  text-align: left;
+}
+.nian-rubric-kicker {
+  display: block;
+  margin-bottom: 6px;
+  color: #99523e;
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: .06em;
+}
+.nian-rubric-box ul {
+  margin: 0;
+  padding-left: 18px;
+  color: rgba(20, 55, 57, .82);
+  font-size: 12px;
+  line-height: 1.65;
+}
+.nian-rubric-box li {
+  margin-bottom: 4px;
+}
+.nian-rubric-box b {
+  color: #173e40;
+}

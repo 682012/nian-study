@@ -1,12 +1,12 @@
-const STATIC_CACHE = 'nian-static-cf-v6-live';
-const PAGE_CACHE = 'nian-pages-cf-v6-live';
+const STATIC_CACHE = 'nian-static-cf-v8.3-ai-voice';
+const PAGE_CACHE = 'nian-pages-cf-v8.3-ai-voice';
 const CORE = [
   '/', '/index.html', '/offline.html', '/manifest.webmanifest', '/favicon.svg',
   '/icons/app-icon-192.png', '/icons/app-icon-512.png', '/icons/app-icon-maskable-512.png',
   '/assets/index-B65g4y4e.css', '/assets/index-Dm1zMWhb.js', '/assets/framework-CXnKph_e.js',
   '/assets/layout-segment-context-B6a3SPWX.js', '/assets/rolldown-runtime-S-ySWqyJ.js',
   '/assets/NianStudyApp-YImpRfNC.js', '/assets/nian-lively-v2.css',
-  '/assets/nian-lively-v2.js', '/assets/nian-arcade-v3.css',
+  '/assets/nian-lively-v2.js', '/assets/nian-voice-v1.js', '/assets/nian-arcade-v3.css',
   '/assets/nian-arcade-v3.js', '/assets/nian-content-v8.js',
   '/assets/nian-companion-v1.css', '/assets/nian-companion-v1.js',
   '/assets/nian-song/welcome.webp',

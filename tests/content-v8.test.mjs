@@ -9,9 +9,9 @@ vm.runInContext(source, context);
 const content = context.globalThis.NIAN_V8_CONTENT;
 
 assert.ok(content, "v8 content bundle should expose NIAN_V8_CONTENT");
-assert.equal(content.sentences.length, 36, "expected 36 additional sentence-order exercises");
-assert.equal(content.listening.length, 24, "expected 24 sentence and dialogue listening exercises");
-assert.equal(content.readings.length, 16, "expected 16 original short-reading exercises");
+assert.ok(content.sentences.length >= 36, "expected at least 36 sentence-order exercises");
+assert.ok(content.listening.length >= 24, "expected at least 24 listening exercises");
+assert.ok(content.readings.length >= 16, "expected at least 16 reading exercises");
 
 for (const [bankName, bank] of Object.entries({ listening: content.listening, readings: content.readings })) {
   const ids = new Set();
@@ -26,11 +26,11 @@ for (const [bankName, bank] of Object.entries({ listening: content.listening, re
 }
 
 const arcade = fs.readFileSync("public/assets/nian-arcade-v3.js", "utf8");
-for (const feature of ["念安私塾", "听句寻意", "短章取证", "math:二次方程", "math:方程组"]) {
+for (const feature of ["念安私塾", "听句寻意", "短章取证", "math:二次方程", "math:方程组", "mathSvg", "nian-math-figure", "nian-rubric-box"]) {
   const needle = feature.startsWith("math:") ? feature.slice(5) : feature;
   assert.ok(arcade.includes(needle), `arcade is missing ${feature}`);
 }
 assert.ok(arcade.includes("arcade.recent = arcade.recent.slice(-80)"), "recent adaptive history must be bounded");
 assert.ok(arcade.includes(".slice(0, 120)"), "arcade mistake storage must be bounded");
 
-console.log("v8 内容检查通过：36 句阵、24 听力、16 短章、自适应与存档上限均有效。");
+console.log("v8+ 内容与动态图像检查通过：句阵、长对话听力、主观短章、SVG几何函数图像与自适应上限均有效。");

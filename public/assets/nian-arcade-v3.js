@@ -154,11 +154,7 @@
     rng: Math.random,
     questionCycle: [],
   };
-  const speechSupported = typeof window.speechSynthesis?.speak === "function"
-    && typeof window.SpeechSynthesisUtterance === "function";
-  let activeUtterance = null;
-  let speechSequence = 0;
-  let englishVoices = [];
+  const speechSupported = Boolean(window.NIAN_VOICE?.supported);
 
   const $ = (selector, root = document) => root.querySelector(selector);
   const esc = (value) => String(value ?? "").replace(/[&<>"]/g, (char) => ({
@@ -358,12 +354,12 @@
     (rng) => {
       const k = 1 + Math.floor(rng() * 6), b = Math.floor(rng() * 8), x = 2 + Math.floor(rng() * 7);
       const answer = k * x + b, options = numberChoices(answer, k, rng);
-      return { topic: "一次函数", prompt: `函数 y=${k}x+${b}，当 x=${x} 时，y 等于？`, ...options, explanation: `代入 x=${x}：y=${k}×${x}+${b}=${answer}。` };
+      return { topic: "一次函数", prompt: `函数 y=${k}x+${b}，当 x=${x} 时，y 等于？`, svg: mathSvg("linear", { k, b }), ...options, explanation: `代入 x=${x}：y=${k}×${x}+${b}=${answer}。` };
     },
     (rng) => {
       const length = 4 + Math.floor(rng() * 10), width = 3 + Math.floor(rng() * 8);
       const answer = 2 * (length + width), options = numberChoices(answer, 2, rng);
-      return { topic: "平面几何", prompt: `长方形长 ${length}、宽 ${width}，周长是？`, ...options, explanation: `周长=2×(长+宽)=2×(${length}+${width})=${answer}。` };
+      return { topic: "平面几何", prompt: `长方形长 ${length}、宽 ${width}，周长是？`, svg: mathSvg("rect", { l: length, w: width }), ...options, explanation: `周长=2×(长+宽)=2×(${length}+${width})=${answer}。` };
     },
     (rng) => {
       const base = pick([2, 3, 5], rng), m = 2 + Math.floor(rng() * 4), n = 1 + Math.floor(rng() * 3);
@@ -382,7 +378,7 @@
       const candidates = [answer, String(a + b), String(a * b), Math.abs(a - b).toFixed(2)];
       const choices = shuffle([...new Set(candidates)], rng);
       while (choices.length < 4) choices.push(String(Number(answer) + choices.length));
-      return { topic: "向量长度", prompt: `向量 a=(${a}, ${b}) 的模约为？（保留两位小数）`, choices, answer: choices.indexOf(answer), explanation: `|a|=√(${a}²+${b}²)≈${answer}。` };
+      return { topic: "向量长度", prompt: `向量 a=(${a}, ${b}) 的模约为？（保留两位小数）`, svg: mathSvg("vector", { a, b }), choices, answer: choices.indexOf(answer), explanation: `|a|=√(${a}²+${b}²)≈${answer}。` };
     },
     (rng) => {
       const total = 5 + Math.floor(rng() * 8), chosen = 2;
@@ -393,7 +389,7 @@
       const a = 1 + Math.floor(rng() * 5), b = a + 1 + Math.floor(rng() * 5);
       const correct = `x=${a} 或 x=${b}`;
       const choices = shuffle([correct, `x=${a + b}`, `x=${a * b}`, `x=${b - a}`], rng);
-      return { topic: "二次方程", prompt: `解方程：(x-${a})(x-${b})=0`, choices, answer: choices.indexOf(correct), explanation: `两个因式至少一个为 0，所以 x=${a} 或 x=${b}。` };
+      return { topic: "二次方程", prompt: `解方程：(x-${a})(x-${b})=0`, svg: mathSvg("parabola", { a, b }), choices, answer: choices.indexOf(correct), explanation: `两个因式至少一个为 0，所以 x=${a} 或 x=${b}。` };
     },
     (rng) => {
       const a1 = 1 + Math.floor(rng() * 6), d = 1 + Math.floor(rng() * 5), n = 5 + Math.floor(rng() * 6);
@@ -415,7 +411,7 @@
       const x1 = Math.floor(rng() * 6), y1 = Math.floor(rng() * 6), x2 = x1 + 2 * (1 + Math.floor(rng() * 4)), y2 = y1 + 2 * (1 + Math.floor(rng() * 4));
       const correct = `(${(x1 + x2) / 2}, ${(y1 + y2) / 2})`;
       const choices = shuffle([correct, `(${x1 + x2}, ${y1 + y2})`, `(${x2 - x1}, ${y2 - y1})`, `(${x1}, ${y2})`], rng);
-      return { topic: "坐标中点", prompt: `A(${x1}, ${y1})、B(${x2}, ${y2}) 的中点坐标是？`, choices, answer: choices.indexOf(correct), explanation: `横、纵坐标分别取平均，得到 ${correct}。` };
+      return { topic: "坐标中点", prompt: `A(${x1}, ${y1})、B(${x2}, ${y2}) 的中点坐标是？`, svg: mathSvg("midpoint", { x1, y1, x2, y2 }), choices, answer: choices.indexOf(correct), explanation: `横、纵坐标分别取平均，得到 ${correct}。` };
     },
     (rng) => {
       const base = pick([2, 3, 5], rng), exponent = 2 + Math.floor(rng() * 4), value = base ** exponent;
@@ -426,7 +422,7 @@
       const x = 2 + Math.floor(rng() * 6), y = 1 + Math.floor(rng() * 5), sum = x + y, difference = x - y;
       const correct = `x=${x}, y=${y}`;
       const choices = shuffle([correct, `x=${y}, y=${x}`, `x=${sum}, y=${difference}`, `x=${sum / 2}, y=${difference / 2}`], rng);
-      return { topic: "方程组", prompt: `已知 x+y=${sum}，x-y=${difference}，则？`, choices, answer: choices.indexOf(correct), explanation: `两式相加得 2x=${sum + difference}，所以 x=${x}，再得 y=${y}。` };
+      return { topic: "方程组", prompt: `已知 x+y=${sum}，x-y=${difference}，则？`, svg: mathSvg("lines", { x, y }), choices, answer: choices.indexOf(correct), explanation: `两式相加得 2x=${sum + difference}，所以 x=${x}，再得 y=${y}。` };
     },
     (rng) => {
       const values = shuffle([3, 5, 7, 9].map((step) => step + Math.floor(rng() * 4)), rng);
@@ -434,6 +430,72 @@
       return { topic: "极差", prompt: `数据 ${values.join("、")} 的极差是？`, ...options, explanation: `极差=最大值 ${Math.max(...values)}-最小值 ${Math.min(...values)}=${answer}。` };
     },
   ];
+
+  
+  function mathSvg(type, p) {
+    if (type === "parabola") {
+      return `<svg viewBox="0 0 280 120" class="nian-math-svg" aria-hidden="true">
+        <line x1="20" y1="80" x2="260" y2="80" stroke="#7698ad" stroke-width="1.2" stroke-dasharray="3,3"/>
+        <line x1="140" y1="10" x2="140" y2="110" stroke="#7698ad" stroke-width="1.2" stroke-dasharray="3,3"/>
+        <path d="M 40,25 Q 140,115 240,25" fill="none" stroke="#255e58" stroke-width="2.5"/>
+        <circle cx="80" cy="80" r="4" fill="#c89443"/>
+        <text x="80" y="96" font-size="11" fill="#143739" text-anchor="middle">x₁=${p.a}</text>
+        <circle cx="200" cy="80" r="4" fill="#c89443"/>
+        <text x="200" y="96" font-size="11" fill="#143739" text-anchor="middle">x₂=${p.b}</text>
+        <text x="140" y="112" font-size="11" fill="#8f4f3c" text-anchor="middle">y=(x-${p.a})(x-${p.b})</text>
+      </svg>`;
+    }
+    if (type === "rect") {
+      return `<svg viewBox="0 0 280 110" class="nian-math-svg" aria-hidden="true">
+        <rect x="50" y="20" width="180" height="65" rx="5" fill="rgba(116,168,145,0.18)" stroke="#255e58" stroke-width="2"/>
+        <text x="140" y="15" font-size="11" fill="#143739" font-weight="bold" text-anchor="middle">长 = ${p.l}</text>
+        <text x="35" y="58" font-size="11" fill="#143739" font-weight="bold" text-anchor="middle">宽 = ${p.w}</text>
+        <text x="140" y="58" font-size="12" fill="#74a891" font-weight="bold" text-anchor="middle">周长=2×(${p.l}+${p.w})</text>
+      </svg>`;
+    }
+    if (type === "vector") {
+      return `<svg viewBox="0 0 280 120" class="nian-math-svg" aria-hidden="true">
+        <line x1="30" y1="95" x2="250" y2="95" stroke="#7698ad" stroke-width="1.2"/>
+        <line x1="50" y1="10" x2="50" y2="110" stroke="#7698ad" stroke-width="1.2"/>
+        <defs><marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#255e58"/></marker></defs>
+        <line x1="50" y1="95" x2="200" y2="35" stroke="#255e58" stroke-width="2.5" marker-end="url(#arrow)"/>
+        <line x1="50" y1="95" x2="200" y2="95" stroke="#c89443" stroke-dasharray="3,3" stroke-width="1.5"/>
+        <line x1="200" y1="95" x2="200" y2="35" stroke="#c89443" stroke-dasharray="3,3" stroke-width="1.5"/>
+        <text x="125" y="55" font-size="11" fill="#255e58" font-weight="bold">|a|=√(${p.a}²+${p.b}²)</text>
+        <text x="125" y="108" font-size="10" fill="#7698ad">a_x=${p.a}</text>
+        <text x="212" y="68" font-size="10" fill="#7698ad">a_y=${p.b}</text>
+      </svg>`;
+    }
+    if (type === "midpoint") {
+      return `<svg viewBox="0 0 280 110" class="nian-math-svg" aria-hidden="true">
+        <line x1="40" y1="80" x2="240" y2="25" stroke="#255e58" stroke-width="2"/>
+        <circle cx="40" cy="80" r="4" fill="#c89443"/><text x="40" y="98" font-size="10" fill="#143739" text-anchor="middle">A(${p.x1},${p.y1})</text>
+        <circle cx="240" cy="25" r="4" fill="#c89443"/><text x="240" y="18" font-size="10" fill="#143739" text-anchor="middle">B(${p.x2},${p.y2})</text>
+        <circle cx="140" cy="52.5" r="5" fill="#b56d58"/><text x="140" y="72" font-size="11" fill="#b56d58" font-weight="bold" text-anchor="middle">M(中点)</text>
+      </svg>`;
+    }
+    if (type === "linear") {
+      return `<svg viewBox="0 0 280 110" class="nian-math-svg" aria-hidden="true">
+        <line x1="30" y1="90" x2="250" y2="90" stroke="#7698ad" stroke-width="1.2"/>
+        <line x1="60" y1="10" x2="60" y2="105" stroke="#7698ad" stroke-width="1.2"/>
+        <line x1="40" y1="95" x2="220" y2="18" stroke="#255e58" stroke-width="2.2"/>
+        <text x="140" y="42" font-size="11" fill="#255e58" font-weight="bold">y=${p.k}x+${p.b}</text>
+        <circle cx="60" cy="${Math.max(20, Math.min(85, 90 - p.b * 8))}" r="3.5" fill="#c89443"/>
+        <text x="40" y="${Math.max(20, Math.min(85, 90 - p.b * 8))}" font-size="10" fill="#c89443">(0,${p.b})</text>
+      </svg>`;
+    }
+    if (type === "lines") {
+      return `<svg viewBox="0 0 280 110" class="nian-math-svg" aria-hidden="true">
+        <line x1="30" y1="85" x2="250" y2="85" stroke="#7698ad" stroke-width="1.2" stroke-dasharray="2,2"/>
+        <line x1="140" y1="10" x2="140" y2="105" stroke="#7698ad" stroke-width="1.2" stroke-dasharray="2,2"/>
+        <line x1="40" y1="90" x2="230" y2="18" stroke="#255e58" stroke-width="2"/>
+        <line x1="40" y1="18" x2="230" y2="90" stroke="#b56d58" stroke-width="2"/>
+        <circle cx="135" cy="54" r="5" fill="#c89443"/>
+        <text x="135" y="42" font-size="11" fill="#143739" font-weight="bold" text-anchor="middle">交点(${p.x},${p.y})</text>
+      </svg>`;
+    }
+    return "";
+  }
 
   function sup(value) {
     const digits = { 0: "⁰", 1: "¹", 2: "²", 3: "³", 4: "⁴", 5: "⁵", 6: "⁶", 7: "⁷", 8: "⁸", 9: "⁹" };
@@ -742,12 +804,6 @@
     return points;
   }
 
-  function refreshEnglishVoices() {
-    if (!speechSupported) return [];
-    englishVoices = window.speechSynthesis.getVoices().filter((voice) => /^en(?:-|$)/i.test(voice.lang));
-    return englishVoices;
-  }
-
   function setSpeechStatus(message, status = "idle") {
     const label = $("[data-nian-speech-status]");
     if (!label) return;
@@ -755,57 +811,27 @@
     label.closest(".nian-audio-orb")?.setAttribute("data-speech-state", status);
   }
 
-  function speak(text, rate = 0.82) {
+  async function speak(text, rate = 0.82) {
     if (!text) return false;
     if (!speechSupported) {
       setSpeechStatus("当前浏览器没有系统朗读", "error");
       return false;
     }
 
-    const synthesis = window.speechSynthesis;
-    const requestId = ++speechSequence;
-    if (synthesis.speaking || synthesis.pending || synthesis.paused) synthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "en-US";
-    utterance.rate = rate;
-    utterance.pitch = 1;
-    const voices = refreshEnglishVoices();
-    utterance.voice = voices.find((voice) => /^en-US$/i.test(voice.lang))
-      || voices.find((voice) => /^en-GB$/i.test(voice.lang))
-      || voices[0]
-      || null;
-    utterance.onstart = () => {
-      if (requestId === speechSequence) setSpeechStatus("正在播放 · 点此可重播", "playing");
-    };
-    utterance.onend = () => {
-      if (requestId !== speechSequence) return;
-      activeUtterance = null;
-      setSpeechStatus("播放完毕 · 点此重播", "idle");
-    };
-    utterance.onerror = (event) => {
-      if (requestId !== speechSequence || ["canceled", "interrupted"].includes(event.error)) return;
-      activeUtterance = null;
-      setSpeechStatus("系统朗读失败，请检查英语语音包", "error");
-    };
-
-    activeUtterance = utterance;
-    setSpeechStatus("正在唤起系统朗读…", "pending");
     try {
-      synthesis.resume();
-      synthesis.speak(utterance);
-    } catch {
-      activeUtterance = null;
-      setSpeechStatus("系统朗读不可用，请检查媒体音量", "error");
+      await window.NIAN_VOICE.speakSystem(text, {
+        lang: "en-US", rate, maxLength: 120,
+        onStatus(status) {
+          if (status === "loading") setSpeechStatus("正在加载英语语音…", "pending");
+          else if (status === "playing") setSpeechStatus("正在播放 · 点此可重播", "playing");
+          else if (status === "ended") setSpeechStatus("播放完毕 · 点此重播", "idle");
+        },
+      });
+    } catch (error) {
+      if (error?.message === "SPEECH_CANCELLED") return false;
+      setSpeechStatus("朗读失败，请检查媒体音量或英语语音包", "error");
       return false;
     }
-
-    window.setTimeout(() => {
-      if (requestId !== speechSequence || !activeUtterance) return;
-      if (!synthesis.speaking && !synthesis.pending) {
-        activeUtterance = null;
-        setSpeechStatus("没有检测到朗读，请点此重试", "error");
-      }
-    }, 1500);
     return true;
   }
 
@@ -945,12 +971,12 @@
         ${question.speech ? `<div class="nian-audio-tools"><button type="button" class="nian-audio-orb" data-arcade-action="speak" data-speech-state="${speechSupported ? "idle" : "error"}" aria-label="播放英文发音"><span>▶</span><strong>播放发音</strong><small data-nian-speech-status>${speechSupported ? (question.kind === "listen" ? "英文暂不显示" : question.phonetic ? `/${esc(question.phonetic)}/` : "先听完整内容") : "当前浏览器没有系统朗读"}</small></button>${question.kind === "listening" ? `<button type="button" class="nian-audio-slow" data-arcade-action="speak-slow">慢速再听</button>` : ""}</div>` : ""}
         <span class="nian-question-eyebrow">${esc(question.eyebrow || "本题")}</span>
         ${question.passage ? `<blockquote class="nian-reading-passage">${esc(question.passage)}</blockquote>` : ""}
+        ${question.svg ? `<div class="nian-math-figure">${question.svg}</div>` : ""}
         <h3>${esc(question.prompt)}</h3>
         ${question.subprompt ? `<p class="nian-question-sub">${esc(question.subprompt)}</p>` : ""}
         ${question.hint ? `<p class="nian-question-hint">提示：${esc(question.hint)}</p>` : ""}
         ${questionBody(question)}
       </main>`;
-    if (question.speech) speak(question.speech);
     if (question.type === "input") window.setTimeout(() => $("#nian-arcade-answer")?.focus(), 120);
   }
 
@@ -995,7 +1021,7 @@
     });
     const feedback = document.createElement("div");
     feedback.className = `nian-answer-feedback ${correct ? "is-correct" : "is-wrong"}`;
-    feedback.innerHTML = `<span>${correct ? (state.combo >= 5 ? `${state.combo} 连！` : "落笔准确") : "这一处先收进拾遗"}</span><strong>${correct ? `+${points} 学识` : "答案已经拆开"}</strong><p>${esc(question.explanation)}</p><button type="button" data-arcade-action="next">${nextLabel()}</button>`;
+    feedback.innerHTML = `<span>${correct ? (state.combo >= 5 ? `${state.combo} 连！` : "落笔准确") : "这一处先收进拾遗"}</span><strong>${correct ? `+${points} 学识` : "答案已经拆开"}</strong><p>${esc(question.explanation)}</p>${question.rubric && Array.isArray(question.rubric) ? `<div class="nian-rubric-box"><span class="nian-rubric-kicker">【分点采分精析】</span><ul>${question.rubric.map(r => `<li><b>${esc(r.point)}</b> (满分: ${r.score}分, 关键词: ${esc(r.keywords.join('、'))})</li>`).join('')}</ul></div>` : ''}<button type="button" data-arcade-action="next">${nextLabel()}</button>`;
     card.appendChild(feedback);
     document.dispatchEvent(new CustomEvent("nian:sound", { detail: { type: correct ? "correct" : "wrong" } }));
   }
@@ -1069,9 +1095,7 @@
 
   function closeArcade() {
     clearInterval(state.timer);
-    speechSequence += 1;
-    window.speechSynthesis?.cancel();
-    activeUtterance = null;
+    window.NIAN_VOICE?.stop();
     const modal = $("#nian-arcade-modal");
     if (modal) modal.hidden = true;
     document.body.classList.remove("nian-arcade-open");
@@ -1104,8 +1128,8 @@
     }
     const action = target.dataset.arcadeAction;
     if (action === "close") closeArcade();
-    if (action === "speak") speak(currentQuestion()?.speech);
-    if (action === "speak-slow") speak(currentQuestion()?.speech, 0.64);
+    if (action === "speak") void speak(currentQuestion()?.speech);
+    if (action === "speak-slow") void speak(currentQuestion()?.speech, 0.64);
     if (action === "next") nextQuestion();
     if (action === "submit-tokens") evaluateAnswer(state.chosenTokens);
   }
@@ -1117,10 +1141,6 @@
   }
 
   async function start() {
-    if (speechSupported) {
-      refreshEnglishVoices();
-      window.speechSynthesis.addEventListener?.("voiceschanged", refreshEnglishVoices);
-    }
     await loadWordBank();
     if (mount()) return;
     const observer = new MutationObserver(() => {

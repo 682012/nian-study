@@ -8,6 +8,7 @@ required=(
   public/assets/NianStudyApp-YImpRfNC.js
   public/assets/nian-lively-v2.css
   public/assets/nian-lively-v2.js
+  public/assets/nian-voice-v1.js
   public/assets/nian-arcade-v3.css
   public/assets/nian-arcade-v3.js
   public/assets/nian-content-v8.js
@@ -17,6 +18,8 @@ required=(
   src/worker.js
   tests/content-v8.test.mjs
   tests/worker-api.test.mjs
+  tests/voice-controller.test.mjs
+  tests/ai-voice-integration.test.mjs
   public/assets/nian-song/welcome.webp
   public/assets/nian-song/idle.webp
   public/assets/nian-song/teaching.webp
@@ -31,6 +34,7 @@ for f in "${required[@]}"; do
   [ -f "$f" ] || { echo "缺少文件: $f"; exit 1; }
 done
 node --check public/assets/nian-lively-v2.js
+node --check public/assets/nian-voice-v1.js
 node --check public/assets/nian-arcade-v3.js
 node --check public/assets/nian-content-v8.js
 node --check public/assets/nian-companion-v1.js
@@ -39,6 +43,8 @@ node --check src/worker.js
 node -e 'JSON.parse(require("fs").readFileSync("public/manifest.webmanifest", "utf8"))'
 node tests/content-v8.test.mjs
 node tests/worker-api.test.mjs
+node tests/voice-controller.test.mjs
+node tests/ai-voice-integration.test.mjs
 node <<'NODE'
 const fs = require('fs');
 const raw = fs.readFileSync('wrangler.jsonc', 'utf8')
@@ -62,7 +68,7 @@ grep -Fq 'nian-lively-v2.css' public/index.html || { echo "首页未加载活泼
 grep -Fq 'nian-arcade-v3.js' public/assets/nian-lively-v2.js || { echo "百戏楼未接入首页"; exit 1; }
 grep -Fq 'AudioContext' public/assets/nian-lively-v2.js || { echo "界面点击音效缺失"; exit 1; }
 grep -Fq 'data-nian-speech-status' public/assets/nian-arcade-v3.js || { echo "英语朗读状态反馈缺失"; exit 1; }
-grep -Fq 'nian-static-cf-v6-live' public/sw.js || { echo "离线缓存版本未更新"; exit 1; }
+grep -Fq 'nian-static-cf-v8.3-ai-voice' public/sw.js || { echo "离线缓存版本未更新"; exit 1; }
 grep -Fq "cache: 'no-cache'" public/sw.js || { echo "可变代码资源仍可能命中旧缓存"; exit 1; }
 grep -Fq 'Unexpected code asset content type' public/sw.js || { echo "脚本回落 HTML 防护缺失"; exit 1; }
 grep -Fq '听音辨词' public/assets/nian-arcade-v3.js || { echo "英语听力玩法缺失"; exit 1; }
@@ -72,6 +78,9 @@ grep -Fq '念安私塾' public/assets/nian-arcade-v3.js || { echo "自适应私�
 grep -Fq '听句寻意' public/assets/nian-arcade-v3.js || { echo "句段听力缺失"; exit 1; }
 grep -Fq '短章取证' public/assets/nian-arcade-v3.js || { echo "语文短章缺失"; exit 1; }
 grep -Fq '/api/nian/respond' src/worker.js || { echo "念安对话 API 缺失"; exit 1; }
+grep -Fq '/api/nian/ai' src/worker.js || { echo "可配置 AI API 缺失"; exit 1; }
+grep -Fq 'nian-voice-v1.js' public/assets/nian-lively-v2.js || { echo "共享朗读控制器未接入"; exit 1; }
+if grep -Eq 'sk-[A-Za-z0-9_-]{16,}' src/worker.js public/assets/nian-companion-v1.js; then echo "源码中仍有疑似硬编码 API Key"; exit 1; fi
 grep -Fq 'env.ASSETS.fetch' src/worker.js || { echo "Worker 静态资源回落缺失"; exit 1; }
 grep -Fq 'nian-study-progress-v2' public/assets/NianStudyApp-YImpRfNC.js || { echo "主存档键异常"; exit 1; }
 node <<'NODE'
@@ -103,6 +112,7 @@ for (const asset of [
   'index-B65g4y4e.css', 'index-Dm1zMWhb.js', 'framework-CXnKph_e.js',
   'layout-segment-context-B6a3SPWX.js', 'rolldown-runtime-S-ySWqyJ.js',
   'NianStudyApp-YImpRfNC.js', 'nian-lively-v2.js', 'nian-lively-v2.css',
+  'nian-voice-v1.js',
   'nian-arcade-v3.js', 'nian-arcade-v3.css', 'nian-content-v8.js',
   'nian-companion-v1.js', 'nian-companion-v1.css',
 ]) {

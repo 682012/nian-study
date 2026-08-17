@@ -108,7 +108,7 @@
   }
 
   function soundTypeFor(interactive) {
-    if (interactive.matches("[data-nian-sound-toggle], [data-arcade-action='speak'], [data-arcade-action='speak-slow'], [data-companion-speak]")) return null;
+    if (interactive.matches("[data-nian-sound-toggle], [data-arcade-action='speak'], [data-arcade-action='speak-slow'], [data-companion-speak], [data-ai-test-voice]")) return null;
     if (interactive.matches("[data-arcade-choice], .nian-answer-form button[type='submit']")) return null;
     if (interactive.matches(".character-button")) return "character";
     if (interactive.matches(".nian-arcade-close, [data-arcade-action='close'], .icon-button")) return "close";
@@ -346,7 +346,8 @@
   function loadEnhancements() {
     loadStyle("/assets/nian-arcade-v3.css", "百戏楼样式");
     loadStyle("/assets/nian-companion-v1.css", "念安陪学面板样式");
-    void loadScript("/assets/nian-content-v8.js", "扩展题库")
+    void loadScript("/assets/nian-voice-v1.js", "系统朗读控制器")
+      .then(() => loadScript("/assets/nian-content-v8.js", "扩展题库"))
       .then(() => loadScript("/assets/nian-arcade-v3.js", "百戏楼脚本"))
       .then(() => loadScript("/assets/nian-companion-v1.js", "念安陪学面板"))
       .catch(() => {

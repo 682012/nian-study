@@ -38,6 +38,18 @@
     ["The old bridge is believed to be over three hundred years old", "人们认为这座古桥已有三百多年历史", "主语 + be believed to do"],
     ["If I had known the truth I would have acted differently", "如果早知道真相，我会采取不同做法", "与过去事实相反的虚拟语气"],
     ["There used to be a small bookstore on this corner", "这个街角过去有一家小书店", "there used to be"],
+    ["In spite of the heavy fog the flight landed safely on time", "尽管大雾弥漫，航班仍安全准点降落", "in spite of 让步介词短语"],
+    ["The professor whose lecture we attended yesterday is from Oxford", "我们昨天去听讲座的那位教授来自牛津", "whose 引导定语从句"],
+    ["It was not until midnight that the storm finally stopped", "直到午夜，暴风雨才终于停止", "It was not until ... that 强调句"],
+    ["Had you followed my advice you would have avoided the trouble", "如果你早听我的建议，就能避免这个麻烦", "虚拟语气省略 if 倒装"],
+    ["The experiment proved far more challenging than they had imagined", "这项实验证明远比他们想象的更具挑战性", "prove + 形容词比较级"],
+    ["Under no circumstances should you share your personal password", "在任何情况下你都不应透露个人密码", "否定介词短语置前完全倒装"],
+    ["What surprised us was that she mastered the skill in two days", "让我们惊讶的是她只用两天就掌握了这门技能", "主语从句与表语从句并用"],
+    ["He devoted all his spare time to helping disadvantaged children", "他把所有业余时间都奉献给帮助弱势儿童", "devote time to doing"],
+    ["The new policy is intended to protect the ecological environment", "这项新政策旨在保护生态自然环境", "be intended to do"],
+    ["No matter how difficult the situation is we must keep going", "无论处境多么艰难，我们都必须坚持前行", "no matter how 引导让步状语从句"],
+    ["So fast did the news spread that everyone knew it by noon", "消息传播得如此之快，以至于中午人尽皆知", "so + 副词置前倒装"],
+    ["It is essential that every student be fully prepared for the exam", "每个学生都必须为考试做好充分准备", "It is essential that + (should) do"],
   ];
 
   const listeningRows = [
@@ -65,6 +77,103 @@
     ["Nora saved money for three months so that she could buy a new camera.", "Nora 存钱的目的是什么？", ["买新相机", "旅行", "参加课程", "送朋友礼物"], 0, "so that 后说明目的：buy a new camera。", "目的"],
     ["The shop closes at nine on weekdays and an hour earlier on Sundays.", "商店星期日几点关门？", ["八点", "九点", "十点", "七点半"], 0, "比九点早一小时，即八点。", "计算"],
     ["Kevin missed the beginning of the lecture because the bus broke down.", "Kevin 错过讲座开头的原因是什么？", ["公交车抛锚", "他睡过头", "记错时间", "找不到教室"], 0, "the bus broke down 是直接原因。", "原因"],
+    // 扩展多轮长对话与情境听力
+    [
+      "M: Excuse me, Professor Chen. I'm wondering if I can sign up for the advanced data analysis course next semester.\nW: Well, that course requires Python programming as a prerequisite. Have you completed that introductory class yet?\nM: Yes, I took it last term and got an A in the final project.\nW: Excellent. Then submit your application through the academic portal before this Friday afternoon.",
+      "长对话情境：男生选修高级数据分析课的先决条件是什么？",
+      ["已修完 Python 编程先修课", "通过英语水平六级考试", "导师必须出具书面推荐信", "必须在大四第一学期方可申请"],
+      0,
+      "对话中教授明确指出：'that course requires Python programming as a prerequisite'。",
+      "长对话·选课与考务"
+    ],
+    [
+      "W: Good morning! I'd like to return these three history reference books and renew the biology textbook for another week.\nM: Let me check your account. The history books are all in good condition, but the biology textbook has a reservation list. You won't be able to renew it.\nW: Oh, I see. When do I have to return the biology book then?\nM: By tomorrow evening at five o'clock at the latest.",
+      "长对话情境：女生为什么不能续借生物学教材？",
+      ["该教材已有其他读者预约", "她的借书借阅权限已到期", "教材存在页面污损破损", "图书馆下周进行闭馆盘点"],
+      0,
+      "图书管理员说明：'the biology textbook has a reservation list. You won't be able to renew it.'",
+      "长对话·图书借阅"
+    ],
+    [
+      "M: Welcome to Central Station Information Desk. How can I assist you?\nW: Hi, I'm heading to Brighton for a conference. Is the 10:15 train running on schedule?\nM: Let me see... Platform 4 is closed for maintenance, so the Brighton train has been moved to Platform 9 and delayed by twenty minutes.\nW: Thank you. Do I need to get my ticket revalidated at the counter?\nM: No need. Your current digital QR ticket remains fully valid.",
+      "长对话情境：前往布莱顿的列车发生了什么变动？",
+      ["改在 9 号站台并晚点 20 分钟", "因暴雨全面取消该班次列车", "旅客必须重新在窗口人工验票", "原定 4 号站台提前 10 分钟发车"],
+      0,
+      "管理员告知：'moved to Platform 9 and delayed by twenty minutes'。",
+      "情境·车站问路"
+    ],
+    [
+      "W: David, have you finished preparing the slides for tomorrow's chemistry presentation?\nM: Almost done, Sarah. I've organized the lab data and graphs, but I'm still struggling with the conclusion section.\nW: Why don't we emphasize how temperature variations directly influenced the reaction rate?\nM: That's a brilliant perspective! That connects perfectly with our initial hypothesis.",
+      "长对话情境：两人决定在展示文稿的结论部分着重强调什么？",
+      ["温度变化对反应速率的直接影响", "实验器材在低温下的测量误差", "化学实验经费的整体预算分配", "团队成员在不同阶段的分工细节"],
+      0,
+      "女生建议：'emphasize how temperature variations directly influenced the reaction rate'，男生表示赞同。",
+      "长对话·实验研讨"
+    ],
+    [
+      "M: Doctor Miller's clinic, how may I help you?\nW: Hello, I'd like to reschedule my dental appointment originally booked for Thursday at 2:00 PM.\nM: Let's see what's available. The doctor is fully booked on Friday, but has an opening on next Monday morning at 9:30.\nW: Monday at 9:30 AM works perfectly for me. Please put me down for that slot.",
+      "长对话情境：女士最终将就诊时间重新调整到了何时？",
+      ["下周一上午九点半", "本周五下午两点整", "下周二上午九点整", "本周四下午三点半"],
+      0,
+      "根据对话，周五已约满，最终敲定：'Monday morning at 9:30'。",
+      "情境·预约改期"
+    ],
+    [
+      "W: Look at the weather radar, Jason! A severe thunderstorm is approaching our coastal camp route.\nM: You're right. Pitching tents near the riverbank tonight would be far too dangerous.\nW: Should we pack our gear and check into the youth hostel near the foot of the hill instead?\nM: Agreed. Safety always comes first. Let's call the hostel to book two rooms right away.",
+      "长对话情境：面对雷暴天气，他们最终作出的安全决定是：",
+      ["收起装备入住山脚下的青年旅社", "留在河岸边加固露营帐篷支架", "立即徒步攀登至山顶避风港", "在车内过夜并等待次日风暴结束"],
+      0,
+      "对话中两人商定：'check into the youth hostel near the foot of the hill instead'。",
+      "长对话·应急决策"
+    ],
+    [
+      "M: Hi Emma, are you joining the university hiking club this Saturday?\nW: I'd love to, but my hiking boots wore out completely during last month's trip.\nM: The outdoor shop downtown is offering a thirty percent discount for student members this week.\nW: That sounds great! Could you send me the address so I can pick up a new pair tomorrow?",
+      "长对话情境：女生目前没有立刻答应周六徒步的主要原因是：",
+      ["徒步登山鞋已经完全磨损破旧", "周六当天需要参加学生会会议", "近期脚踝受伤尚未完全恢复", "没有获得徒步俱乐部的会员资格"],
+      0,
+      "女生说明：'my hiking boots wore out completely during last month's trip'。",
+      "情境·活动邀请"
+    ],
+    [
+      "W: Good evening, sir. Have you decided on your main course for tonight's dinner?\nM: I'm allergic to peanuts and shellfish. Could you recommend something suitable?\nW: Absolutely. Our grilled salmon with roasted asparagus is completely nut-free and prepared in a separate cooking area.\nM: Perfect, I will have that along with a glass of sparkling mineral water, please.",
+      "长对话情境：服务员向顾客推荐烤三文鱼的主要原因是：",
+      ["完全不含坚果且在独立区域烹饪", "三文鱼是今晚半价优惠主推菜", "三文鱼含有丰富的花生调味汁", "该菜品烹饪速度最快无需等待"],
+      0,
+      "针对顾客花生过敏，服务员明确说明：'completely nut-free and prepared in a separate cooking area'。",
+      "情境·餐饮点单"
+    ],
+    [
+      "M: Sophie, congratulations on winning first prize in the national robotics contest!\nW: Thank you so much! Our team worked through countless late nights debugging the sensor modules.\nM: What was the most critical factor that set your robot apart from the competitors?\nW: Our adaptive navigation algorithm—it could recalibrate paths in less than 0.1 seconds when encountering obstacles.",
+      "长对话情境：获胜机器人在比赛中最突出的核心优势是：",
+      ["遇障碍0.1秒内重校路径的自适应算法", "采用了极为轻量化的钛合金外壳材质", "续航能力比其他队伍长两倍以上", "机械臂可以抓取两倍自重的物体"],
+      0,
+      "女生回答：'adaptive navigation algorithm—it could recalibrate paths in less than 0.1 seconds'。",
+      "长对话·科技竞赛"
+    ],
+    [
+      "W: Tom, I've noticed you've been listening to English podcasts during your daily commute.\nM: Yes, it really helps my listening fluency. I started with 5-minute news clips and now listen to 30-minute academic discussions.\nW: Don't you find the speaking rate in academic debates a bit overwhelming?\nM: At first, yes. But I use the 0.8x speed option when encountering complex arguments, then replay at normal speed.",
+      "长对话情境：Tom 在遇到复杂的学术讨论听力时采用的学习技巧是：",
+      ["先以 0.8 倍速慢听理解再常速复听", "只记录对话中出现的生词与拼写", "完全依赖英文字幕不开启原音频", "跳过复杂辩论只听简单新闻片段"],
+      0,
+      "Tom 说明：'I use the 0.8x speed option when encountering complex arguments, then replay at normal speed'。",
+      "情境·学习策略"
+    ],
+    [
+      "M: Excuse me, is this seat taken? The flight is completely full today.\nW: No, it's free. Are you traveling to Toronto for the international green energy summit?\nM: Exactly! I'm presenting our university's solar cell efficiency research on Wednesday morning.\nW: What a coincidence! I'm attending the wind power turbine panel in the same conference hall.",
+      "长对话情境：两位旅客在飞机上的对话表明他们：",
+      ["前往同一场国际绿色能源峰会参会", "是同一所大学同专业的研究生同窗", "正在商讨共同创办风力发电公司", "因为航班延误而在候机厅初次相识"],
+      0,
+      "对话确认两人都是去 Toronto 参加国际绿色能源峰会。",
+      "长对话·机上交谈"
+    ],
+    [
+      "W: Mr. Roberts, our community garden project has gathered over fifty enthusiastic volunteers.\nM: That's remarkable news! Have we secured the water supply permit from the municipal department?\nW: Yes, the permit was approved yesterday, and the local hardware store donated twenty irrigation hoses.\nM: Excellent! Let's schedule the inaugural planting weekend for next Saturday morning at 8:00 AM.",
+      "长对话情境：社区花园项目接下来确定的启动时间是：",
+      ["下周六上午八点整开始首次种植", "本周五下午向市政部门递交申请", "下周日由五位志愿者进行管道测试", "下周一上午与五金店商讨捐赠事宜"],
+      0,
+      "男士建议：'schedule the inaugural planting weekend for next Saturday morning at 8:00 AM'。",
+      "情境·社区营造"
+    ],
   ];
 
   const readingRows = [
@@ -84,6 +193,103 @@
     ["社区把一面旧墙改成留言板，最初贴满失物招领和维修通知。后来有人写下‘今晚七点，免费教孩子修自行车’，旁边很快多了‘我带工具’‘我会补胎’。一面发布问题的墙，渐渐也开始组织答案。", "“组织答案”指的是：", ["留言促成居民共同解决问题", "工作人员统一回复通知", "墙面自动生成文字", "所有失物都被找到"], 0, "居民从发布信息走向协作，留言板成为行动连接点。", "语句含义"],
     ["跑步训练的前两周，我每天都想刷新最快成绩。教练把计时器收走，只让我记录呼吸是否稳定、动作是否变形。一个月后重新计时，我反而比之前快了。", "教练收走计时器的用意是：", ["让训练先关注可持续的过程质量", "防止计时器损坏", "取消跑步训练", "隐瞒真实成绩"], 0, "稳定呼吸和动作是过程指标，先改善过程才带来速度提升。", "目的题"],
     ["老木匠接到一张尺寸含糊的桌子草图，没有马上开料。他带着卷尺去了使用者家里，看椅子的高度、门的宽度，还问桌边是否要放轮椅。回来后，他在草图空白处写：‘尺寸不是数字，是人在空间里的动作。’", "这句话强调设计尺寸应当：", ["从真实使用场景和人的动作出发", "尽量采用最大的数字", "完全照搬旧家具", "只考虑材料价格"], 0, "前文的测量对象都与实际使用动作有关。", "观点题"],
+    // 扩展主观分点采分试题
+    [
+      "【分点采分】古人云：‘不积跬步，无以至千里；不积小流，无以成江海。’骐骥一跃，不能十步；驽马十驾，功在不舍。锲而舍之，朽木不折；锲而不舍，金石可镂。",
+      "主观分析：文段通过正反对比论证了什么道理？请结合文意概括采分要点。",
+      ["坚持不懈与持之以恒是成就学问事业的根本所在", "骏马虽然跑得快但不能用于长途运输", "朽木容易腐朽而金石永远不会磨损", "古人积累小步只是为了锻炼体魄"],
+      0,
+      "【采分点解析】① 采分点一（论点）：强调坚持不懈、循序渐进的决定性作用（关键词：坚持、积累、持之以恒，占2分）；② 采分点二（论证方法）：运用骐骥与驽马、舍与不舍的正反对比论证（关键词：对比论证、形象鲜明，占2分）。",
+      "主观采分·论证对比",
+      [
+        { point: "采分点一：准确概括文章核心论点（坚持与积累）", score: 2, keywords: ["积累", "坚持", "持之以恒", "毅力"] },
+        { point: "采分点二：指出对比论证修辞手法及其表达效果", score: 2, keywords: ["对比", "正反", "生动", "鲜明"] },
+      ]
+    ],
+    [
+      "【分点采分】老街的旧茶馆里，跑堂的伙计总在茶客快喝尽时才提起铜壶。他不问续不续水，只看茶客的茶盖：虚掩着，便添滚水一注；扣严了，便微笑收杯。在这条老街上，体面不需要大声交代。",
+      "主观赏析：文段中‘茶盖虚掩与扣严’的细节描写有何深意？请结合上下文分点阐述。",
+      ["以茶盖暗号展现人际交往中的默契、尊重与含蓄体面", "说明茶馆水温过高需要通过茶盖散热降温", "反映茶客经济困难无法支付整壶茶水费用", "表现伙计服务态度敷衍不愿主动与顾客沟通"],
+      0,
+      "【采分点解析】① 采分点一（物象细节）：茶盖虚掩/扣严作为无声暗号，反映传统礼仪与心照不宣的默契（关键词：细节描写、无声、默契，占2分）；② 采分点二（主题升华）：表现人际交往中互不打扰、给彼此留余地的体面与温情（关键词：体面、分寸、温情，占2分）。",
+      "主观采分·物象细节",
+      [
+        { point: "采分点一：分析细节描写的表层作用（无声动作与默契）", score: 2, keywords: ["动作", "细节", "默契", "暗号"] },
+        { point: "采分点二：阐释深层主题思想（体面、尊重与温情）", score: 2, keywords: ["体面", "分寸", "尊重", "温情"] },
+      ]
+    ],
+    [
+      "【分点采分】治学如筑塔，基不固则塔必倾。昔者学者研读一经，必通其训诂，晓其章句，而后求其大义。今人急于立言，未及辨析字义，已肆意引申，此所谓凌空蹈虚也。",
+      "主观阐释：作者对‘治学如筑塔’与‘凌空蹈虚’分别持何种态度？请分点概括答题要点。",
+      ["倡导求真务实、夯实基础的治学态度，批判急功近利、空谈引申的不良学风", "认为建筑技艺应当全面应用于古籍经典的编纂之中", "主张所有人都不必探求大义只需记住字词注释即可", "赞赏今人思维活跃勇于跳过基础概念直接发表言论"],
+      0,
+      "【采分点解析】① 采分点一（立论）：以‘筑塔’为喻，倡导由浅入深、先辨训诂后求大义的扎实学风（关键词：基础、踏实、严谨，占2分）；② 采分点二（驳论）：以‘凌空蹈虚’批评急于求成、浮躁空洞的治学弊端（关键词：批评、浮躁、急功近利，占2分）。",
+      "主观采分·态度观点",
+      [
+        { point: "采分点一：概括作者肯定的治学方法与主张（扎实基础）", score: 2, keywords: ["扎实", "严谨", "基础", "训诂"] },
+        { point: "采分点二：概括作者批驳的不良现象与风气（浮躁急躁）", score: 2, keywords: ["浮躁", "急功近利", "空泛", "批判"] },
+      ]
+    ],
+    [
+      "【分点采分】林徽因在谈及古建筑测绘时写道：‘一梁一柱，皆有古人营造之规矩；尺规所至，非徒画线条，乃与前代匠人晤谈也。’",
+      "主观理解：为什么说测绘‘非徒画线条，乃与前代匠人晤谈’？请按采分要点作答。",
+      ["测绘超越了技术层面，是理解古代营造智慧与精神的情感共鸣", "古代工匠在梁柱内部留有文字笔记需要现场阅读", "测绘工作必须严格按照现代电脑制图标准进行绘制", "古代建筑规矩复杂繁琐导致测绘效率极其低下"],
+      0,
+      "【采分点解析】① 采分点一（技术与精神）：指出测绘不仅是技术测量，更包含对营造法则与工匠智慧的理解（关键词：智慧、匠心、法则，占2分）；② 采分点二（情感跨越）：跨越时空的情感共鸣与文化传承（关键词：对话、传承、敬畏，占2分）。",
+      "主观采分·语句理解",
+      [
+        { point: "采分点一：理解‘非徒画线条’的表层与深层技术超越", score: 2, keywords: ["技术", "超越", "智慧", "匠心"] },
+        { point: "采分点二：阐述‘与匠人晤谈’的精神共鸣与文化传承", score: 2, keywords: ["共鸣", "传承", "跨越时空", "敬畏"] },
+      ]
+    ],
+    [
+      "【分点采分】深秋清晨，老农在麦田边点燃一堆枯草。浓烟低回不散，缓缓笼罩了整片幼苗。路人问何故熏烟，老农答：‘霜重之夜，浓烟如被，可护幼苗免遭冻伤。看似污浊之烟，实为御寒之衣。’",
+      "主观分析：文末‘看似污浊之烟，实为御寒之衣’蕴含了怎样的生活哲理？请分点写出得分要点。",
+      ["事物的作用不能仅看表面表象，要在具体情境中把握其实际价值与功用", "浓烟会对大气造成污染必须立即彻底禁止在田间点火", "秋季麦田不需要任何水分与肥料只需要防冻即可", "霜冻天气过后麦苗无论如何都会自然恢复生长"],
+      0,
+      "【采分点解析】① 采分点一（辨证认识）：事物表象（污浊之烟）与实际效用（御寒之衣）具有辩证性（关键词：表象与实质、辩证，占2分）；② 采分点二（现实指导）：看待人或事物不能浮于表面，要看其实际贡献与真实价值（关键词：实际价值、不以貌取人，占2分）。",
+      "主观采分·哲理阐发",
+      [
+        { point: "采分点一：指出表象与实质的辩证关系（矛盾统一）", score: 2, keywords: ["表象", "实质", "辩证", "本质"] },
+        { point: "采分点二：结合生活实际阐发指导意义（全面评价）", score: 2, keywords: ["实际价值", "全面", "实践", "效用"] },
+      ]
+    ],
+    [
+      "【分点采分】古琴断纹，乃历经百年岁月木漆自然开裂之痕。初学者或以为瑕疵，善琴者则视若瑰宝：‘琴之有断，如人之有阅历；音色因松透而愈发沉古，非新材所能仿也。’",
+      "主观探究：古琴‘断纹’与‘阅历’之间的相似点体现在何处？请分点列出采分点。",
+      ["两者皆由岁月历练沉淀而成，虽带沧桑痕迹，却赋予事物深厚沉稳的内在韵味", "古琴断纹会导致琴弦无法正常调音必须全部打磨重刷", "年纪越大的人弹奏古琴音准必然越精确完美", "现代制作的古琴必须用刀刻出断纹才能提升售价"],
+      0,
+      "【采分点解析】① 采分点一（形成过程）：两者都需要时间的积累与磨砺（关键词：岁月积淀、磨砺，占2分）；② 采分点二（内在品质）：表面的磨损转化为内在的厚重、深沉与通透（关键词：内在韵味、沉古、厚重，占2分）。",
+      "主观采分·比喻联想",
+      [
+        { point: "采分点一：分析两者在时间积淀与磨砺过程上的契合", score: 2, keywords: ["时间", "岁月", "积淀", "历练"] },
+        { point: "采分点二：阐述两者在由表及里、升华内在韵味上的共同特质", score: 2, keywords: ["沉古", "韵味", "厚重", "通透"] },
+      ]
+    ],
+    [
+      "【分点采分】苏轼在《题西林壁》中写道：‘横看成岭侧成峰，远近高低各不同。不识庐山真面目，只缘身在此山中。’",
+      "主观阐释：后两句诗揭示了怎样的认识论哲理？在学习中应如何避免‘身在此山中’？请分点作答。",
+      ["当局者迷，客观看待事物需跳出局部局限；学习中应善于宏观审视与跳出固有思维", "庐山常年云雾缭绕因此任何人都不可能看清其真实地貌", "只要登上最高山顶就必然能彻底解决所有学科的所有难题", "写诗只需记录视觉看到的景象无需思考背后的深层规律"],
+      0,
+      "【采分点解析】① 采分点一（哲学原理）：指出受主观位置与局部视角的局限，容易产生片面认识（关键词：局部局限、主观片面、当局者迷，占2分）；② 采分点二（方法启示）：学习中要建立知识全貌图谱、善于跳出局部题海做宏观复盘（关键词：整体视野、全局思维、跳出局限，占2分）。",
+      "主观采分·名句哲理",
+      [
+        { point: "采分点一：解析诗句揭示的认识论原理（视角局限与片面性）", score: 2, keywords: ["视角", "局部", "片面", "当局者迷"] },
+        { point: "采分点二：结合实际提出跳出局限、宏观审视的解决路径", score: 2, keywords: ["全局", "宏观", "全貌", "复盘"] },
+      ]
+    ],
+    [
+      "【分点采分】《战国策》载：‘行百里者半九十。’此言末路之难也。夫涉远途者，前八九十里凭初发之锐气尚可支撑；至最后十里，气力已衰，惰意渐生，若无坚韧意志，往往功亏一篑。",
+      "主观探究：为何说‘末路之难’？请分点提炼文章的逻辑采分点。",
+      ["越接近终点越面临体力消耗与心理懈怠的双重考验，更需要意志力坚持到底", "最后十里路的道路质量普遍比前段更加崎岖难行", "古代计量单位不准确导致最后十里的实际距离等于九十里", "远行者应当在走到九十里时直接返回以避免过度疲劳"],
+      0,
+      "【采分点解析】① 采分点一（主客观困境）：末段面临身心疲惫、惰性滋生与锐气耗尽的双重危机（关键词：身心疲惫、惰性、考验，占2分）；② 采分点二（结论警示）：越是关键收尾阶段，越需要咬牙坚持，防止功亏一篑（关键词：坚持到底、克服懈怠、防功亏一篑，占2分）。",
+      "主观采分·文言事理",
+      [
+        { point: "采分点一：分析末路阶段身心处于极限的困难成因", score: 2, keywords: ["极限", "疲劳", "惰性", "衰竭"] },
+        { point: "采分点二：总结临近成功更需咬牙坚持的警示意义", score: 2, keywords: ["坚持到底", "关键时刻", "功亏一篑", "意志"] },
+      ]
+    ],
   ];
 
   globalThis.NIAN_V8_CONTENT = Object.freeze({
@@ -91,8 +297,8 @@
     listening: listeningRows.map(([speech, prompt, choices, answer, explanation, skill], index) => ({
       id: `listening-v8-${index + 1}`, speech, prompt, choices, answer, explanation, skill,
     })),
-    readings: readingRows.map(([passage, prompt, choices, answer, explanation, skill], index) => ({
-      id: `reading-v8-${index + 1}`, passage, prompt, choices, answer, explanation, skill,
+    readings: readingRows.map(([passage, prompt, choices, answer, explanation, skill, rubric], index) => ({
+      id: `reading-v8-${index + 1}`, passage, prompt, choices, answer, explanation, skill, rubric: Array.isArray(rubric) ? rubric : null,
     })),
   });
 })();
