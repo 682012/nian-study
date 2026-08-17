@@ -813,26 +813,47 @@
 
   async function speak(text, rate = 0.82) {
     if (!text) return false;
-    if (!speechSupported) {
-      setSpeechStatus("当前浏览器没有系统朗读", "error");
-      return false;
-    }
-
     try {
-      await window.NIAN_VOICE.speakSystem(text, {
-        lang: "en-US", rate, maxLength: 120,
-        onStatus(status) {
-          if (status === "loading") setSpeechStatus("正在加载英语语音…", "pending");
-          else if (status === "playing") setSpeechStatus("正在播放 · 点此可重播", "playing");
-          else if (status === "ended") setSpeechStatus("播放完毕 · 点此重播", "idle");
-        },
-      });
+      if (speechSupported) {
+        await window.NIAN_VOICE.speakSystem(text, {
+          lang: "en-US", rate, maxLength: 120,
+          onStatus(status) {
+            if (status === "loading") setSpeechStatus("正在加载英语语音…", "pending");
+            else if (status === "playing") setSpeechStatus("正在播放 · 点此可重播", "playing");
+            else if (status === "ended") setSpeechStatus("播放完毕 · 点此重播", "idle");
+          },
+        });
+        return true;
+      }
     } catch (error) {
       if (error?.message === "SPEECH_CANCELLED") return false;
-      setSpeechStatus("朗读失败，请检查媒体音量或英语语音包", "error");
+    }
+    return speakCloudEnglish(text, rate);
+  }
+
+  let cloudAudio = null;
+  async function speakCloudEnglish(text, rate = 0.82) {
+    setSpeechStatus("正在生成云端发音…", "pending");
+    try {
+      if (cloudAudio) { cloudAudio.pause(); cloudAudio = null; }
+      const response = await fetch("http://682012ysh.loc.cc/tts/v1/audio/speech", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ model: "edge-tts", voice: "en-US-AriaNeural", input: text, response_format: "mp3" }),
+      });
+      if (!response.ok) throw new Error(`CLOUD_${response.status}`);
+      const blob = await response.blob();
+      cloudAudio = new Audio(URL.createObjectURL(blob));
+      cloudAudio.playbackRate = Math.max(0.5, Math.min(1.5, rate / 0.82));
+      cloudAudio.onended = () => setSpeechStatus("播放完毕 · 点此重播", "idle");
+      cloudAudio.onerror = () => setSpeechStatus("云端发音失败", "error");
+      await cloudAudio.play();
+      setSpeechStatus("正在播放 · 点此可重播", "playing");
+      return true;
+    } catch (error) {
+      setSpeechStatus("发音服务不可用", "error");
       return false;
     }
-    return true;
   }
 
   function modeQueue(mode) {

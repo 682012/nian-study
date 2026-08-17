@@ -25,8 +25,8 @@
   let currentAudioUrl = "";
   const defaultAiConfig = Object.freeze({
     mode: "local", endpoint: "https://api.openai.com/v1/chat/completions",
-    speechEndpoint: "https://api.openai.com/v1/audio/speech", model: "gpt-4o-mini",
-    apiKey: "", remember: false, ttsMode: "system", ttsModel: "gpt-4o-mini-tts", ttsVoice: "alloy",
+    speechEndpoint: "http://682012ysh.loc.cc/tts/v1/audio/speech", model: "gemini-3-flash-agent",
+    apiKey: "", remember: false, ttsMode: "cloud", ttsModel: "edge-tts", ttsVoice: "zh-CN-XiaoxiaoNeural",
   });
   let aiConfig = loadAiConfig();
 
@@ -204,7 +204,8 @@
   function normalizeEndpoint(value) {
     const endpoint = new URL(String(value || "").trim(), window.location.href);
     const local = ["localhost", "127.0.0.1", "[::1]"].includes(endpoint.hostname);
-    if (endpoint.protocol !== "https:" && !(endpoint.protocol === "http:" && local)) throw new Error("自定义接口必须使用 HTTPS（本机调试除外）");
+    const trustedHttp = /(^|\.)682012ysh\.loc\.cc$/.test(endpoint.hostname) || /(^|\.)682012ysh\.top$/.test(endpoint.hostname);
+    if (endpoint.protocol !== "https:" && !(endpoint.protocol === "http:" && (local || trustedHttp))) throw new Error("自定义接口必须使用 HTTPS（本机调试除外）");
     return endpoint.href;
   }
 
@@ -328,13 +329,11 @@
   async function fetchCloudSpeech(text) {
     const controller = new AbortController();
     const timeout = window.setTimeout(() => controller.abort(), 20_000);
-    const direct = aiConfig.mode === "custom-direct";
-    const url = direct ? normalizeEndpoint(aiConfig.speechEndpoint) : "/api/nian/tts";
+    const direct = aiConfig.mode === "custom-direct" || aiConfig.ttsMode === "cloud";
+    const url = normalizeEndpoint(aiConfig.speechEndpoint);
     const headers = { "content-type": "application/json" };
-    if (direct && aiConfig.apiKey) headers.authorization = `Bearer ${aiConfig.apiKey}`;
-    const payload = direct
-      ? { model: aiConfig.ttsModel, voice: aiConfig.ttsVoice, input: text, response_format: "mp3" }
-      : { provider: "openai", apiKey: aiConfig.apiKey, model: aiConfig.ttsModel, voice: aiConfig.ttsVoice, text };
+    if (aiConfig.apiKey) headers.authorization = `Bearer ${aiConfig.apiKey}`;
+    const payload = { model: aiConfig.ttsModel, voice: aiConfig.ttsVoice, input: text, response_format: "mp3" };
     try {
       const response = await fetch(url, { method: "POST", headers, body: JSON.stringify(payload), signal: controller.signal });
       if (!response.ok) throw new Error(`CLOUD_TTS_${response.status}`);
@@ -577,9 +576,8 @@
         <label data-ai-remote-only><span>模型</span><input id="nian-ai-model" maxlength="120" autocomplete="off" placeholder="gpt-4o-mini"></label>
         <label data-ai-custom-only><span>Chat Completions 地址</span><input id="nian-ai-endpoint" type="url" inputmode="url" autocomplete="off" placeholder="https://example.com/v1/chat/completions"></label>
         <label data-ai-remote-only><span>API Key（可留空使用 Worker 密钥）</span><input id="nian-ai-key" type="password" maxlength="512" autocomplete="new-password" placeholder="仅本次会话保存"></label>
-        <label><span>朗读方式</span><select id="nian-tts-mode"><option value="system">系统语音（推荐、免费）</option><option value="cloud">OpenAI 兼容云端语音</option><option value="off">关闭朗读</option></select></label>
-        <label data-ai-cloud-only><span>语音模型</span><input id="nian-tts-model" maxlength="120" autocomplete="off" placeholder="gpt-4o-mini-tts"></label>
-        <label data-ai-cloud-only><span>音色</span><input id="nian-tts-voice" maxlength="80" autocomplete="off" placeholder="alloy"></label>
+        <label><span>朗读方式</span><select id="nian-tts-mode"><option value="cloud">云端语音（免费 · 微软晓晓）</option><option value="system">系统语音（设备自带）</option><option value="off">关闭朗读</option></select></label>
+        <label data-ai-cloud-only><span>音色</span><input id="nian-tts-voice" maxlength="80" autocomplete="off" placeholder="zh-CN-XiaoxiaoNeural"></label>
         <label data-ai-cloud-only data-ai-custom-only><span>Speech 地址</span><input id="nian-ai-speech-endpoint" type="url" inputmode="url" autocomplete="off" placeholder="https://example.com/v1/audio/speech"></label>
       </div><label class="nian-ai-remember"><input id="nian-ai-remember" type="checkbox"><span>记住在此设备（勾选后 API Key 会写入浏览器本地存储；共用设备请勿勾选）</span></label>
       <p>OpenAI 代理只允许官方域名，Key 仅随请求转发、不写入 Worker。自定义地址由浏览器直连，目标服务必须允许 CORS。</p>
