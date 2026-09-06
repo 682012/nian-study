@@ -1,5 +1,5 @@
-const STATIC_CACHE = 'nian-static-cf-v8.3.1-wordroom';
-const PAGE_CACHE = 'nian-pages-cf-v8.3.1-wordroom';
+const STATIC_CACHE = 'nian-static-cf-v9.0-workspace';
+const PAGE_CACHE = 'nian-pages-cf-v9.0-workspace';
 const CORE = [
   '/', '/index.html', '/offline.html', '/manifest.webmanifest', '/favicon.svg',
   '/icons/app-icon-192.png', '/icons/app-icon-512.png', '/icons/app-icon-maskable-512.png',
@@ -8,6 +8,7 @@ const CORE = [
   '/assets/NianStudyApp-YImpRfNC.js', '/assets/nian-lively-v2.css',
   '/assets/nian-lively-v2.js', '/assets/nian-patch-v1.js', '/assets/nian-voice-v1.js', '/assets/nian-arcade-v3.css',
   '/assets/nian-arcade-v3.js', '/assets/nian-content-v8.js',
+  '/assets/nian-workspace-v9.css', '/assets/nian-workspace-v9.js',
   '/assets/nian-companion-v1.css', '/assets/nian-companion-v1.js',
   '/assets/nian-song/welcome.webp',
   '/assets/nian-song/idle.webp', '/assets/nian-song/teaching.webp',
@@ -34,7 +35,7 @@ self.addEventListener('install', event => {
     .then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', event => {
-  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => ![STATIC_CACHE,PAGE_CACHE].includes(k)).map(k => caches.delete(k)))).then(() => self.clients.claim()));
+  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => /^nian-(?:static|pages)-/.test(k) && ![STATIC_CACHE,PAGE_CACHE].includes(k)).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
 self.addEventListener('fetch', event => {
   const req = event.request;

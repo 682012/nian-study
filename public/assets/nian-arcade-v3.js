@@ -10,7 +10,7 @@
     listening: { seal: "闻", title: "听句寻意", note: "句子、通知与短对话听后取意", count: 10, tone: "blue" },
     dictation: { seal: "写", title: "听写巡夜", note: "听见什么，就完整写出来", count: 10, tone: "blue" },
     sentence: { seal: "句", title: "句阵重排", note: "点词成句，练语序与语感", count: 8, tone: "peach" },
-    math: { seal: "算", title: "算学千变", note: "十类题型，每次参数都不同", count: 12, tone: "gold" },
+    math: { seal: "算", title: "算学千变", note: "代数、几何与统计，反复练变式", count: 12, tone: "gold" },
     chinese: { seal: "文", title: "经史百问", note: "诗文、成语、语用与阅读策略", count: 12, tone: "rose" },
     reading: { seal: "阅", title: "短章取证", note: "读真实短文，回到原文找证据", count: 8, tone: "rose" },
     mixed: { seal: "巡", title: "三馆巡考", note: "英语、数学、语文混合十五题", count: 15, tone: "ink" },
@@ -19,23 +19,8 @@
     mistakes: { seal: "追", title: "错题追击", note: "只追本馆里真正答错的题", count: 12, tone: "ember" },
   };
 
-  const FALLBACK_WORDS = [
-    [1, "all", "ɔːl", "完全；全部"], [2, "need", "niːd", "需要"],
-    [3, "other", "ˈʌðə(r)", "其他的"], [4, "school", "skuːl", "学校"],
-    [5, "student", "ˈstjuːdnt", "学生"], [6, "change", "tʃeɪndʒ", "改变；变化"],
-    [7, "follow", "ˈfɒləʊ", "跟随"], [8, "library", "ˈlaɪbrəri", "图书馆"],
-    [9, "problem", "ˈprɒbləm", "问题"], [10, "improve", "ɪmˈpruːv", "改善；提高"],
-    [11, "prepare", "prɪˈpeə(r)", "准备"], [12, "continue", "kənˈtɪnjuː", "继续"],
-    [13, "knowledge", "ˈnɒlɪdʒ", "知识"], [14, "practice", "ˈpræktɪs", "练习"],
-    [15, "challenge", "ˈtʃælɪndʒ", "挑战"], [16, "convenient", "kənˈviːniənt", "方便的"],
-    [17, "imagine", "ɪˈmædʒɪn", "想象"], [18, "success", "səkˈses", "成功"],
-    [19, "careful", "ˈkeəfl", "仔细的"], [20, "environment", "ɪnˈvaɪrənmənt", "环境"],
-    [21, "different", "ˈdɪfrənt", "不同的"], [22, "important", "ɪmˈpɔːtnt", "重要的"],
-    [23, "remember", "rɪˈmembə(r)", "记得"], [24, "understand", "ˌʌndəˈstænd", "理解"],
-    [25, "possible", "ˈpɒsəbl", "可能的"], [26, "language", "ˈlæŋɡwɪdʒ", "语言"],
-    [27, "question", "ˈkwestʃən", "问题；提问"], [28, "answer", "ˈɑːnsə(r)", "回答；答案"],
-    [29, "example", "ɪɡˈzɑːmpl", "例子"], [30, "future", "ˈfjuːtʃə(r)", "未来"],
-  ].map(([id, word, phonetic, meaning]) => ({ id, word, phonetic, meaning }));
+  // Canonical IDs from the main word room; degraded mode must not corrupt mastery.
+  const FALLBACK_WORDS = [{"id": 1, "word": "all", "phonetic": "ɔ:l", "meaning": "完全；全部"}, {"id": 2, "word": "need", "phonetic": "ni:d", "meaning": "需要"}, {"id": 3, "word": "as", "phonetic": "æz; gz", "meaning": "像……一样；随着；作为"}, {"id": 4, "word": "other", "phonetic": "'ʌðə(r)", "meaning": "其他的；另一个"}, {"id": 5, "word": "but", "phonetic": "bʌt; bɪt", "meaning": "但是；除了"}, {"id": 6, "word": "say", "phonetic": "seɪ", "meaning": "(said, said) 说"}, {"id": 7, "word": "from", "phonetic": "frʌm; frɒm", "meaning": "从；来自"}, {"id": 8, "word": "school", "phonetic": "sku:l", "meaning": "学校"}, {"id": 9, "word": "get", "phonetic": "get", "meaning": "(got, gotten) 得到；成为；到达"}, {"id": 10, "word": "student", "phonetic": "'stju:d(ə)nt", "meaning": "学生"}, {"id": 11, "word": "good", "phonetic": "gʊd", "meaning": "(better, best) 好的"}, {"id": 12, "word": "there", "phonetic": "ðeə(r)", "meaning": "在那里；(引导词)存在"}, {"id": 13, "word": "have", "phonetic": "hæv; hev", "meaning": "(had, had) 有；吃；喝"}, {"id": 14, "word": "thing", "phonetic": "θɪŋ", "meaning": "东西；事情"}, {"id": 15, "word": "how", "phonetic": "hau", "meaning": "怎样；多少"}, {"id": 16, "word": "too", "phonetic": "tu:", "meaning": "也；太"}, {"id": 17, "word": "make", "phonetic": "meɪk", "meaning": "(made, made) 制造；使得"}, {"id": 18, "word": "use", "phonetic": "ju:z", "meaning": "使用；"}, {"id": 19, "word": "more", "phonetic": "mɔ:(r)", "meaning": "更多的；更"}, {"id": 20, "word": "which", "phonetic": "wɪtʃ", "meaning": "哪一个"}, {"id": 21, "word": "take", "phonetic": "teɪk", "meaning": "(took, taken) 拿；花费；乘坐"}, {"id": 22, "word": "who", "phonetic": "hu:", "meaning": "谁"}, {"id": 23, "word": "see", "phonetic": "si:", "meaning": "(saw, seen) 看见；理解"}, {"id": 24, "word": "work", "phonetic": "wɜ:k", "meaning": "工作"}, {"id": 25, "word": "so", "phonetic": "səu", "meaning": "这么；因此"}, {"id": 26, "word": "best", "phonetic": "best", "meaning": "最好的"}, {"id": 27, "word": "time", "phonetic": "taɪm", "meaning": "时间；次；时代"}, {"id": 28, "word": "call", "phonetic": "kɔ:l", "meaning": "打电话；称呼；通话"}, {"id": 29, "word": "what", "phonetic": "wɒt", "meaning": "什么"}, {"id": 30, "word": "eat", "phonetic": "i:t", "meaning": "(ate, eaten) 吃"}];
 
   const SENTENCES = [
     ["I review my notes before going to bed", "我睡前复习笔记", "before 后接动名词短语"],
@@ -225,6 +210,7 @@
   }
 
   async function loadWordBank() {
+    if (window.NIAN_WORDS?.length === 822) { state.words = window.NIAN_WORDS; return; }
     try {
       const response = await fetch("/assets/NianStudyApp-YImpRfNC.js", { cache: "no-cache" });
       if (!response.ok) return;
@@ -311,7 +297,7 @@
       id: item.id, subject: "chinese", type: "choice", kind: "reading",
       eyebrow: `短章取证 · ${item.skill || "阅读"}`, passage: item.passage,
       prompt: item.prompt, choices: [...item.choices], answer: item.answer,
-      explanation: item.explanation,
+      skill: item.skill, rubric: item.rubric, explanation: item.explanation,
     };
   }
 
@@ -340,9 +326,7 @@
     (rng) => {
       const red = 2 + Math.floor(rng() * 7), blue = 2 + Math.floor(rng() * 7), total = red + blue;
       const answer = `${red}/${total}`;
-      const candidates = [answer, `${blue}/${total}`, `${red}/${blue}`, `1/${total}`];
-      const choices = shuffle([...new Set(candidates)], rng);
-      while (choices.length < 4) choices.push(`${choices.length + 1}/${total}`);
+      const choices = shuffle([red, red - 1, red + 1, 0].map(n => `${n}/${total}`), rng);
       return { topic: "古典概率", prompt: `袋中有 ${red} 个红球和 ${blue} 个蓝球，随机取 1 个，取到红球的概率是？`, choices, answer: choices.indexOf(answer), explanation: `等可能结果共 ${total} 个，红球有 ${red} 个，概率为 ${answer}。` };
     },
     (rng) => {
@@ -399,7 +383,7 @@
     },
     (rng) => {
       const base = (4 + Math.floor(rng() * 9)) * 10, rate = pick([10, 20, 25, 50], rng);
-      const answer = base * (1 + rate / 100), options = numberChoices(answer, 10, rng);
+      const answer = Number((base * (1 + rate / 100)).toFixed(2)), options = numberChoices(answer, 10, rng);
       return { topic: "增长率", prompt: `某数为 ${base}，增长 ${rate}% 后是多少？`, ...options, explanation: `${base}×(1+${rate}%)=${answer}。` };
     },
     (rng) => {
@@ -410,18 +394,20 @@
     (rng) => {
       const x1 = Math.floor(rng() * 6), y1 = Math.floor(rng() * 6), x2 = x1 + 2 * (1 + Math.floor(rng() * 4)), y2 = y1 + 2 * (1 + Math.floor(rng() * 4));
       const correct = `(${(x1 + x2) / 2}, ${(y1 + y2) / 2})`;
-      const choices = shuffle([correct, `(${x1 + x2}, ${y1 + y2})`, `(${x2 - x1}, ${y2 - y1})`, `(${x1}, ${y2})`], rng);
+      const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+      const choices = shuffle([correct, `(${mx + 1}, ${my})`, `(${mx}, ${my + 1})`, `(${mx - 1}, ${my - 1})`], rng);
       return { topic: "坐标中点", prompt: `A(${x1}, ${y1})、B(${x2}, ${y2}) 的中点坐标是？`, svg: mathSvg("midpoint", { x1, y1, x2, y2 }), choices, answer: choices.indexOf(correct), explanation: `横、纵坐标分别取平均，得到 ${correct}。` };
     },
     (rng) => {
       const base = pick([2, 3, 5], rng), exponent = 2 + Math.floor(rng() * 4), value = base ** exponent;
       const options = numberChoices(exponent, 1, rng);
-      return { topic: "对数", prompt: `log${sup(base)} ${value} = ?`, ...options, explanation: `因为 ${base}${sup(exponent)}=${value}，所以 log${sup(base)} ${value}=${exponent}。` };
+      const subBase = String(base).replace(/\d/g, n => '₀₁₂₃₄₅₆₇₈₉'[n]);
+      return { topic: "对数", prompt: `log${subBase} ${value} = ?`, ...options, explanation: `因为 ${base}${sup(exponent)}=${value}，所以 log${subBase} ${value}=${exponent}。` };
     },
     (rng) => {
       const x = 2 + Math.floor(rng() * 6), y = 1 + Math.floor(rng() * 5), sum = x + y, difference = x - y;
       const correct = `x=${x}, y=${y}`;
-      const choices = shuffle([correct, `x=${y}, y=${x}`, `x=${sum}, y=${difference}`, `x=${sum / 2}, y=${difference / 2}`], rng);
+      const choices = shuffle([correct, `x=${x + 1}, y=${y}`, `x=${x}, y=${y + 1}`, `x=${x - 1}, y=${y - 1}`], rng);
       return { topic: "方程组", prompt: `已知 x+y=${sum}，x-y=${difference}，则？`, svg: mathSvg("lines", { x, y }), choices, answer: choices.indexOf(correct), explanation: `两式相加得 2x=${sum + difference}，所以 x=${x}，再得 y=${y}。` };
     },
     (rng) => {
@@ -663,6 +649,7 @@
   function saveProgress(progress) {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+      window.dispatchEvent(new CustomEvent("nian:progress-changed"));
       return true;
     } catch {
       showStorageWarning();
@@ -800,6 +787,7 @@
     document.dispatchEvent(new CustomEvent("nian:study-result", { detail: {
       correct, points, mode: state.mode, subject: question.subject, skill: skillKey,
       combo: state.combo, score: state.score, attempts: arcade.attempts, totalCorrect: arcade.correct,
+      prompt: question.prompt, topic: question.topic || question.eyebrow, explanation: question.explanation,
     } }));
     return points;
   }
@@ -831,33 +819,34 @@
     return speakCloudEnglish(text, rate);
   }
 
-  let cloudAudio = null;
+  function stopEnglishSpeech() { window.NIAN_VOICE?.stop(); }
+
   async function speakCloudEnglish(text, rate = 0.82) {
-    setSpeechStatus("正在生成云端发音…", "pending");
     try {
-      if (cloudAudio) { cloudAudio.pause(); cloudAudio = null; }
-      const response = await fetch("http://682012ysh.loc.cc/tts/v1/audio/speech", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ model: "edge-tts", voice: "en-US-AriaNeural", input: text, response_format: "mp3" }),
+      await window.NIAN_VOICE.speakCloud(text, {
+        lang: "en-US", rate,
+        onStatus(status) {
+          if (status === "loading") setSpeechStatus("正在生成云端发音…", "pending");
+          else if (status === "playing") setSpeechStatus("正在播放 · 点此重播", "playing");
+          else if (status === "ended") setSpeechStatus("播放完毕 · 点此重播", "idle");
+        },
       });
-      if (!response.ok) throw new Error(`CLOUD_${response.status}`);
-      const blob = await response.blob();
-      cloudAudio = new Audio(URL.createObjectURL(blob));
-      cloudAudio.playbackRate = Math.max(0.5, Math.min(1.5, rate / 0.82));
-      cloudAudio.onended = () => setSpeechStatus("播放完毕 · 点此重播", "idle");
-      cloudAudio.onerror = () => setSpeechStatus("云端发音失败", "error");
-      await cloudAudio.play();
-      setSpeechStatus("正在播放 · 点此可重播", "playing");
       return true;
     } catch (error) {
-      setSpeechStatus("发音服务不可用", "error");
+      if (error?.message === "SPEECH_CANCELLED") return false;
+      setSpeechStatus("发音不可用：请在念安设置中配置语音", "error");
+      document.dispatchEvent(new CustomEvent("nian:speech-error", { detail: "发音不可用，请检查系统英语语音包或在念安设置中配置云端语音。" }));
       return false;
     }
   }
+  document.addEventListener("nian:english-speech", event => { if (typeof event.detail === "string") void speakCloudEnglish(event.detail); });
 
   function modeQueue(mode) {
     const config = MODES[mode];
+    const savedDaily = loadProgress()[ARCADE_KEY].dailyQueue;
+    if (mode === "daily" && savedDaily?.date === todayKey() && Array.isArray(savedDaily.questions) && savedDaily.questions.length === config.count) {
+      return savedDaily.questions;
+    }
     const rng = seeded(mode === "daily" ? `${todayKey()}-daily-v8` : `${mode}-${Date.now()}-${Math.random()}`);
     state.rng = rng;
     state.questionCycle = ["daily", "adaptive"].includes(mode) ? adaptiveCycle(loadProgress()) : [];
@@ -874,6 +863,11 @@
       if (seen.has(question.id)) continue;
       seen.add(question.id);
       queue.push(question);
+    }
+    if (mode === "daily") {
+      const progress = loadProgress();
+      progress[ARCADE_KEY].dailyQueue = { date: todayKey(), questions: queue };
+      saveProgress(progress);
     }
     return queue;
   }
@@ -942,6 +936,7 @@
 
   function startMode(mode) {
     if (!MODES[mode]) return;
+    stopEnglishSpeech();
     const queue = modeQueue(mode);
     if (!queue.length) {
       showEmptyMistakes();
@@ -963,6 +958,14 @@
     modal.hidden = false;
     document.body.classList.add("nian-arcade-open");
     $("#nian-arcade-stage").innerHTML = `<div class="nian-empty-arcade"><span>净</span><h2>这里暂时没有旧误。</h2><p>去任意一馆闯几关；答错的题会自动来这里排队，不需要手抄第二本错题册。</p><button type="button" data-arcade-mode="mixed">去三馆巡考</button><button type="button" data-arcade-action="close">返回书院</button></div>`;
+  }
+
+  function refreshLedger() {
+    const arcade = getArcade();
+    const values = [arcade.correct || 0, arcade.bestCombo || 0, Object.keys(arcade.mistakes || {}).length, (arcade.badges || []).length];
+    document.querySelectorAll(".nian-arcade-ledger b").forEach((item, index) => { item.textContent = String(values[index]); });
+    const button = document.querySelector(".nian-arcade-foot [data-arcade-mode=mistakes]");
+    if (button) { button.disabled = !values[2]; button.textContent = `追击错题 ${values[2]}`; }
   }
 
   function currentQuestion() {
@@ -989,15 +992,17 @@
       <div class="nian-arcade-status"><i style="width:${Math.min(100, ((state.index + 1) / state.queue.length) * 100)}%"></i></div>
       <div class="nian-arcade-scorebar"><span>答对 <b>${state.score}</b></span><span>最佳连击 <b>${state.bestCombo}</b></span>${state.mode === "endless" ? `<span>余心 <b>${"♥".repeat(state.lives)}${"♡".repeat(3 - state.lives)}</b></span>` : ""}</div>
       <main class="nian-question-card" aria-live="polite">
-        ${question.speech ? `<div class="nian-audio-tools"><button type="button" class="nian-audio-orb" data-arcade-action="speak" data-speech-state="${speechSupported ? "idle" : "error"}" aria-label="播放英文发音"><span>▶</span><strong>播放发音</strong><small data-nian-speech-status>${speechSupported ? (question.kind === "listen" ? "英文暂不显示" : question.phonetic ? `/${esc(question.phonetic)}/` : "先听完整内容") : "当前浏览器没有系统朗读"}</small></button>${question.kind === "listening" ? `<button type="button" class="nian-audio-slow" data-arcade-action="speak-slow">慢速再听</button>` : ""}</div>` : ""}
+        ${question.speech ? `<div class="nian-audio-tools"><button type="button" class="nian-audio-orb" data-arcade-action="speak" data-speech-state="${speechSupported ? "idle" : "error"}" aria-label="播放英文发音"><span>▶</span><strong>播放发音</strong><small data-nian-speech-status>${speechSupported ? (question.kind === "listen" ? "英文暂不显示" : question.phonetic ? `/${esc(question.phonetic)}/` : "先听完整内容") : "点击播放；可配置云端语音"}</small></button>${question.kind === "listening" ? `<button type="button" class="nian-audio-slow" data-arcade-action="speak-slow">慢速再听</button>` : ""}</div>` : ""}
         <span class="nian-question-eyebrow">${esc(question.eyebrow || "本题")}</span>
         ${question.passage ? `<blockquote class="nian-reading-passage">${esc(question.passage)}</blockquote>` : ""}
         ${question.svg ? `<div class="nian-math-figure">${question.svg}</div>` : ""}
-        <h3>${esc(question.prompt)}</h3>
+        <h3 tabindex="-1">${esc(question.prompt)}</h3>
         ${question.subprompt ? `<p class="nian-question-sub">${esc(question.subprompt)}</p>` : ""}
         ${question.hint ? `<p class="nian-question-hint">提示：${esc(question.hint)}</p>` : ""}
         ${questionBody(question)}
       </main>`;
+    $(".nian-arcade-sheet").scrollTop = 0;
+    $(".nian-question-card h3")?.focus({ preventScroll: true });
     if (question.type === "input") window.setTimeout(() => $("#nian-arcade-answer")?.focus(), 120);
   }
 
@@ -1044,6 +1049,8 @@
     feedback.className = `nian-answer-feedback ${correct ? "is-correct" : "is-wrong"}`;
     feedback.innerHTML = `<span>${correct ? (state.combo >= 5 ? `${state.combo} 连！` : "落笔准确") : "这一处先收进拾遗"}</span><strong>${correct ? `+${points} 学识` : "答案已经拆开"}</strong><p>${esc(question.explanation)}</p>${question.rubric && Array.isArray(question.rubric) ? `<div class="nian-rubric-box"><span class="nian-rubric-kicker">【分点采分精析】</span><ul>${question.rubric.map(r => `<li><b>${esc(r.point)}</b> (满分: ${r.score}分, 关键词: ${esc(r.keywords.join('、'))})</li>`).join('')}</ul></div>` : ''}<button type="button" data-arcade-action="next">${nextLabel()}</button>`;
     card.appendChild(feedback);
+    feedback.querySelector("button")?.focus({ preventScroll: true });
+    feedback.scrollIntoView({ block: "nearest", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
     document.dispatchEvent(new CustomEvent("nian:sound", { detail: { type: correct ? "correct" : "wrong" } }));
   }
 
@@ -1054,6 +1061,7 @@
 
   function nextQuestion() {
     if (!state.answered) return;
+    stopEnglishSpeech();
     if (state.mode === "endless" && state.lives <= 0) {
       finishSession();
       return;
@@ -1077,7 +1085,7 @@
     awardBadges(arcade);
     state.dirty = saveProgress(progress) || state.dirty;
     const config = MODES[state.mode];
-    const total = state.mode === "endless" ? Math.max(state.index + 1, state.score) : state.queue.length;
+    const total = state.mode === "endless" ? Math.min(state.queue.length, state.index + Number(state.lives <= 0)) : state.queue.length;
     const rate = total ? Math.round((state.score / total) * 100) : 0;
     const weakest = Object.entries(asRecord(arcade.skills))
       .map(([key, value]) => ({ key, value: asRecord(value), rate: asNumber(value?.attempts) ? asNumber(value?.correct) / asNumber(value?.attempts) : 1 }))
@@ -1116,11 +1124,12 @@
 
   function closeArcade() {
     clearInterval(state.timer);
-    window.NIAN_VOICE?.stop();
+    stopEnglishSpeech();
     const modal = $("#nian-arcade-modal");
     if (modal) modal.hidden = true;
-    document.body.classList.remove("nian-arcade-open");
-    if (state.dirty) window.location.reload();
+    if (document.querySelector("#nian-companion-modal")?.hidden !== false) document.body.classList.remove("nian-arcade-open");
+    state.dirty = false;
+    refreshLedger();
   }
 
   function handleClick(event) {

@@ -346,10 +346,12 @@
   function loadEnhancements() {
     loadStyle("/assets/nian-arcade-v3.css", "百戏楼样式");
     loadStyle("/assets/nian-companion-v1.css", "念安陪学面板样式");
+    loadStyle("/assets/nian-workspace-v9.css", "书案样式");
     void loadScript("/assets/nian-voice-v1.js", "系统朗读控制器")
       .then(() => loadScript("/assets/nian-content-v8.js", "扩展题库"))
       .then(() => loadScript("/assets/nian-arcade-v3.js", "百戏楼脚本"))
       .then(() => loadScript("/assets/nian-companion-v1.js", "念安陪学面板"))
+      .then(() => loadScript("/assets/nian-workspace-v9.js", "书案导航"))
       .catch(() => {
         // showAssetFailure already exposed a recoverable reload action.
       });

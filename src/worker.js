@@ -1,4 +1,4 @@
-const VERSION = "nian-v8.3-ai-voice-1";
+const VERSION = "nian-v9.0-workspace";
 const JSON_HEADERS = {
   "content-type": "application/json; charset=utf-8",
   "cache-control": "no-store",

@@ -42,3 +42,10 @@
   Cache-Control: no-cache
 /downloads/*
   Cache-Control: public, max-age=3600
+
+/assets/nian-patch-v1.js
+  Cache-Control: no-cache
+/assets/nian-workspace-v9.js
+  Cache-Control: no-cache
+/assets/nian-workspace-v9.css
+  Cache-Control: no-cache

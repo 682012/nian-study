@@ -16,7 +16,20 @@ const synthesis = {
   speak(utterance) { spoken.push(utterance); queueMicrotask(() => { utterance.onstart?.(); utterance.onend?.(); }); },
 };
 const window = { speechSynthesis: synthesis, SpeechSynthesisUtterance: FakeUtterance, setTimeout, clearTimeout, setInterval, clearInterval };
-vm.runInNewContext(source, { window, Date, Promise, Error, Object, String, Number, Math });
+let audioCreated = 0;
+let audioPaused = 0;
+let urlsRevoked = 0;
+let latestAudio;
+class FakeAudio {
+  constructor() { audioCreated++; latestAudio = this; }
+  play() { return Promise.resolve(); }
+  pause() { audioPaused++; }
+}
+vm.runInNewContext(source, {
+  window, Date, Promise, Error, Object, String, Number, Math, AbortController,
+  Audio: FakeAudio,
+  URL: { createObjectURL: () => 'blob:test', revokeObjectURL: () => { urlsRevoked++; } },
+});
 const voice = window.NIAN_VOICE;
 assert.equal(voice.supported, true);
 const chunks = voice.splitText("第一段很短。" + "这是一个需要拆分的长句，".repeat(18) + "结束。", 48);
@@ -34,4 +47,37 @@ assert.equal(statuses.at(-1), "ended");
 assert.ok(statuses.includes("playing"));
 voice.stop();
 assert.ok(cancelCount >= 2);
-console.log("语音控制器检查通过：延迟音色加载、中文音色选择、长句拆分、播放状态与停止队列均有效。");
+synthesis.speak = utterance => { spoken.push(utterance); utterance.onstart?.(); };
+const pendingNative = voice.speakSystem('等待结束');
+await new Promise(resolve => setTimeout(resolve, 0));
+voice.stop();
+await assert.rejects(pendingNative, /SPEECH_CANCELLED/);
+synthesis.speak = () => {};
+const beforeTimeout = cancelCount;
+await assert.rejects(voice.speakSystem('不能启动', { startTimeout: 10 }), /SPEECH_DID_NOT_START/);
+assert.ok(cancelCount >= beforeTimeout + 2, 'Timeout cancels native speech to prevent late playback');
+let finishProvider;
+let requestSignal;
+voice.setCloudProvider((text, options, signal) => { requestSignal = signal; return new Promise(resolve => { finishProvider = resolve; }); });
+const pendingCloud = voice.speakCloud('稍后返回的音频');
+voice.stop();
+assert.equal(requestSignal.aborted, true);
+finishProvider({});
+await assert.rejects(pendingCloud, /SPEECH_CANCELLED/);
+assert.equal(audioCreated, 0, 'Cancelled requests never create a player');
+voice.setCloudProvider(async () => ({}));
+const playback = voice.speakCloud('播放中停止');
+await new Promise(resolve => setTimeout(resolve, 0));
+voice.stop();
+await assert.rejects(playback, /SPEECH_CANCELLED/);
+assert.ok(audioPaused > 0);
+assert.equal(urlsRevoked, 1);
+const cloudStatuses = [];
+const complete = voice.speakCloud('完整播放', { onStatus: status => cloudStatuses.push(status) });
+await new Promise(resolve => setTimeout(resolve, 0));
+assert.equal(cloudStatuses.at(-1), 'playing');
+latestAudio.onended();
+await complete;
+assert.equal(cloudStatuses.at(-1), 'ended');
+assert.equal(urlsRevoked, 2);
+console.log("语音控制器检查通过：音色加载、长句拆分、原生超时取消、云端请求取消、播放停止与资源回收均有效。");

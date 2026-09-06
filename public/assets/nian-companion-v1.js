@@ -21,12 +21,11 @@
   let interactionCount = 0;
   let lastMistakeContext = null;
   let chatHistory = [];
-  let currentAudio = null;
-  let currentAudioUrl = "";
+  let sending = false;
   const defaultAiConfig = Object.freeze({
     mode: "local", endpoint: "https://api.openai.com/v1/chat/completions",
-    speechEndpoint: "http://682012ysh.loc.cc/tts/v1/audio/speech", model: "gemini-3-flash-agent",
-    apiKey: "", remember: false, ttsMode: "cloud", ttsModel: "edge-tts", ttsVoice: "zh-CN-XiaoxiaoNeural",
+    speechEndpoint: "", model: "gpt-4o-mini",
+    apiKey: "", remember: false, ttsMode: "system", ttsModel: "gpt-4o-mini-tts", ttsVoice: "alloy", ttsEnglishVoice: "alloy",
   });
   let aiConfig = loadAiConfig();
 
@@ -35,7 +34,14 @@
       try {
         const storage = window[storageName];
         const value = asRecord(JSON.parse(storage.getItem(key) || "{}"));
-        if (Object.keys(value).length) return { ...defaultAiConfig, ...value };
+        if (Object.keys(value).length) {
+          const config = { ...defaultAiConfig, ...value };
+          if (config.speechEndpoint === "http://682012ysh.loc.cc/tts/v1/audio/speech") {
+            config.speechEndpoint = ""; config.ttsMode = "system";
+            config.ttsModel = defaultAiConfig.ttsModel; config.ttsVoice = defaultAiConfig.ttsVoice;
+          }
+          return config;
+        }
       } catch { /* Storage can be unavailable in private or embedded modes. */ }
     }
     return { ...defaultAiConfig };
@@ -116,6 +122,11 @@
       title: `百戏楼还有 ${data.arcadeMistakes} 处旧误等你。`,
       text: "先补旧误再开新卷，十分钟通常比硬刷一整套更划算。",
       action: "mistakes",
+    };
+    if (data.rates.every(item => item.attempts === 0)) return {
+      title: "先做一小卷，我们从这里认识你的节奏。",
+      text: "还没有足够的作答记录。先试十二题，之后我再按你真正卡住的地方配题。",
+      action: "adaptive",
     };
     const weak = subjectNames[data.weakestSubject] || "英语";
     return {
@@ -204,8 +215,7 @@
   function normalizeEndpoint(value) {
     const endpoint = new URL(String(value || "").trim(), window.location.href);
     const local = ["localhost", "127.0.0.1", "[::1]"].includes(endpoint.hostname);
-    const trustedHttp = /(^|\.)682012ysh\.loc\.cc$/.test(endpoint.hostname) || /(^|\.)682012ysh\.top$/.test(endpoint.hostname);
-    if (endpoint.protocol !== "https:" && !(endpoint.protocol === "http:" && (local || trustedHttp))) throw new Error("自定义接口必须使用 HTTPS（本机调试除外）");
+    if (endpoint.protocol !== "https:" && !(endpoint.protocol === "http:" && local)) throw new Error("自定义接口必须使用 HTTPS（本机调试除外）");
     return endpoint.href;
   }
 
@@ -319,43 +329,37 @@
 
   function stopSpeech() {
     window.NIAN_VOICE?.stop();
-    if (currentAudio) currentAudio.pause();
-    currentAudio = null;
-    if (currentAudioUrl) URL.revokeObjectURL(currentAudioUrl);
-    currentAudioUrl = "";
     $("[data-companion-speak]")?.classList.remove("is-speaking");
   }
 
-  async function fetchCloudSpeech(text) {
-    const controller = new AbortController();
-    const timeout = window.setTimeout(() => controller.abort(), 20_000);
-    const direct = aiConfig.mode === "custom-direct" || aiConfig.ttsMode === "cloud";
-    const url = normalizeEndpoint(aiConfig.speechEndpoint);
+  async function fetchCloudSpeech(text, options = {}, signal) {
+    const direct = Boolean(aiConfig.speechEndpoint);
+    const url = direct ? normalizeEndpoint(aiConfig.speechEndpoint) : "/api/nian/tts";
+    const voice = options.lang?.startsWith("en") ? aiConfig.ttsEnglishVoice : aiConfig.ttsVoice;
     const headers = { "content-type": "application/json" };
-    if (aiConfig.apiKey) headers.authorization = `Bearer ${aiConfig.apiKey}`;
-    const payload = { model: aiConfig.ttsModel, voice: aiConfig.ttsVoice, input: text, response_format: "mp3" };
-    try {
-      const response = await fetch(url, { method: "POST", headers, body: JSON.stringify(payload), signal: controller.signal });
-      if (!response.ok) throw new Error(`CLOUD_TTS_${response.status}`);
-      const type = response.headers.get("content-type") || "";
-      if (!/^audio\//i.test(type) && !/octet-stream/i.test(type)) throw new Error("INVALID_AUDIO_RESPONSE");
-      const blob = await response.blob();
-      if (!blob.size || blob.size > 12 * 1024 * 1024) throw new Error("INVALID_AUDIO_SIZE");
-      return blob;
-    } finally { window.clearTimeout(timeout); }
+    if (direct && aiConfig.apiKey) headers.authorization = `Bearer ${aiConfig.apiKey}`;
+    const payload = direct
+      ? { model: aiConfig.ttsModel, voice, input: text, response_format: "mp3" }
+      : { provider: "openai", apiKey: aiConfig.apiKey, model: aiConfig.ttsModel, voice, text };
+    const response = await fetch(url, { method: "POST", headers, body: JSON.stringify(payload), signal });
+    if (!response.ok) throw new Error(`CLOUD_TTS_${response.status}`);
+    const type = response.headers.get("content-type") || "";
+    if (!/^audio\//i.test(type) && !/octet-stream/i.test(type)) throw new Error("INVALID_AUDIO_RESPONSE");
+    const blob = await response.blob();
+    if (!blob.size || blob.size > 12 * 1024 * 1024) throw new Error("INVALID_AUDIO_SIZE");
+    return blob;
   }
+  window.NIAN_VOICE?.setCloudProvider(fetchCloudSpeech);
 
   async function playCloudSpeech(text) {
-    setServiceStatus("正在生成云端语音…", "working");
-    const blob = await fetchCloudSpeech(text);
-    stopSpeech();
-    currentAudioUrl = URL.createObjectURL(blob);
-    currentAudio = new Audio(currentAudioUrl);
-    currentAudio.preload = "auto";
-    currentAudio.onended = () => { setServiceStatus("朗读完毕", "ok"); stopSpeech(); };
-    currentAudio.onerror = () => { setServiceStatus("音频解码失败，请改用系统语音", "error"); stopSpeech(); };
-    await currentAudio.play();
-    setServiceStatus("云端语音正在播放", "working");
+    await window.NIAN_VOICE.speakCloud(text, {
+      lang: "zh-CN", rate: 0.92,
+      onStatus(status) {
+        if (status === "loading") setServiceStatus("正在生成云端语音…", "working");
+        else if (status === "playing") setServiceStatus("云端语音正在播放", "working");
+        else if (status === "ended") setServiceStatus("朗读完毕", "ok");
+      },
+    });
   }
 
   async function playSystemSpeech(text) {
@@ -375,7 +379,7 @@
     if (aiConfig.ttsMode === "off") { setServiceStatus("朗读已在设置中关闭", "error"); return; }
     stopSpeech();
     if (aiConfig.ttsMode === "cloud") {
-      try { await playCloudSpeech(text); return; } catch { setServiceStatus("云端语音失败，正在切回系统语音…", "error"); }
+      try { await playCloudSpeech(text); return; } catch (error) { if (error?.message === "SPEECH_CANCELLED") return; setServiceStatus("云端语音失败，正在切回系统语音…", "error"); }
     }
     try { await playSystemSpeech(text); }
     catch (error) {
@@ -388,6 +392,7 @@
   async function speakLastReply() {
     if (!lastReply) return;
     const button = $("[data-companion-speak]");
+    if (button?.classList.contains("is-speaking")) { stopSpeech(); return; }
     button?.classList.add("is-speaking");
     try { await speakText(lastReply); } catch { /* Visible status explains the failure. */ }
     finally { button?.classList.remove("is-speaking"); }
@@ -395,7 +400,9 @@
 
   async function sendMessage(message) {
     const trimmed = String(message || "").trim().slice(0, 240);
-    if (!trimmed) return;
+    if (!trimmed || sending) return;
+    sending = true;
+    $("#nian-companion-form button[type=submit]")?.setAttribute("disabled", "");
     interactionCount += 1;
     addMessage(trimmed, "user");
     const waiting = addMessage(aiConfig.mode === "local" ? "念安正在看你的近几页学录……" : "念安正在请 AI 一起看这件事……", "waiting");
@@ -415,6 +422,8 @@
     addMessage(result.reply);
     quickActions(result.suggestedAction);
     setMood(result.mood, result.reply);
+    sending = false;
+    $("#nian-companion-form button[type=submit]")?.removeAttribute("disabled");
   }
 
   function syncSettingsVisibility() {
@@ -422,7 +431,7 @@
     const ttsMode = $("#nian-tts-mode")?.value || aiConfig.ttsMode;
     document.querySelectorAll("[data-ai-custom-only], [data-ai-remote-only], [data-ai-cloud-only]").forEach((item) => {
       item.hidden = (item.hasAttribute("data-ai-custom-only") && mode !== "custom-direct")
-        || (item.hasAttribute("data-ai-remote-only") && mode === "local")
+        || (item.hasAttribute("data-ai-remote-only") && mode === "local" && !(item.querySelector("#nian-ai-key") && ttsMode === "cloud"))
         || (item.hasAttribute("data-ai-cloud-only") && ttsMode !== "cloud");
     });
   }
@@ -431,7 +440,7 @@
     const fields = {
       "#nian-ai-mode": aiConfig.mode, "#nian-ai-endpoint": aiConfig.endpoint, "#nian-ai-speech-endpoint": aiConfig.speechEndpoint,
       "#nian-ai-model": aiConfig.model, "#nian-ai-key": aiConfig.apiKey, "#nian-tts-mode": aiConfig.ttsMode,
-      "#nian-tts-model": aiConfig.ttsModel, "#nian-tts-voice": aiConfig.ttsVoice,
+      "#nian-tts-model": aiConfig.ttsModel, "#nian-tts-voice": aiConfig.ttsVoice, "#nian-tts-english-voice": aiConfig.ttsEnglishVoice,
     };
     for (const [selector, value] of Object.entries(fields)) { const field = $(selector); if (field) field.value = value; }
     const remember = $("#nian-ai-remember");
@@ -444,15 +453,16 @@
     const config = {
       mode: ["local", "openai-proxy", "custom-direct"].includes(mode) ? mode : "local",
       endpoint: $("#nian-ai-endpoint")?.value.trim() || defaultAiConfig.endpoint,
-      speechEndpoint: $("#nian-ai-speech-endpoint")?.value.trim() || defaultAiConfig.speechEndpoint,
+      speechEndpoint: $("#nian-ai-speech-endpoint")?.value.trim() || "",
       model: $("#nian-ai-model")?.value.trim() || defaultAiConfig.model,
       apiKey: $("#nian-ai-key")?.value.trim() || "", remember: Boolean($("#nian-ai-remember")?.checked),
       ttsMode: $("#nian-tts-mode")?.value || "system",
       ttsModel: $("#nian-tts-model")?.value.trim() || defaultAiConfig.ttsModel,
       ttsVoice: $("#nian-tts-voice")?.value.trim() || defaultAiConfig.ttsVoice,
+      ttsEnglishVoice: $("#nian-tts-english-voice")?.value.trim() || defaultAiConfig.ttsEnglishVoice,
     };
     if (config.mode === "custom-direct") normalizeEndpoint(config.endpoint);
-    if (config.mode === "custom-direct" && config.ttsMode === "cloud") normalizeEndpoint(config.speechEndpoint);
+    if (config.speechEndpoint) normalizeEndpoint(config.speechEndpoint);
     return config;
   }
 
@@ -486,7 +496,7 @@
   function openChat(initialMessage = "") {
     const modal = $("#nian-companion-modal");
     if (!modal) return;
-    lastFocus = document.activeElement;
+    if (modal.hidden) lastFocus = document.activeElement;
     modal.hidden = false;
     document.body.classList.add("nian-arcade-open");
     $("#nian-companion-input")?.focus();
@@ -497,7 +507,7 @@
   function closeChat() {
     const modal = $("#nian-companion-modal");
     if (modal) modal.hidden = true;
-    document.body.classList.remove("nian-arcade-open");
+    if ($("#nian-arcade-modal")?.hidden !== false) document.body.classList.remove("nian-arcade-open");
     stopSpeech();
     if (lastFocus instanceof HTMLElement) lastFocus.focus();
   }
@@ -506,8 +516,7 @@
     if (attempt === 0) closeChat();
     const button = document.querySelector(`[data-arcade-mode="${mode}"]`);
     if (button instanceof HTMLElement) {
-      button.scrollIntoView({ behavior: "smooth", block: "center" });
-      window.setTimeout(() => button.click(), 280);
+      button.click();
       return;
     }
     if (attempt < 20) window.setTimeout(() => clickMode(mode, attempt + 1), 250);
@@ -540,7 +549,7 @@
     primary.textContent = advice.action === "wrongbook" ? "先翻拾遗簿" : advice.action === "mistakes" ? "追击旧误" : "开念安私塾";
     $("[data-companion-due]", card).textContent = String(data.dueWords);
     $("[data-companion-wrong]", card).textContent = String(data.totalMistakes);
-    $("[data-companion-weak]", card).textContent = subjectNames[data.weakestSubject] || "英语";
+    $("[data-companion-weak]", card).textContent = data.rates.some(item => item.attempts > 0) ? subjectNames[data.weakestSubject] : "待了解";
     $("[data-companion-combo]", card).textContent = String(data.bestCombo);
   }
 
@@ -570,19 +579,21 @@
     modal.className = "nian-companion-modal";
     modal.hidden = true;
     modal.innerHTML = `<button type="button" class="nian-companion-backdrop" data-companion-close aria-label="关闭对话"></button><section class="nian-companion-sheet" role="dialog" aria-modal="true" aria-labelledby="nian-companion-title">
-      <header class="nian-companion-head"><span class="nian-companion-avatar">安</span><div><span>清晖书院 · 东斋</span><strong id="nian-companion-title">林念安在听</strong></div><div class="nian-companion-head-actions"><button type="button" data-companion-settings aria-expanded="false" aria-controls="nian-ai-settings">AI 设置</button><button type="button" class="nian-companion-close" data-companion-close aria-label="关闭">×</button></div></header>
+      <header class="nian-companion-head"><span class="nian-companion-avatar">安</span><div><span>清晖书院 · 东斋</span><strong id="nian-companion-title">林念安在听</strong></div><div class="nian-companion-head-actions"><button type="button" data-companion-settings aria-expanded="false" aria-controls="nian-ai-settings">对话与语音设置</button><button type="button" class="nian-companion-close" data-companion-close aria-label="关闭">×</button></div></header>
       <form class="nian-ai-settings" id="nian-ai-settings" hidden><div class="nian-ai-settings-grid">
         <label><span>对话模式</span><select id="nian-ai-mode"><option value="local">本地陪练（无需 Key）</option><option value="openai-proxy">OpenAI · Worker 安全代理</option><option value="custom-direct">自定义兼容接口 · 浏览器直连</option></select></label>
         <label data-ai-remote-only><span>模型</span><input id="nian-ai-model" maxlength="120" autocomplete="off" placeholder="gpt-4o-mini"></label>
         <label data-ai-custom-only><span>Chat Completions 地址</span><input id="nian-ai-endpoint" type="url" inputmode="url" autocomplete="off" placeholder="https://example.com/v1/chat/completions"></label>
-        <label data-ai-remote-only><span>API Key（可留空使用 Worker 密钥）</span><input id="nian-ai-key" type="password" maxlength="512" autocomplete="new-password" placeholder="仅本次会话保存"></label>
-        <label><span>朗读方式</span><select id="nian-tts-mode"><option value="cloud">云端语音（免费 · 微软晓晓）</option><option value="system">系统语音（设备自带）</option><option value="off">关闭朗读</option></select></label>
-        <label data-ai-cloud-only><span>音色</span><input id="nian-tts-voice" maxlength="80" autocomplete="off" placeholder="zh-CN-XiaoxiaoNeural"></label>
-        <label data-ai-cloud-only data-ai-custom-only><span>Speech 地址</span><input id="nian-ai-speech-endpoint" type="url" inputmode="url" autocomplete="off" placeholder="https://example.com/v1/audio/speech"></label>
+        <label data-ai-remote-only><span>API Key（对话 / 语音服务；可留空使用本站密钥）</span><input id="nian-ai-key" type="password" maxlength="512" autocomplete="new-password" placeholder="仅本次会话保存"></label>
+        <label><span>朗读方式</span><select id="nian-tts-mode"><option value="cloud">云端语音（需配置服务）</option><option value="system">系统语音（设备自带）</option><option value="off">关闭朗读</option></select></label>
+        <label data-ai-cloud-only><span>中文音色</span><input id="nian-tts-voice" maxlength="80" autocomplete="off" placeholder="alloy 或你的服务音色"></label>
+        <label data-ai-cloud-only><span>语音模型</span><input id="nian-tts-model" maxlength="120" placeholder="gpt-4o-mini-tts"></label>
+        <label data-ai-cloud-only><span>英语音色</span><input id="nian-tts-english-voice" maxlength="80" placeholder="alloy 或英语音色"></label>
+        <label data-ai-cloud-only><span>Speech 地址（留空使用本站代理）</span><input id="nian-ai-speech-endpoint" type="url" inputmode="url" autocomplete="off" placeholder="https://example.com/v1/audio/speech"></label>
       </div><label class="nian-ai-remember"><input id="nian-ai-remember" type="checkbox"><span>记住在此设备（勾选后 API Key 会写入浏览器本地存储；共用设备请勿勾选）</span></label>
       <p>OpenAI 代理只允许官方域名，Key 仅随请求转发、不写入 Worker。自定义地址由浏览器直连，目标服务必须允许 CORS。</p>
       <div class="nian-ai-settings-actions"><button type="submit">保存设置</button><button type="button" data-ai-test>测试 AI</button><button type="button" data-ai-test-voice>试听朗读</button></div></form>
-      <div class="nian-companion-log" id="nian-companion-log"></div><div class="nian-companion-compose"><div class="nian-companion-quick" id="nian-companion-quick"></div><output id="nian-service-status" aria-live="polite">当前使用本地陪练；点击“AI 设置”可接入自己的接口</output><form class="nian-companion-form" id="nian-companion-form"><input id="nian-companion-input" name="message" maxlength="600" autocomplete="off" placeholder="说说你现在想学什么……"><button type="button" data-companion-speak aria-label="朗读念安上一句话">声</button><button type="submit">送出</button></form></div></section>`;
+      <div class="nian-companion-log" id="nian-companion-log" role="log" aria-live="polite"></div><div class="nian-companion-compose"><div class="nian-companion-quick" id="nian-companion-quick"></div><output id="nian-service-status" aria-live="polite">当前使用本地陪练；点击“对话与语音设置”可接入自己的接口</output><form class="nian-companion-form" id="nian-companion-form"><input id="nian-companion-input" name="message" aria-label="发给念安的消息" maxlength="240" autocomplete="off" placeholder="说说你现在想学什么……"><button type="button" data-companion-speak aria-label="朗读念安上一句话">声</button><button type="submit">送出</button></form></div></section>`;
     document.body.appendChild(modal);
     const data = snapshot();
     const hello = data.hour >= 23
@@ -619,7 +630,7 @@
     if (event.target.closest("[data-companion-settings]")) return toggleSettings();
     if (event.target.closest("[data-ai-test]")) return void testAiConnection();
     if (event.target.closest("[data-ai-test-voice]")) {
-      try { commitSettings(); void speakText("同窗，若你能听见这句话，朗读功能已经可以使用。"); }
+      try { commitSettings(); void speakText("同窗，若你能听见这句话，朗读功能已经可以使用。").catch(() => {}); }
       catch (error) { setServiceStatus(error?.message || "语音设置无效", "error"); }
       return;
     }
@@ -638,6 +649,7 @@
     if (event.target.id !== "nian-companion-form") return;
     event.preventDefault();
     const input = $("#nian-companion-input");
+    if (sending) return;
     const message = input?.value || "";
     if (input) input.value = "";
     void sendMessage(message);
@@ -682,7 +694,9 @@
   window.addEventListener("storage", (event) => {
     if (event.key === STORAGE_KEY) renderCard();
   });
-  navigator.serviceWorker?.addEventListener("controllerchange", showUpdateNotice);
+  let hadController = Boolean(navigator.serviceWorker?.controller);
+  navigator.serviceWorker?.addEventListener("controllerchange", () => { if (hadController) showUpdateNotice(); hadController = true; });
+  document.addEventListener("nian:progress-saved", renderCard);
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mount, { once: true });
   else mount();

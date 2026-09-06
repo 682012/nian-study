@@ -9,6 +9,8 @@ required=(
   public/assets/nian-lively-v2.css
   public/assets/nian-lively-v2.js
   public/assets/nian-voice-v1.js
+  public/assets/nian-workspace-v9.js
+  public/assets/nian-workspace-v9.css
   public/assets/nian-arcade-v3.css
   public/assets/nian-arcade-v3.js
   public/assets/nian-content-v8.js
@@ -33,6 +35,7 @@ required=(
 for f in "${required[@]}"; do
   [ -f "$f" ] || { echo "缺少文件: $f"; exit 1; }
 done
+node --check public/assets/nian-workspace-v9.js
 node --check public/assets/nian-lively-v2.js
 node --check public/assets/nian-voice-v1.js
 node --check public/assets/nian-arcade-v3.js
@@ -68,7 +71,7 @@ grep -Fq 'nian-lively-v2.css' public/index.html || { echo "首页未加载活泼
 grep -Fq 'nian-arcade-v3.js' public/assets/nian-lively-v2.js || { echo "百戏楼未接入首页"; exit 1; }
 grep -Fq 'AudioContext' public/assets/nian-lively-v2.js || { echo "界面点击音效缺失"; exit 1; }
 grep -Fq 'data-nian-speech-status' public/assets/nian-arcade-v3.js || { echo "英语朗读状态反馈缺失"; exit 1; }
-grep -Fq 'nian-static-cf-v8.3-ai-voice' public/sw.js || { echo "离线缓存版本未更新"; exit 1; }
+grep -Fq 'nian-static-cf-v9.0-workspace' public/sw.js || { echo "离线缓存版本未更新"; exit 1; }
 grep -Fq "cache: 'no-cache'" public/sw.js || { echo "可变代码资源仍可能命中旧缓存"; exit 1; }
 grep -Fq 'Unexpected code asset content type' public/sw.js || { echo "脚本回落 HTML 防护缺失"; exit 1; }
 grep -Fq '听音辨词' public/assets/nian-arcade-v3.js || { echo "英语听力玩法缺失"; exit 1; }
