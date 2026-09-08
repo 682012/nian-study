@@ -17,10 +17,11 @@ assert.ok(worker.includes('url.pathname === "/api/nian/ai"'));
 assert.ok(!arcade.includes("if (question.speech) speak(question.speech)"), "题目渲染时不应绕过用户手势自动朗读");
 assert.ok(arcade.includes("window.NIAN_VOICE.speakSystem"));
 assert.ok(lively.indexOf("nian-voice-v1.js") < lively.indexOf("nian-arcade-v3.js"), "语音控制器必须先于题目脚本加载");
-assert.ok(sw.includes("nian-static-cf-v9.2-voice"));
+assert.ok(sw.includes("nian-static-cf-v9.3-voice"));
 assert.ok(sw.includes("/assets/nian-voice-v1.js"));
 assert.ok(companion.includes("nian:english-speech"), "陪学面板必须监听闪卡云端发音事件");
-assert.ok(companion.includes("/api/nian/voice-key") && companion.includes("mimoDirectSpeech"), "陪学面板必须支持小米直连加速");
+assert.ok(companion.includes("edgeBridgeSpeech") && companion.includes("nian-voice-provider-v1"), "陪学面板必须支持Edge桥发音");
+assert.ok(companion.includes("/api/nian/voice-key") && companion.includes("mimoDirectSpeech"), "陪学面板必须支持小米直连回落");
 assert.ok(worker.includes("handleDefaultTTS") && worker.includes("MIMO_API_KEY"), "Worker 必须内置云端默认发音回落");
 
 console.log("AI/语音集成检查通过：三种对话模式、密钥策略、用户手势、加载顺序和离线缓存均正确接线。");

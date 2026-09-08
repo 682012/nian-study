@@ -332,36 +332,50 @@
     $("[data-companion-speak]")?.classList.remove("is-speaking");
   }
 
-  const DIRECT_VOICE_STORAGE_KEY = "nian-voice-direct-v1";
-  let directVoiceConfig = null;
+  const PROVIDER_STORAGE_KEY = "nian-voice-provider-v1";
+  let voiceProvider = null;
   const memorySpeechCache = new Map();
 
-  async function loadDirectVoiceConfig() {
-    if (directVoiceConfig) return directVoiceConfig;
+  function persistVoiceProvider(provider) {
+    voiceProvider = provider;
+    try { sessionStorage.setItem(PROVIDER_STORAGE_KEY, JSON.stringify(provider)); } catch { /* ignore */ }
+  }
+
+  function clearVoiceProvider() {
+    voiceProvider = null;
+    try { sessionStorage.removeItem(PROVIDER_STORAGE_KEY); } catch { /* ignore */ }
+  }
+
+  async function loadVoiceProvider() {
+    if (voiceProvider) return voiceProvider;
     try {
-      const cached = JSON.parse(sessionStorage.getItem(DIRECT_VOICE_STORAGE_KEY) || "null");
-      if (cached?.key && cached?.baseUrl && cached?.model) {
-        directVoiceConfig = cached;
-        return directVoiceConfig;
+      const cached = JSON.parse(sessionStorage.getItem(PROVIDER_STORAGE_KEY) || "null");
+      if (cached?.provider === "edgetts" && cached?.url) {
+        voiceProvider = cached;
+        return voiceProvider;
+      }
+      if (cached?.provider === "mimo" && cached?.key && cached?.baseUrl) {
+        voiceProvider = cached;
+        return voiceProvider;
       }
     } catch { /* Storage can be unavailable in private or embedded modes. */ }
     try {
       const response = await fetch("/api/nian/voice-key", { headers: { accept: "application/json" } });
       if (response.ok) {
         const config = await response.json();
-        if (config?.key && config?.baseUrl && config?.model) {
-          directVoiceConfig = { key: config.key, baseUrl: config.baseUrl, model: config.model, voice: config.voice || "冰糖" };
-          try { sessionStorage.setItem(DIRECT_VOICE_STORAGE_KEY, JSON.stringify(directVoiceConfig)); } catch { /* ignore */ }
-          return directVoiceConfig;
+        if (config?.provider === "edgetts" && config?.url) {
+          const provider = { provider: "edgetts", url: config.url };
+          persistVoiceProvider(provider);
+          return provider;
+        }
+        if (config?.provider === "mimo" && config?.key && config?.baseUrl) {
+          const provider = { provider: "mimo", key: config.key, baseUrl: config.baseUrl, model: config.model, voice: config.voice || "冰糖" };
+          persistVoiceProvider(provider);
+          return provider;
         }
       }
     } catch { /* Proxy unavailable; fall back to proxied speech. */ }
     return null;
-  }
-
-  function clearDirectVoiceConfig() {
-    directVoiceConfig = null;
-    try { sessionStorage.removeItem(DIRECT_VOICE_STORAGE_KEY); } catch { /* ignore */ }
   }
 
   async function mimoDirectSpeech(config, text, signal) {
@@ -406,22 +420,46 @@
     } catch { /* Quota errors are non-fatal. */ }
   }
 
+  async function edgeBridgeSpeech(url, text, lang, signal) {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ text, lang }),
+      signal,
+    });
+    if (!response.ok) throw new Error(`EDGE_TTS_${response.status}`);
+    const type = response.headers.get("content-type") || "";
+    if (!/^audio\//i.test(type) && !/octet-stream/i.test(type)) throw new Error("INVALID_AUDIO_RESPONSE");
+    const blob = await response.blob();
+    if (!blob.size || blob.size > 12 * 1024 * 1024) throw new Error("INVALID_AUDIO_SIZE");
+    return blob;
+  }
+
   async function fetchCloudSpeech(text, options = {}, signal) {
     const direct = Boolean(aiConfig.speechEndpoint);
     const voice = options.lang?.startsWith("en") ? aiConfig.ttsEnglishVoice : aiConfig.ttsVoice;
-    const cacheKey = direct ? "" : `default|${encodeURIComponent(text)}`;
+    const cacheKey = direct ? "" : `v2|${encodeURIComponent(text)}`;
     if (!direct) {
       const cached = await readSpeechCache(cacheKey);
       if (cached) return cached;
-      const config = await loadDirectVoiceConfig();
-      if (config) {
+      const provider = await loadVoiceProvider();
+      if (provider?.provider === "edgetts") {
         try {
-          const blob = await mimoDirectSpeech(config, text, signal);
+          const blob = await edgeBridgeSpeech(provider.url, text, options.lang || "zh-CN", signal);
           await writeSpeechCache(cacheKey, blob);
           return blob;
         } catch (error) {
           if (error?.name === "AbortError") throw error;
-          clearDirectVoiceConfig();
+          clearVoiceProvider();
+        }
+      } else if (provider?.provider === "mimo") {
+        try {
+          const blob = await mimoDirectSpeech(provider, text, signal);
+          await writeSpeechCache(cacheKey, blob);
+          return blob;
+        } catch (error) {
+          if (error?.name === "AbortError") throw error;
+          clearVoiceProvider();
         }
       }
     }

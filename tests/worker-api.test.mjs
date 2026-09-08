@@ -136,21 +136,53 @@ const defaultMissing = await worker.fetch(new Request("https://nian.test/api/nia
 assert.equal(defaultMissing.status, 503);
 assert.equal((await defaultMissing.json()).code, "DEFAULT_VOICE_UNAVAILABLE");
 
-// Voice-key endpoint hands browser-direct config only to same-origin callers
-const voiceKey = await worker.fetch(new Request("https://nian.test/api/nian/voice-key", {
+// Voice selection: edge bridge preferred, MiMo direct as legacy, none otherwise
+const voiceKeyEdge = await worker.fetch(new Request("https://nian.test/api/nian/voice-key", {
+  headers: { "sec-fetch-site": "same-origin" },
+}), { ...env, EDGE_TTS_TOKEN: "environment-bridge-token" });
+assert.equal(voiceKeyEdge.status, 200);
+assert.equal((await voiceKeyEdge.json()).provider, "edgetts");
+
+const voiceKeyMimo = await worker.fetch(new Request("https://nian.test/api/nian/voice-key", {
   headers: { "sec-fetch-site": "same-origin" },
 }), { ...env, MIMO_API_KEY: "environment-mimo-key" });
-assert.equal(voiceKey.status, 200);
-const voiceKeyBody = await voiceKey.json();
+assert.equal(voiceKeyMimo.status, 200);
+const voiceKeyBody = await voiceKeyMimo.json();
+assert.equal(voiceKeyBody.provider, "mimo");
 assert.equal(voiceKeyBody.baseUrl, "https://api.xiaomimimo.com/v1");
 assert.equal(voiceKeyBody.model, "mimo-v2.5-tts");
 assert.ok(voiceKeyBody.key.length > 0);
+
 const voiceKeyMissing = await worker.fetch(new Request("https://nian.test/api/nian/voice-key"), env);
-assert.equal((await voiceKeyMissing.json()).key, "");
+assert.equal((await voiceKeyMissing.json()).provider, "none");
+
 const voiceKeyCross = await worker.fetch(new Request("https://nian.test/api/nian/voice-key", {
   headers: { "sec-fetch-site": "cross-site" },
 }), env);
 assert.equal(voiceKeyCross.status, 403);
+
+// Edge TTS proxy: same-origin POST -> bridge with token and engine=edge
+globalThis.fetch = async (url, init) => {
+  capturedUrl = String(url); capturedInit = init;
+  return new Response(new Uint8Array([73, 68, 51, 4]), { status: 200, headers: { "content-type": "audio/mpeg" } });
+};
+const edgeTts = await worker.fetch(new Request("https://nian.test/api/nian/edgetts", {
+  method: "POST", headers: jsonHeaders,
+  body: JSON.stringify({ text: "all", lang: "en-US" }),
+}), { ...env, EDGE_TTS_TOKEN: "environment-bridge-token" });
+assert.equal(edgeTts.status, 200);
+assert.equal(edgeTts.headers.get("content-type"), "audio/mpeg");
+assert.equal(capturedUrl, "http://tts.682012ysh.loc.cc/v1/audio/speech");
+assert.equal(capturedInit.headers["x-bridge-token"], "environment-bridge-token");
+const edgePayload = JSON.parse(capturedInit.body);
+assert.equal(edgePayload.voice, "en-US-AvaNeural");
+assert.equal(edgePayload.engine, "edge");
+assert.deepEqual([...new Uint8Array(await edgeTts.arrayBuffer())], [73, 68, 51, 4]);
+
+const edgeNoToken = await worker.fetch(new Request("https://nian.test/api/nian/edgetts", {
+  method: "POST", headers: jsonHeaders, body: JSON.stringify({ text: "all" }),
+}), env);
+assert.equal(edgeNoToken.status, 503);
 globalThis.fetch = originalFetch;
 
 const asset = await worker.fetch(new Request("https://nian.test/favicon.svg"), env);
