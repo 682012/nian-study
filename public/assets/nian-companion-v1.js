@@ -332,10 +332,100 @@
     $("[data-companion-speak]")?.classList.remove("is-speaking");
   }
 
+  const DIRECT_VOICE_STORAGE_KEY = "nian-voice-direct-v1";
+  let directVoiceConfig = null;
+  const memorySpeechCache = new Map();
+
+  async function loadDirectVoiceConfig() {
+    if (directVoiceConfig) return directVoiceConfig;
+    try {
+      const cached = JSON.parse(sessionStorage.getItem(DIRECT_VOICE_STORAGE_KEY) || "null");
+      if (cached?.key && cached?.baseUrl && cached?.model) {
+        directVoiceConfig = cached;
+        return directVoiceConfig;
+      }
+    } catch { /* Storage can be unavailable in private or embedded modes. */ }
+    try {
+      const response = await fetch("/api/nian/voice-key", { headers: { accept: "application/json" } });
+      if (response.ok) {
+        const config = await response.json();
+        if (config?.key && config?.baseUrl && config?.model) {
+          directVoiceConfig = { key: config.key, baseUrl: config.baseUrl, model: config.model, voice: config.voice || "冰糖" };
+          try { sessionStorage.setItem(DIRECT_VOICE_STORAGE_KEY, JSON.stringify(directVoiceConfig)); } catch { /* ignore */ }
+          return directVoiceConfig;
+        }
+      }
+    } catch { /* Proxy unavailable; fall back to proxied speech. */ }
+    return null;
+  }
+
+  function clearDirectVoiceConfig() {
+    directVoiceConfig = null;
+    try { sessionStorage.removeItem(DIRECT_VOICE_STORAGE_KEY); } catch { /* ignore */ }
+  }
+
+  async function mimoDirectSpeech(config, text, signal) {
+    const response = await fetch(`${config.baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${config.key}`, "content-type": "application/json" },
+      body: JSON.stringify({ model: config.model, messages: [{ role: "assistant", content: text }], audio: { format: "mp3", voice: config.voice } }),
+      signal,
+    });
+    if (!response.ok) throw new Error(`MIMO_TTS_${response.status}`);
+    const payload = await response.json();
+    const data = payload?.choices?.[0]?.message?.audio?.data;
+    if (typeof data !== "string" || !data) throw new Error("INVALID_AUDIO_RESPONSE");
+    const binary = atob(data.replace(/\s+/g, ""));
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+    const blob = new Blob([bytes], { type: "audio/mpeg" });
+    if (!blob.size || blob.size > 12 * 1024 * 1024) throw new Error("INVALID_AUDIO_SIZE");
+    return blob;
+  }
+
+  async function readSpeechCache(cacheKey) {
+    if (memorySpeechCache.has(cacheKey)) return memorySpeechCache.get(cacheKey);
+    try {
+      const cache = await caches.open("nian-tts-v1");
+      const hit = await cache.match(`https://nian-tts.cache.local/${cacheKey}`);
+      if (hit) {
+        const blob = await hit.blob();
+        memorySpeechCache.set(cacheKey, blob);
+        return blob;
+      }
+    } catch { /* Cache API unavailable in private or embedded modes. */ }
+    return null;
+  }
+
+  async function writeSpeechCache(cacheKey, blob) {
+    if (memorySpeechCache.size > 300) memorySpeechCache.clear();
+    memorySpeechCache.set(cacheKey, blob);
+    try {
+      const cache = await caches.open("nian-tts-v1");
+      await cache.put(`https://nian-tts.cache.local/${cacheKey}`, new Response(blob));
+    } catch { /* Quota errors are non-fatal. */ }
+  }
+
   async function fetchCloudSpeech(text, options = {}, signal) {
     const direct = Boolean(aiConfig.speechEndpoint);
-    const url = direct ? normalizeEndpoint(aiConfig.speechEndpoint) : "/api/nian/tts";
     const voice = options.lang?.startsWith("en") ? aiConfig.ttsEnglishVoice : aiConfig.ttsVoice;
+    const cacheKey = direct ? "" : `default|${encodeURIComponent(text)}`;
+    if (!direct) {
+      const cached = await readSpeechCache(cacheKey);
+      if (cached) return cached;
+      const config = await loadDirectVoiceConfig();
+      if (config) {
+        try {
+          const blob = await mimoDirectSpeech(config, text, signal);
+          await writeSpeechCache(cacheKey, blob);
+          return blob;
+        } catch (error) {
+          if (error?.name === "AbortError") throw error;
+          clearDirectVoiceConfig();
+        }
+      }
+    }
+    const url = direct ? normalizeEndpoint(aiConfig.speechEndpoint) : "/api/nian/tts";
     const headers = { "content-type": "application/json" };
     if (direct && aiConfig.apiKey) headers.authorization = `Bearer ${aiConfig.apiKey}`;
     const payload = direct
@@ -349,6 +439,7 @@
     if (!/^audio\//i.test(type) && !/octet-stream/i.test(type)) throw new Error("INVALID_AUDIO_RESPONSE");
     const blob = await response.blob();
     if (!blob.size || blob.size > 12 * 1024 * 1024) throw new Error("INVALID_AUDIO_SIZE");
+    if (!direct) await writeSpeechCache(cacheKey, blob);
     return blob;
   }
   window.NIAN_VOICE?.setCloudProvider(fetchCloudSpeech);

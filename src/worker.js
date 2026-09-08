@@ -1,4 +1,4 @@
-const VERSION = "nian-v9.1-voice";
+const VERSION = "nian-v9.2-voice";
 const JSON_HEADERS = {
   "content-type": "application/json; charset=utf-8",
   "cache-control": "no-store",
@@ -246,6 +246,19 @@ async function handleDefaultTTS(text, env) {
   }
 }
 
+function sameOriginGuard(request) {
+  const site = request.headers.get("sec-fetch-site");
+  if (site && !["same-origin", "same-site"].includes(site)) return json({ error: "cross-site request rejected", code: "CROSS_SITE_REJECTED" }, 403);
+  return null;
+}
+
+function handleVoiceKey(request, env) {
+  const guarded = sameOriginGuard(request);
+  if (guarded) return guarded;
+  const key = cleanApiKey(env?.MIMO_API_KEY);
+  return json({ baseUrl: MIMO_API_BASE, model: DEFAULT_TTS.model, voice: DEFAULT_TTS.voice, key: key || "" });
+}
+
 async function handleTTS(request, env) {
   const parsed = await readJson(request);
   if (parsed.error) return parsed.error;
@@ -319,6 +332,7 @@ export default {
     if (url.pathname === "/api/nian/respond") return handleNian(request);
     if (url.pathname === "/api/nian/ai") return handleAI(request, env);
     if (url.pathname === "/api/nian/tts") return handleTTS(request, env);
+    if (url.pathname === "/api/nian/voice-key") return handleVoiceKey(request, env);
     return env.ASSETS.fetch(request);
   },
 };

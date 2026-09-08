@@ -135,6 +135,22 @@ const defaultMissing = await worker.fetch(new Request("https://nian.test/api/nia
 }), env);
 assert.equal(defaultMissing.status, 503);
 assert.equal((await defaultMissing.json()).code, "DEFAULT_VOICE_UNAVAILABLE");
+
+// Voice-key endpoint hands browser-direct config only to same-origin callers
+const voiceKey = await worker.fetch(new Request("https://nian.test/api/nian/voice-key", {
+  headers: { "sec-fetch-site": "same-origin" },
+}), { ...env, MIMO_API_KEY: "environment-mimo-key" });
+assert.equal(voiceKey.status, 200);
+const voiceKeyBody = await voiceKey.json();
+assert.equal(voiceKeyBody.baseUrl, "https://api.xiaomimimo.com/v1");
+assert.equal(voiceKeyBody.model, "mimo-v2.5-tts");
+assert.ok(voiceKeyBody.key.length > 0);
+const voiceKeyMissing = await worker.fetch(new Request("https://nian.test/api/nian/voice-key"), env);
+assert.equal((await voiceKeyMissing.json()).key, "");
+const voiceKeyCross = await worker.fetch(new Request("https://nian.test/api/nian/voice-key", {
+  headers: { "sec-fetch-site": "cross-site" },
+}), env);
+assert.equal(voiceKeyCross.status, 403);
 globalThis.fetch = originalFetch;
 
 const asset = await worker.fetch(new Request("https://nian.test/favicon.svg"), env);
