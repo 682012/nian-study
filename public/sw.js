@@ -1,5 +1,5 @@
-const STATIC_CACHE = 'nian-static-cf-v9.0-workspace';
-const PAGE_CACHE = 'nian-pages-cf-v9.0-workspace';
+const STATIC_CACHE = 'nian-static-cf-v9.1-voice';
+const PAGE_CACHE = 'nian-pages-cf-v9.1-voice';
 const CORE = [
   '/', '/index.html', '/offline.html', '/manifest.webmanifest', '/favicon.svg',
   '/icons/app-icon-192.png', '/icons/app-icon-512.png', '/icons/app-icon-maskable-512.png',

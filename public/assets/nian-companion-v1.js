@@ -340,7 +340,9 @@
     if (direct && aiConfig.apiKey) headers.authorization = `Bearer ${aiConfig.apiKey}`;
     const payload = direct
       ? { model: aiConfig.ttsModel, voice, input: text, response_format: "mp3" }
-      : { provider: "openai", apiKey: aiConfig.apiKey, model: aiConfig.ttsModel, voice, text };
+      : (aiConfig.apiKey
+        ? { provider: "openai", apiKey: aiConfig.apiKey, model: aiConfig.ttsModel, voice, text }
+        : { text });
     const response = await fetch(url, { method: "POST", headers, body: JSON.stringify(payload), signal });
     if (!response.ok) throw new Error(`CLOUD_TTS_${response.status}`);
     const type = response.headers.get("content-type") || "";
@@ -350,6 +352,21 @@
     return blob;
   }
   window.NIAN_VOICE?.setCloudProvider(fetchCloudSpeech);
+
+  document.addEventListener("nian:english-speech", (event) => {
+    const word = typeof event?.detail === "string" ? event.detail.trim().slice(0, 120) : "";
+    if (!word) return;
+    window.NIAN_VOICE?.speakCloud(word, {
+      lang: "en-US", rate: 0.82,
+      onStatus(status) {
+        if (status === "loading") setServiceStatus("正在生成云端发音…", "working");
+        else if (status === "playing") setServiceStatus("正在播放 · 点此可重播", "working");
+        else if (status === "ended") setServiceStatus("朗读完毕", "ok");
+      },
+    }).catch((error) => {
+      if (error?.message !== "SPEECH_CANCELLED") setServiceStatus("云端发音不可用，请稍后再试", "error");
+    });
+  });
 
   async function playCloudSpeech(text) {
     await window.NIAN_VOICE.speakCloud(text, {

@@ -1,4 +1,4 @@
-const VERSION = "nian-v9.0-workspace";
+const VERSION = "nian-v9.1-voice";
 const JSON_HEADERS = {
   "content-type": "application/json; charset=utf-8",
   "cache-control": "no-store",
@@ -7,6 +7,8 @@ const JSON_HEADERS = {
 
 const subjectNames = { english: "英语", math: "数学", chinese: "语文" };
 const OPENAI_API_BASE = "https://api.openai.com/v1";
+const MIMO_API_BASE = "https://api.xiaomimimo.com/v1";
+const DEFAULT_TTS = Object.freeze({ model: "mimo-v2.5-tts", voice: "冰糖" });
 const MAX_JSON_BYTES = 32_768;
 
 function json(data, status = 200) {
@@ -73,11 +75,11 @@ function aiSystemPrompt(snapshot, mistakeContext) {
   return `你是学习应用“清晖书院”里的陪学角色林念安。使用简洁、自然、有一点书院气质的中文回答；先解决学生的问题，再给一个可执行的小步骤。不要假装看过未提供的数据，不要编造分数、知识点或资料来源。涉及自伤、医疗、法律或危险行为时，优先给安全建议并鼓励联系可信任的成年人或专业帮助。${summary}${mistake}`;
 }
 
-async function fetchOpenAI(path, apiKey, payload, timeoutMs = 20_000) {
+async function fetchOpenAI(path, apiKey, payload, timeoutMs = 20_000, baseUrl = OPENAI_API_BASE) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    return await fetch(`${OPENAI_API_BASE}${path}`, {
+    return await fetch(`${baseUrl}${path}`, {
       method: "POST",
       headers: { "authorization": `Bearer ${apiKey}`, "content-type": "application/json" },
       body: JSON.stringify(payload),
@@ -213,6 +215,37 @@ function respond(message, snapshot, mistakeContext) {
   };
 }
 
+function base64ToBytes(value) {
+  try {
+    const binary = atob(String(value).replace(/\s+/g, ""));
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+    return bytes;
+  } catch { return new Uint8Array(); }
+}
+
+async function handleDefaultTTS(text, env) {
+  const apiKey = cleanApiKey(env?.MIMO_API_KEY);
+  if (!apiKey) return json({ error: "default voice is not configured on the server", code: "DEFAULT_VOICE_UNAVAILABLE" }, 503);
+  try {
+    const upstream = await fetchOpenAI("/chat/completions", apiKey, {
+      model: DEFAULT_TTS.model,
+      messages: [{ role: "assistant", content: text }],
+      audio: { format: "mp3", voice: DEFAULT_TTS.voice },
+    }, 20_000, MIMO_API_BASE);
+    if (!upstream.ok) return json({ error: "speech provider rejected the request", code: "UPSTREAM_TTS_FAILED", status: upstream.status }, 502);
+    const payload = await upstream.json().catch(() => null);
+    const data = payload?.choices?.[0]?.message?.audio?.data;
+    if (typeof data !== "string" || !data) return json({ error: "speech provider returned invalid audio", code: "INVALID_AUDIO_RESPONSE" }, 502);
+    const bytes = base64ToBytes(data);
+    if (!bytes.length || bytes.length > 12 * 1024 * 1024) return json({ error: "speech provider returned invalid audio", code: "INVALID_AUDIO_RESPONSE" }, 502);
+    return new Response(bytes, { status: 200, headers: { "content-type": "audio/mpeg", "cache-control": "no-store", "x-content-type-options": "nosniff", "x-nian-version": VERSION } });
+  } catch (error) {
+    const timedOut = error?.name === "AbortError";
+    return json({ error: timedOut ? "speech provider timed out" : "speech service unavailable", code: timedOut ? "UPSTREAM_TIMEOUT" : "UPSTREAM_UNAVAILABLE" }, 502);
+  }
+}
+
 async function handleTTS(request, env) {
   const parsed = await readJson(request);
   if (parsed.error) return parsed.error;
@@ -221,7 +254,7 @@ async function handleTTS(request, env) {
   const text = typeof body?.text === "string" ? body.text.replace(/\s+/g, " ").trim().slice(0, 800) : "";
   if (!text) return json({ error: "text required", code: "TEXT_REQUIRED" }, 400);
   const apiKey = cleanApiKey(body?.apiKey, env.OPENAI_API_KEY);
-  if (!apiKey) return json({ error: "api key required", code: "API_KEY_REQUIRED" }, 401);
+  if (!apiKey) return handleDefaultTTS(text, env);
   const model = cleanModel(body?.model, "gpt-4o-mini-tts");
   const voice = cleanModel(body?.voice, "alloy");
   if (!model || !voice) return json({ error: "invalid model or voice", code: "INVALID_TTS_CONFIG" }, 400);

@@ -71,7 +71,7 @@ grep -Fq 'nian-lively-v2.css' public/index.html || { echo "首页未加载活泼
 grep -Fq 'nian-arcade-v3.js' public/assets/nian-lively-v2.js || { echo "百戏楼未接入首页"; exit 1; }
 grep -Fq 'AudioContext' public/assets/nian-lively-v2.js || { echo "界面点击音效缺失"; exit 1; }
 grep -Fq 'data-nian-speech-status' public/assets/nian-arcade-v3.js || { echo "英语朗读状态反馈缺失"; exit 1; }
-grep -Fq 'nian-static-cf-v9.0-workspace' public/sw.js || { echo "离线缓存版本未更新"; exit 1; }
+grep -Fq 'nian-static-cf-v9.1-voice' public/sw.js || { echo "离线缓存版本未更新"; exit 1; }
 grep -Fq "cache: 'no-cache'" public/sw.js || { echo "可变代码资源仍可能命中旧缓存"; exit 1; }
 grep -Fq 'Unexpected code asset content type' public/sw.js || { echo "脚本回落 HTML 防护缺失"; exit 1; }
 grep -Fq '听音辨词' public/assets/nian-arcade-v3.js || { echo "英语听力玩法缺失"; exit 1; }

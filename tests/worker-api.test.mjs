@@ -110,6 +110,31 @@ assert.equal(ttsResponse.headers.get("content-type"), "audio/mpeg");
 assert.equal(capturedUrl, "https://api.openai.com/v1/audio/speech");
 assert.deepEqual([...new Uint8Array(await ttsResponse.arrayBuffer())], [73, 68, 51, 4]);
 assert.equal(JSON.parse(capturedInit.body).input, "同窗你好");
+
+// Default voice fallback: no apiKey -> server-side Xiaomi MiMo
+globalThis.fetch = async (url, init) => {
+  capturedUrl = String(url); capturedInit = init;
+  const audio = Buffer.from([73, 68, 51, 4]).toString("base64");
+  return new Response(JSON.stringify({ choices: [{ message: { role: "assistant", content: "", audio: { data: audio } } }] }), { status: 200, headers: { "content-type": "application/json" } });
+};
+const defaultTts = await worker.fetch(new Request("https://nian.test/api/nian/tts", {
+  method: "POST", headers: jsonHeaders, body: JSON.stringify({ text: "all" }),
+}), { ...env, MIMO_API_KEY: "environment-mimo-key" });
+assert.equal(defaultTts.status, 200);
+assert.equal(defaultTts.headers.get("content-type"), "audio/mpeg");
+assert.equal(capturedUrl, "https://api.xiaomimimo.com/v1/chat/completions");
+assert.equal(JSON.parse(capturedInit.body).model, "mimo-v2.5-tts");
+assert.equal(JSON.parse(capturedInit.body).messages[0].role, "assistant");
+assert.ok(JSON.parse(capturedInit.body).audio.voice.length > 0);
+assert.deepEqual([...new Uint8Array(await defaultTts.arrayBuffer())], [73, 68, 51, 4]);
+
+// Missing server key: default voice fails loudly, not silently
+globalThis.fetch = async () => new Response("{}", { status: 200 });
+const defaultMissing = await worker.fetch(new Request("https://nian.test/api/nian/tts", {
+  method: "POST", headers: jsonHeaders, body: JSON.stringify({ text: "all" }),
+}), env);
+assert.equal(defaultMissing.status, 503);
+assert.equal((await defaultMissing.json()).code, "DEFAULT_VOICE_UNAVAILABLE");
 globalThis.fetch = originalFetch;
 
 const asset = await worker.fetch(new Request("https://nian.test/favicon.svg"), env);
