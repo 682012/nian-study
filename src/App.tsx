@@ -6,6 +6,7 @@ import CourtyardPage from './pages/CourtyardPage';
 import QuizModal from './components/QuizModal';
 import Companion from './components/Companion';
 import { useUi } from './store/ui-store';
+import { loadTheme, applyTheme } from './lib/theme';
 import { useProgress } from './store/progress-store';
 import { useSession } from './store/session-store';
 
@@ -16,6 +17,7 @@ const TABS = [
   { id: 'courtyard', label: '书院' },
 ] as const;
 
+applyTheme(loadTheme());
 export default function App() {
   const startSession = useSession((s) => s.start);
   const openChat = useUi((s) => s.openChat);

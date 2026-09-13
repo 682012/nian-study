@@ -11,3 +11,47 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body, #root { height: 100%; }
 body { font-family: var(--sans); background: var(--paper); color: var(--ink); }
+
+/* 深色模式：墨夜卷帙 */
+:root[data-theme="dark"] {
+  --paper: #111f1e;
+  --surface: #1b2c2a;
+  --ink: #e6e2d4;
+  --muted: #93a099;
+  --line: #2f4440;
+  --cream-100: #243531;
+  --cream-200: #33473f;
+  --cream-300: #8fa098;
+  --shadow-soft: 0 12px 36px #0008;
+  color-scheme: dark;
+}
+:root[data-theme="dark"] body { background: var(--paper); color: var(--ink); }
+:root[data-theme="dark"] .q-prompt,
+:root[data-theme="dark"] .lesson-head strong,
+:root[data-theme="dark"] .mode-card strong,
+:root[data-theme="dark"] .poem-card h3,
+:root[data-theme="dark"] .page-head h1,
+:root[data-theme="dark"] .section-title { color: #ece8da; }
+:root[data-theme="dark"] .q-option { background: var(--surface); }
+:root[data-theme="dark"] .q-option-key { background: #2a3d38; color: var(--gold-light); }
+:root[data-theme="dark"] .q-option.correct { background: #17332a; border-color: #3f7a55; }
+:root[data-theme="dark"] .q-option.wrong { background: #35231f; border-color: #95513f; }
+:root[data-theme="dark"] .q-feedback.ok { background: #15291f; border-color: #345440; }
+:root[data-theme="dark"] .q-feedback.no { background: #2c1d1a; border-color: #5e3a31; }
+:root[data-theme="dark"] .q-passage { background: var(--surface); color: #cdd6cf; }
+:root[data-theme="dark"] .token { background: #22322e; color: #e6e2d4; border-color: #38504a; }
+:root[data-theme="dark"] .q-token-line { background: #16262200; }
+:root[data-theme="dark"] .q-input,
+:root[data-theme="dark"] .chat-input input,
+:root[data-theme="dark"] .settings-body input:not([type]) { background: #162622; color: var(--ink); border-color: #34483f; }
+:root[data-theme="dark"] .quiz-dialog,
+:root[data-theme="dark"] .chat-dialog { background: var(--paper); }
+:root[data-theme="dark"] .bubble-row.nian .bubble { background: var(--surface); border-color: var(--line); color: var(--ink); }
+:root[data-theme="dark"] .tabbar,
+:root[data-theme="dark"] .chat-input { background: #162622; }
+:root[data-theme="dark"] .ghost-btn { color: #9fc7b6; }
+:root[data-theme="dark"] .atlas-points span { background: #243531; color: #c3cdc1; }
+:root[data-theme="dark"] .badge.on { background: #22372c; border-color: #4d7157; }
+:root[data-theme="dark"] .badge.on strong { color: #ece8da; }
+:root[data-theme="dark"] .prio-必拿 { background: #3a2620; color: #e0a390; }
+:root[data-theme="dark"] .prio-常考 { background: #22352c; color: #9fc7ad; }

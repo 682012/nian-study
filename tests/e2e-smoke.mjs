@@ -70,6 +70,13 @@ console.log('数学图谱模块:', await page.locator('.atlas-card').count());
 await page.getByRole('button', { name: '书院', exact: true }).click();
 await page.waitForSelector('.poem-card.small');
 console.log('诗笺:', await page.locator('.poem-card.small').count());
+await page.getByRole('button', { name: '夜读模式' }).click();
+const theme = await page.evaluate(() => document.documentElement.dataset.theme);
+console.log('深色模式:', theme);
+if (theme !== 'dark') { console.log('FAIL: 深色未生效'); process.exitCode = 1; }
+const backupStat = await page.locator('.record-stats strong').first().textContent();
+console.log('学录统计可见:', /\d+/.test(backupStat));
+await page.screenshot({ path: '/workspace/nian-v10/shots/05-dark.png' });
 
 // 云端念安：mock OpenAI 兼容 SSE，验证逐字渲染
 await page.getByRole('button', { name: '书案' }).click();
