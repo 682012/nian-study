@@ -1,0 +1,67 @@
+.page { padding: 4px 2px 24px; }
+.page-head h1 { font-family: var(--serif); font-size: 23px; line-height: 1.4; color: var(--navy-900); }
+.page-head p { color: var(--muted); font-size: 13px; margin: 6px 0 16px; }
+.section-title { font-family: var(--serif); font-size: 17px; margin: 22px 0 12px; color: var(--navy-800); }
+
+.nian-card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; box-shadow: var(--shadow-soft); margin-bottom: 14px; }
+.nian-scene { position: relative; background: linear-gradient(150deg, #2c5a50, #1d423c 70%); padding: 18px 16px 0; min-height: 210px; }
+.online { color: #d8e6dd; font-size: 12px; } .online i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #9fd3a8; margin-right: 5px; }
+.nian-scene-info p { color: #f2ede0; font-family: var(--serif); font-size: 16px; line-height: 1.7; margin-top: 10px; max-width: 70%; }
+.nian-img { position: absolute; right: 6px; bottom: 0; height: 220px; border-radius: 12px 0 0 0; object-fit: cover; }
+.nian-actions { display: flex; gap: 10px; padding: 14px; }
+.nian-actions { flex-wrap: wrap; }
+.nian-actions .primary-btn { width: 100%; flex: none; }
+.nian-actions .ghost-btn { width: auto; flex: 1; padding: 11px; font-size: 14px; white-space: nowrap; }
+.ghost-btn { background: none; border: 1.5px solid var(--line); color: var(--jade); border-radius: 12px; font-size: 15px; font-weight: 600; }
+
+.stat-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
+.stat-strip div { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; text-align: center; padding: 10px 4px; }
+.stat-strip strong { display: block; font-size: 20px; font-family: var(--serif); color: var(--jade); }
+.stat-strip span { font-size: 11px; color: var(--muted); }
+
+.lesson-card, .poem-card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 14px; margin-bottom: 14px; box-shadow: var(--shadow-soft); }
+.lesson-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+.lesson-head > span { font-size: 12px; color: var(--muted); } .lesson-head strong { font-family: var(--serif); font-size: 17px; flex: 1; }
+.lesson-pct { color: var(--jade); font-weight: 700; }
+.task-row { display: flex; width: 100%; align-items: center; gap: 12px; background: none; border: 0; border-top: 1px solid #ece7d9; padding: 12px 2px; text-align: left; }
+.task-text { flex: 1; } .task-text strong { display: block; font-size: 15px; color: var(--navy-900); } .task-text small { color: var(--muted); font-size: 12px; }
+.task-n { font-size: 18px; font-family: var(--serif); color: var(--navy-900); } .task-n i { font-style: normal; color: var(--muted); font-size: 13px; }
+.task-seal, .mode-seal { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; color: #fff; font-family: var(--serif); font-size: 19px; flex: none; }
+.tone-jade { background: var(--jade); } .tone-gold { background: #a9843f; } .tone-rose { background: #9d6270; }
+.tone-ember { background: #93483a; } .tone-blue { background: #4a6d80; } .tone-peach { background: #a66c52; }
+.tone-ink { background: #37424a; } .tone-sun { background: #9c6b2c; } .tone-night { background: #20293a; }
+.primary-btn.wide { margin-top: 10px; }
+
+.poem-card h3 { font-family: var(--serif); font-size: 19px; line-height: 1.7; color: var(--navy-900); margin: 8px 0 2px; }
+.poem-card small { color: var(--muted); } .poem-card p { font-size: 14px; line-height: 1.9; color: #46524c; margin-top: 8px; }
+.poem-seal { font-size: 12px; color: var(--gold); letter-spacing: 2px; }
+.page-foot { text-align: center; color: #9aa397; font-size: 12px; line-height: 1.8; margin-top: 26px; }
+
+.mode-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.mode-card { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px; text-align: left; box-shadow: var(--shadow-soft); display: flex; flex-direction: column; gap: 6px; min-height: 132px; }
+.mode-card strong { font-size: 16px; color: var(--navy-900); } .mode-card small { font-size: 12px; color: var(--muted); line-height: 1.6; flex: 1; }
+.mode-count { font-size: 12px; color: var(--green); font-weight: 600; }
+
+.subject-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+.subject-tabs button { flex: 1; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 9px; font-size: 14px; color: var(--muted); }
+.subject-tabs button.active { background: var(--jade); color: #fff; border-color: var(--jade); }
+.atlas-card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow-soft); }
+.atlas-head { display: flex; align-items: center; gap: 10px; } .atlas-head strong { font-size: 16px; }
+.atlas-head > div:last-child { flex: 1; display: flex; align-items: center; justify-content: space-between; }
+.prio { font-size: 11px; padding: 2px 8px; border-radius: 999px; } .prio-必拿 { background: #f3e6dc; color: #93483a; } .prio-常考 { background: #e7eee8; color: var(--jade); }
+.atlas-card p { font-size: 13px; color: #55605a; line-height: 1.8; margin: 8px 0; }
+.atlas-points { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.atlas-points span { font-size: 12px; background: var(--cream-100); border-radius: 8px; padding: 3px 9px; color: #6d674f; }
+.atlas-method { font-size: 12.5px; line-height: 1.9; color: #5d6862; border-top: 1px dashed var(--cream-200); padding-top: 8px; }
+
+.poem-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.poem-card.small { margin: 0; } .poem-card.small h3 { font-size: 17px; }
+details summary { color: var(--green); font-size: 13px; cursor: pointer; margin-top: 8px; }
+.festival-row { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; }
+.festival-row span { font-size: 12px; color: var(--gold); } .festival-row strong { margin-left: 10px; font-family: var(--serif); }
+.festival-row p { font-size: 13px; color: #55605a; line-height: 1.8; margin-top: 4px; }
+.badge-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.badge { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px; opacity: .45; filter: grayscale(.8); }
+.badge.on { opacity: 1; filter: none; border-color: #d8c48e; background: #fdfaf0; }
+.badge span { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: var(--jade); color: var(--gold-light); font-family: var(--serif); font-size: 18px; margin-bottom: 6px; }
+.badge strong { font-size: 14px; display: block; } .badge small { font-size: 12px; color: var(--muted); }

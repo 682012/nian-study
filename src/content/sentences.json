@@ -1,0 +1,290 @@
+[
+ {
+  "id": "sentence-v8-1",
+  "sentence": "I have already finished the work you gave me",
+  "meaning": "你交给我的工作我已经完成了",
+  "rule": "现在完成时与定语从句"
+ },
+ {
+  "id": "sentence-v8-2",
+  "sentence": "Unless you hurry you will miss the last bus",
+  "meaning": "除非快一点，否则你会错过末班车",
+  "rule": "unless 引导条件状语从句"
+ },
+ {
+  "id": "sentence-v8-3",
+  "sentence": "The girl sitting by the window is my cousin",
+  "meaning": "坐在窗边的女孩是我的表妹",
+  "rule": "现在分词作后置定语"
+ },
+ {
+  "id": "sentence-v8-4",
+  "sentence": "What matters most is how we solve the problem",
+  "meaning": "最重要的是我们如何解决问题",
+  "rule": "主语从句与表语从句"
+ },
+ {
+  "id": "sentence-v8-5",
+  "sentence": "He apologized for keeping us waiting so long",
+  "meaning": "他为让我们久等而道歉",
+  "rule": "apologize for doing"
+ },
+ {
+  "id": "sentence-v8-6",
+  "sentence": "The road was so narrow that two cars could not pass",
+  "meaning": "道路太窄，两辆车无法同时通过",
+  "rule": "so ... that ..."
+ },
+ {
+  "id": "sentence-v8-7",
+  "sentence": "It took her two hours to complete the report",
+  "meaning": "她花了两个小时完成报告",
+  "rule": "It takes sb time to do"
+ },
+ {
+  "id": "sentence-v8-8",
+  "sentence": "The museum is worth visiting more than once",
+  "meaning": "这座博物馆值得多次参观",
+  "rule": "be worth doing"
+ },
+ {
+  "id": "sentence-v8-9",
+  "sentence": "We were asked to hand in the forms before Friday",
+  "meaning": "我们被要求在周五前交表格",
+  "rule": "被动语态与 ask sb to do"
+ },
+ {
+  "id": "sentence-v8-10",
+  "sentence": "The harder the task becomes the calmer she gets",
+  "meaning": "任务越难，她反而越冷静",
+  "rule": "the more ... the more ..."
+ },
+ {
+  "id": "sentence-v8-11",
+  "sentence": "I did not realize the truth until he explained it",
+  "meaning": "直到他解释我才明白真相",
+  "rule": "not ... until ..."
+ },
+ {
+  "id": "sentence-v8-12",
+  "sentence": "There is no point in worrying about what has happened",
+  "meaning": "为已经发生的事担心没有意义",
+  "rule": "There is no point in doing"
+ },
+ {
+  "id": "sentence-v8-13",
+  "sentence": "She speaks English as confidently as her teacher",
+  "meaning": "她说英语和老师一样自信",
+  "rule": "as ... as 同级比较"
+ },
+ {
+  "id": "sentence-v8-14",
+  "sentence": "Neither answer seems completely correct to me",
+  "meaning": "两个答案在我看来都不完全正确",
+  "rule": "neither 与主谓一致"
+ },
+ {
+  "id": "sentence-v8-15",
+  "sentence": "The letter should have been sent yesterday",
+  "meaning": "这封信昨天就应该寄出",
+  "rule": "情态动词完成式的被动语态"
+ },
+ {
+  "id": "sentence-v8-16",
+  "sentence": "Having checked the door he went downstairs",
+  "meaning": "检查门锁后，他下了楼",
+  "rule": "现在分词完成式作状语"
+ },
+ {
+  "id": "sentence-v8-17",
+  "sentence": "I prefer reading at home to studying in a noisy cafe",
+  "meaning": "比起在嘈杂咖啡馆学习，我更喜欢在家阅读",
+  "rule": "prefer doing A to doing B"
+ },
+ {
+  "id": "sentence-v8-18",
+  "sentence": "The reason why he left early remains unclear",
+  "meaning": "他提前离开的原因仍不清楚",
+  "rule": "why 引导定语从句"
+ },
+ {
+  "id": "sentence-v8-19",
+  "sentence": "No sooner had we arrived than it began to rain",
+  "meaning": "我们刚到就开始下雨",
+  "rule": "no sooner 置前引起倒装"
+ },
+ {
+  "id": "sentence-v8-20",
+  "sentence": "You are supposed to keep your phone silent here",
+  "meaning": "你在这里应该把手机调成静音",
+  "rule": "be supposed to do"
+ },
+ {
+  "id": "sentence-v8-21",
+  "sentence": "The plan needs discussing before we make a decision",
+  "meaning": "作决定前，这个计划需要讨论",
+  "rule": "need doing 表被动"
+ },
+ {
+  "id": "sentence-v8-22",
+  "sentence": "She had her bicycle repaired near the station",
+  "meaning": "她在车站附近找人修了自行车",
+  "rule": "have sth done"
+ },
+ {
+  "id": "sentence-v8-23",
+  "sentence": "Even though the answer was wrong his method was useful",
+  "meaning": "尽管答案错了，他的方法仍有用",
+  "rule": "even though 引导让步状语从句"
+ },
+ {
+  "id": "sentence-v8-24",
+  "sentence": "Hardly had the bell rung when the students rushed out",
+  "meaning": "铃声刚响，学生们就冲了出去",
+  "rule": "hardly 置前引起倒装"
+ },
+ {
+  "id": "sentence-v8-25",
+  "sentence": "The teacher suggested that we review the lesson again",
+  "meaning": "老师建议我们再复习一次课文",
+  "rule": "suggest 后的宾语从句"
+ },
+ {
+  "id": "sentence-v8-26",
+  "sentence": "Anyone who finishes early may check the answers",
+  "meaning": "提前完成的人可以检查答案",
+  "rule": "who 引导定语从句"
+ },
+ {
+  "id": "sentence-v8-27",
+  "sentence": "The project turned out to be easier than expected",
+  "meaning": "这个项目结果比预想的容易",
+  "rule": "turn out to be"
+ },
+ {
+  "id": "sentence-v8-28",
+  "sentence": "Only by practicing regularly can you improve steadily",
+  "meaning": "只有规律练习才能稳定进步",
+  "rule": "only 置前引起部分倒装"
+ },
+ {
+  "id": "sentence-v8-29",
+  "sentence": "She found it difficult to concentrate in the crowded room",
+  "meaning": "她发现在拥挤房间里很难集中注意力",
+  "rule": "find it + adj + to do"
+ },
+ {
+  "id": "sentence-v8-30",
+  "sentence": "Whether we leave today depends on the weather",
+  "meaning": "我们今天是否出发取决于天气",
+  "rule": "whether 引导主语从句"
+ },
+ {
+  "id": "sentence-v8-31",
+  "sentence": "The more carefully you read the fewer mistakes you make",
+  "meaning": "读得越仔细，犯错越少",
+  "rule": "比较级关联结构"
+ },
+ {
+  "id": "sentence-v8-32",
+  "sentence": "He is used to getting up before sunrise",
+  "meaning": "他习惯在日出前起床",
+  "rule": "be used to doing"
+ },
+ {
+  "id": "sentence-v8-33",
+  "sentence": "Not all useful lessons are learned in a classroom",
+  "meaning": "并非所有有用的经验都在课堂里学到",
+  "rule": "部分否定"
+ },
+ {
+  "id": "sentence-v8-34",
+  "sentence": "The old bridge is believed to be over three hundred years old",
+  "meaning": "人们认为这座古桥已有三百多年历史",
+  "rule": "主语 + be believed to do"
+ },
+ {
+  "id": "sentence-v8-35",
+  "sentence": "If I had known the truth I would have acted differently",
+  "meaning": "如果早知道真相，我会采取不同做法",
+  "rule": "与过去事实相反的虚拟语气"
+ },
+ {
+  "id": "sentence-v8-36",
+  "sentence": "There used to be a small bookstore on this corner",
+  "meaning": "这个街角过去有一家小书店",
+  "rule": "there used to be"
+ },
+ {
+  "id": "sentence-v8-37",
+  "sentence": "In spite of the heavy fog the flight landed safely on time",
+  "meaning": "尽管大雾弥漫，航班仍安全准点降落",
+  "rule": "in spite of 让步介词短语"
+ },
+ {
+  "id": "sentence-v8-38",
+  "sentence": "The professor whose lecture we attended yesterday is from Oxford",
+  "meaning": "我们昨天去听讲座的那位教授来自牛津",
+  "rule": "whose 引导定语从句"
+ },
+ {
+  "id": "sentence-v8-39",
+  "sentence": "It was not until midnight that the storm finally stopped",
+  "meaning": "直到午夜，暴风雨才终于停止",
+  "rule": "It was not until ... that 强调句"
+ },
+ {
+  "id": "sentence-v8-40",
+  "sentence": "Had you followed my advice you would have avoided the trouble",
+  "meaning": "如果你早听我的建议，就能避免这个麻烦",
+  "rule": "虚拟语气省略 if 倒装"
+ },
+ {
+  "id": "sentence-v8-41",
+  "sentence": "The experiment proved far more challenging than they had imagined",
+  "meaning": "这项实验证明远比他们想象的更具挑战性",
+  "rule": "prove + 形容词比较级"
+ },
+ {
+  "id": "sentence-v8-42",
+  "sentence": "Under no circumstances should you share your personal password",
+  "meaning": "在任何情况下你都不应透露个人密码",
+  "rule": "否定介词短语置前完全倒装"
+ },
+ {
+  "id": "sentence-v8-43",
+  "sentence": "What surprised us was that she mastered the skill in two days",
+  "meaning": "让我们惊讶的是她只用两天就掌握了这门技能",
+  "rule": "主语从句与表语从句并用"
+ },
+ {
+  "id": "sentence-v8-44",
+  "sentence": "He devoted all his spare time to helping disadvantaged children",
+  "meaning": "他把所有业余时间都奉献给帮助弱势儿童",
+  "rule": "devote time to doing"
+ },
+ {
+  "id": "sentence-v8-45",
+  "sentence": "The new policy is intended to protect the ecological environment",
+  "meaning": "这项新政策旨在保护生态自然环境",
+  "rule": "be intended to do"
+ },
+ {
+  "id": "sentence-v8-46",
+  "sentence": "No matter how difficult the situation is we must keep going",
+  "meaning": "无论处境多么艰难，我们都必须坚持前行",
+  "rule": "no matter how 引导让步状语从句"
+ },
+ {
+  "id": "sentence-v8-47",
+  "sentence": "So fast did the news spread that everyone knew it by noon",
+  "meaning": "消息传播得如此之快，以至于中午人尽皆知",
+  "rule": "so + 副词置前倒装"
+ },
+ {
+  "id": "sentence-v8-48",
+  "sentence": "It is essential that every student be fully prepared for the exam",
+  "meaning": "每个学生都必须为考试做好充分准备",
+  "rule": "It is essential that + (should) do"
+ }
+]

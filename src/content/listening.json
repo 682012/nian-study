@@ -1,0 +1,506 @@
+[
+ {
+  "id": "listening-v8-1",
+  "speech": "The train leaves at a quarter past seven.",
+  "prompt": "火车什么时候出发？",
+  "choices": [
+   "七点一刻",
+   "七点半",
+   "六点四十五",
+   "八点一刻"
+  ],
+  "answer": 0,
+  "explanation": "a quarter past seven 表示 7:15。",
+  "skill": "时间"
+ },
+ {
+  "id": "listening-v8-2",
+  "speech": "Please put the blue folder on the second shelf.",
+  "prompt": "蓝色文件夹应放在哪里？",
+  "choices": [
+   "第二层架子",
+   "桌子下面",
+   "第一个抽屉",
+   "门边"
+  ],
+  "answer": 0,
+  "explanation": "关键信息是 on the second shelf。",
+  "skill": "地点"
+ },
+ {
+  "id": "listening-v8-3",
+  "speech": "Lucy stayed home because she had a bad headache.",
+  "prompt": "Lucy 为什么待在家？",
+  "choices": [
+   "她头痛得厉害",
+   "她错过了公交",
+   "她要等快递",
+   "她忘了作业"
+  ],
+  "answer": 0,
+  "explanation": "because 后说明原因：a bad headache。",
+  "skill": "原因"
+ },
+ {
+  "id": "listening-v8-4",
+  "speech": "The meeting has been moved from Monday to Wednesday.",
+  "prompt": "会议改到了哪一天？",
+  "choices": [
+   "星期三",
+   "星期一",
+   "星期二",
+   "星期五"
+  ],
+  "answer": 0,
+  "explanation": "from Monday to Wednesday 表示从周一改到周三。",
+  "skill": "日期"
+ },
+ {
+  "id": "listening-v8-5",
+  "speech": "You can borrow the book but you must return it within two weeks.",
+  "prompt": "借书后需要多久归还？",
+  "choices": [
+   "两周内",
+   "两天内",
+   "一个月内",
+   "当天"
+  ],
+  "answer": 0,
+  "explanation": "within two weeks 表示两周以内。",
+  "skill": "规则"
+ },
+ {
+  "id": "listening-v8-6",
+  "speech": "I ordered tea, but the waiter brought me coffee instead.",
+  "prompt": "服务员端来了什么？",
+  "choices": [
+   "咖啡",
+   "茶",
+   "果汁",
+   "牛奶"
+  ],
+  "answer": 0,
+  "explanation": "but 后是真实发生的结果：brought me coffee。",
+  "skill": "转折"
+ },
+ {
+  "id": "listening-v8-7",
+  "speech": "Although the coat was expensive, Mia bought it because it was warm.",
+  "prompt": "Mia 为什么买下外套？",
+  "choices": [
+   "它很保暖",
+   "它正在打折",
+   "颜色特别",
+   "朋友推荐"
+  ],
+  "answer": 0,
+  "explanation": "because it was warm 给出购买原因。",
+  "skill": "原因"
+ },
+ {
+  "id": "listening-v8-8",
+  "speech": "Turn left at the bank and the library will be across from the park.",
+  "prompt": "图书馆在什么地方？",
+  "choices": [
+   "公园对面",
+   "银行里面",
+   "车站后面",
+   "学校旁边"
+  ],
+  "answer": 0,
+  "explanation": "across from the park 表示在公园对面。",
+  "skill": "路线"
+ },
+ {
+  "id": "listening-v8-9",
+  "speech": "Ben usually walks to school, but today his father drove him.",
+  "prompt": "Ben 今天怎样去学校？",
+  "choices": [
+   "父亲开车送他",
+   "步行",
+   "骑自行车",
+   "乘地铁"
+  ],
+  "answer": 0,
+  "explanation": "but today 后给出今天的不同情况。",
+  "skill": "变化"
+ },
+ {
+  "id": "listening-v8-10",
+  "speech": "The red bag is cheaper, while the black one is more durable.",
+  "prompt": "黑色包的优势是什么？",
+  "choices": [
+   "更耐用",
+   "更便宜",
+   "更轻",
+   "容量更小"
+  ],
+  "answer": 0,
+  "explanation": "more durable 表示更加耐用。",
+  "skill": "比较"
+ },
+ {
+  "id": "listening-v8-11",
+  "speech": "A: Shall we meet at the school gate at five? B: I have piano class then. How about six thirty?",
+  "prompt": "两人最后建议几点见面？",
+  "choices": [
+   "六点半",
+   "五点",
+   "六点",
+   "七点半"
+  ],
+  "answer": 0,
+  "explanation": "第二个人用 How about six thirty 提出新时间。",
+  "skill": "对话"
+ },
+ {
+  "id": "listening-v8-12",
+  "speech": "A: Did you enjoy the movie? B: The music was wonderful, but the story was hard to follow.",
+  "prompt": "第二个人怎样评价电影？",
+  "choices": [
+   "音乐好但故事难懂",
+   "故事精彩但音乐吵",
+   "整部电影都很无聊",
+   "没有看完电影"
+  ],
+  "answer": 0,
+  "explanation": "wonderful music 与 hard-to-follow story 形成转折。",
+  "skill": "态度"
+ },
+ {
+  "id": "listening-v8-13",
+  "speech": "A: Can I use your dictionary? B: Sure, but I need it back before lunch.",
+  "prompt": "字典什么时候需要归还？",
+  "choices": [
+   "午饭前",
+   "放学后",
+   "明天早上",
+   "晚饭前"
+  ],
+  "answer": 0,
+  "explanation": "before lunch 是明确的归还期限。",
+  "skill": "请求"
+ },
+ {
+  "id": "listening-v8-14",
+  "speech": "A: Why are you carrying an umbrella? B: The forecast says it may rain this afternoon.",
+  "prompt": "第二个人为什么带伞？",
+  "choices": [
+   "天气预报说下午可能下雨",
+   "现在正在下雨",
+   "太阳太强",
+   "要借给朋友"
+  ],
+  "answer": 0,
+  "explanation": "forecast 与 may rain 是关键。",
+  "skill": "推断"
+ },
+ {
+  "id": "listening-v8-15",
+  "speech": "A: This soup tastes a little salty. B: I will add some water to it.",
+  "prompt": "第二个人准备怎么做？",
+  "choices": [
+   "加一些水",
+   "再加盐",
+   "倒掉汤",
+   "换一个碗"
+  ],
+  "answer": 0,
+  "explanation": "add some water 可以减淡咸味。",
+  "skill": "解决办法"
+ },
+ {
+  "id": "listening-v8-16",
+  "speech": "A: I cannot find my student card. B: Check the pocket of the jacket you wore yesterday.",
+  "prompt": "第二个人建议去哪里找？",
+  "choices": [
+   "昨天穿的外套口袋",
+   "书包夹层",
+   "教室讲台",
+   "图书馆柜台"
+  ],
+  "answer": 0,
+  "explanation": "建议句直接指出 jacket pocket。",
+  "skill": "建议"
+ },
+ {
+  "id": "listening-v8-17",
+  "speech": "A: The printer is not working again. B: Have you checked whether there is any paper left?",
+  "prompt": "第二个人首先建议检查什么？",
+  "choices": [
+   "打印机里是否还有纸",
+   "电费是否缴清",
+   "电脑是否关机",
+   "文件是否保存"
+  ],
+  "answer": 0,
+  "explanation": "whether there is any paper left 是检查重点。",
+  "skill": "排障"
+ },
+ {
+  "id": "listening-v8-18",
+  "speech": "A: Would you like the window open? B: Just a little. The wind is quite strong today.",
+  "prompt": "第二个人希望窗户怎样？",
+  "choices": [
+   "只开一点",
+   "完全打开",
+   "保持关闭",
+   "换一扇窗"
+  ],
+  "answer": 0,
+  "explanation": "Just a little 表示只开一条小缝。",
+  "skill": "意图"
+ },
+ {
+  "id": "listening-v8-19",
+  "speech": "The museum is free for children under twelve, but adults pay fifteen dollars.",
+  "prompt": "谁可以免费进入博物馆？",
+  "choices": [
+   "十二岁以下儿童",
+   "所有学生",
+   "十五岁以下儿童",
+   "老年人"
+  ],
+  "answer": 0,
+  "explanation": "under twelve 指十二岁以下。",
+  "skill": "规则"
+ },
+ {
+  "id": "listening-v8-20",
+  "speech": "Students should submit the form online instead of handing in a paper copy.",
+  "prompt": "学生应怎样提交表格？",
+  "choices": [
+   "在线提交",
+   "交纸质版",
+   "邮寄",
+   "拍照发短信"
+  ],
+  "answer": 0,
+  "explanation": "instead of 排除了纸质提交。",
+  "skill": "通知"
+ },
+ {
+  "id": "listening-v8-21",
+  "speech": "The football match was canceled because the field was covered with water.",
+  "prompt": "比赛为什么取消？",
+  "choices": [
+   "场地积水",
+   "队员迟到",
+   "观众太少",
+   "天气太冷"
+  ],
+  "answer": 0,
+  "explanation": "field was covered with water 说明场地积水。",
+  "skill": "原因"
+ },
+ {
+  "id": "listening-v8-22",
+  "speech": "Nora saved money for three months so that she could buy a new camera.",
+  "prompt": "Nora 存钱的目的是什么？",
+  "choices": [
+   "买新相机",
+   "旅行",
+   "参加课程",
+   "送朋友礼物"
+  ],
+  "answer": 0,
+  "explanation": "so that 后说明目的：buy a new camera。",
+  "skill": "目的"
+ },
+ {
+  "id": "listening-v8-23",
+  "speech": "The shop closes at nine on weekdays and an hour earlier on Sundays.",
+  "prompt": "商店星期日几点关门？",
+  "choices": [
+   "八点",
+   "九点",
+   "十点",
+   "七点半"
+  ],
+  "answer": 0,
+  "explanation": "比九点早一小时，即八点。",
+  "skill": "计算"
+ },
+ {
+  "id": "listening-v8-24",
+  "speech": "Kevin missed the beginning of the lecture because the bus broke down.",
+  "prompt": "Kevin 错过讲座开头的原因是什么？",
+  "choices": [
+   "公交车抛锚",
+   "他睡过头",
+   "记错时间",
+   "找不到教室"
+  ],
+  "answer": 0,
+  "explanation": "the bus broke down 是直接原因。",
+  "skill": "原因"
+ },
+ {
+  "id": "listening-v8-25",
+  "speech": "M: Excuse me, Professor Chen. I'm wondering if I can sign up for the advanced data analysis course next semester.\nW: Well, that course requires Python programming as a prerequisite. Have you completed that introductory class yet?\nM: Yes, I took it last term and got an A in the final project.\nW: Excellent. Then submit your application through the academic portal before this Friday afternoon.",
+  "prompt": "长对话情境：男生选修高级数据分析课的先决条件是什么？",
+  "choices": [
+   "已修完 Python 编程先修课",
+   "通过英语水平六级考试",
+   "导师必须出具书面推荐信",
+   "必须在大四第一学期方可申请"
+  ],
+  "answer": 0,
+  "explanation": "对话中教授明确指出：'that course requires Python programming as a prerequisite'。",
+  "skill": "长对话·选课与考务"
+ },
+ {
+  "id": "listening-v8-26",
+  "speech": "W: Good morning! I'd like to return these three history reference books and renew the biology textbook for another week.\nM: Let me check your account. The history books are all in good condition, but the biology textbook has a reservation list. You won't be able to renew it.\nW: Oh, I see. When do I have to return the biology book then?\nM: By tomorrow evening at five o'clock at the latest.",
+  "prompt": "长对话情境：女生为什么不能续借生物学教材？",
+  "choices": [
+   "该教材已有其他读者预约",
+   "她的借书借阅权限已到期",
+   "教材存在页面污损破损",
+   "图书馆下周进行闭馆盘点"
+  ],
+  "answer": 0,
+  "explanation": "图书管理员说明：'the biology textbook has a reservation list. You won't be able to renew it.'",
+  "skill": "长对话·图书借阅"
+ },
+ {
+  "id": "listening-v8-27",
+  "speech": "M: Welcome to Central Station Information Desk. How can I assist you?\nW: Hi, I'm heading to Brighton for a conference. Is the 10:15 train running on schedule?\nM: Let me see... Platform 4 is closed for maintenance, so the Brighton train has been moved to Platform 9 and delayed by twenty minutes.\nW: Thank you. Do I need to get my ticket revalidated at the counter?\nM: No need. Your current digital QR ticket remains fully valid.",
+  "prompt": "长对话情境：前往布莱顿的列车发生了什么变动？",
+  "choices": [
+   "改在 9 号站台并晚点 20 分钟",
+   "因暴雨全面取消该班次列车",
+   "旅客必须重新在窗口人工验票",
+   "原定 4 号站台提前 10 分钟发车"
+  ],
+  "answer": 0,
+  "explanation": "管理员告知：'moved to Platform 9 and delayed by twenty minutes'。",
+  "skill": "情境·车站问路"
+ },
+ {
+  "id": "listening-v8-28",
+  "speech": "W: David, have you finished preparing the slides for tomorrow's chemistry presentation?\nM: Almost done, Sarah. I've organized the lab data and graphs, but I'm still struggling with the conclusion section.\nW: Why don't we emphasize how temperature variations directly influenced the reaction rate?\nM: That's a brilliant perspective! That connects perfectly with our initial hypothesis.",
+  "prompt": "长对话情境：两人决定在展示文稿的结论部分着重强调什么？",
+  "choices": [
+   "温度变化对反应速率的直接影响",
+   "实验器材在低温下的测量误差",
+   "化学实验经费的整体预算分配",
+   "团队成员在不同阶段的分工细节"
+  ],
+  "answer": 0,
+  "explanation": "女生建议：'emphasize how temperature variations directly influenced the reaction rate'，男生表示赞同。",
+  "skill": "长对话·实验研讨"
+ },
+ {
+  "id": "listening-v8-29",
+  "speech": "M: Doctor Miller's clinic, how may I help you?\nW: Hello, I'd like to reschedule my dental appointment originally booked for Thursday at 2:00 PM.\nM: Let's see what's available. The doctor is fully booked on Friday, but has an opening on next Monday morning at 9:30.\nW: Monday at 9:30 AM works perfectly for me. Please put me down for that slot.",
+  "prompt": "长对话情境：女士最终将就诊时间重新调整到了何时？",
+  "choices": [
+   "下周一上午九点半",
+   "本周五下午两点整",
+   "下周二上午九点整",
+   "本周四下午三点半"
+  ],
+  "answer": 0,
+  "explanation": "根据对话，周五已约满，最终敲定：'Monday morning at 9:30'。",
+  "skill": "情境·预约改期"
+ },
+ {
+  "id": "listening-v8-30",
+  "speech": "W: Look at the weather radar, Jason! A severe thunderstorm is approaching our coastal camp route.\nM: You're right. Pitching tents near the riverbank tonight would be far too dangerous.\nW: Should we pack our gear and check into the youth hostel near the foot of the hill instead?\nM: Agreed. Safety always comes first. Let's call the hostel to book two rooms right away.",
+  "prompt": "长对话情境：面对雷暴天气，他们最终作出的安全决定是：",
+  "choices": [
+   "收起装备入住山脚下的青年旅社",
+   "留在河岸边加固露营帐篷支架",
+   "立即徒步攀登至山顶避风港",
+   "在车内过夜并等待次日风暴结束"
+  ],
+  "answer": 0,
+  "explanation": "对话中两人商定：'check into the youth hostel near the foot of the hill instead'。",
+  "skill": "长对话·应急决策"
+ },
+ {
+  "id": "listening-v8-31",
+  "speech": "M: Hi Emma, are you joining the university hiking club this Saturday?\nW: I'd love to, but my hiking boots wore out completely during last month's trip.\nM: The outdoor shop downtown is offering a thirty percent discount for student members this week.\nW: That sounds great! Could you send me the address so I can pick up a new pair tomorrow?",
+  "prompt": "长对话情境：女生目前没有立刻答应周六徒步的主要原因是：",
+  "choices": [
+   "徒步登山鞋已经完全磨损破旧",
+   "周六当天需要参加学生会会议",
+   "近期脚踝受伤尚未完全恢复",
+   "没有获得徒步俱乐部的会员资格"
+  ],
+  "answer": 0,
+  "explanation": "女生说明：'my hiking boots wore out completely during last month's trip'。",
+  "skill": "情境·活动邀请"
+ },
+ {
+  "id": "listening-v8-32",
+  "speech": "W: Good evening, sir. Have you decided on your main course for tonight's dinner?\nM: I'm allergic to peanuts and shellfish. Could you recommend something suitable?\nW: Absolutely. Our grilled salmon with roasted asparagus is completely nut-free and prepared in a separate cooking area.\nM: Perfect, I will have that along with a glass of sparkling mineral water, please.",
+  "prompt": "长对话情境：服务员向顾客推荐烤三文鱼的主要原因是：",
+  "choices": [
+   "完全不含坚果且在独立区域烹饪",
+   "三文鱼是今晚半价优惠主推菜",
+   "三文鱼含有丰富的花生调味汁",
+   "该菜品烹饪速度最快无需等待"
+  ],
+  "answer": 0,
+  "explanation": "针对顾客花生过敏，服务员明确说明：'completely nut-free and prepared in a separate cooking area'。",
+  "skill": "情境·餐饮点单"
+ },
+ {
+  "id": "listening-v8-33",
+  "speech": "M: Sophie, congratulations on winning first prize in the national robotics contest!\nW: Thank you so much! Our team worked through countless late nights debugging the sensor modules.\nM: What was the most critical factor that set your robot apart from the competitors?\nW: Our adaptive navigation algorithm—it could recalibrate paths in less than 0.1 seconds when encountering obstacles.",
+  "prompt": "长对话情境：获胜机器人在比赛中最突出的核心优势是：",
+  "choices": [
+   "遇障碍0.1秒内重校路径的自适应算法",
+   "采用了极为轻量化的钛合金外壳材质",
+   "续航能力比其他队伍长两倍以上",
+   "机械臂可以抓取两倍自重的物体"
+  ],
+  "answer": 0,
+  "explanation": "女生回答：'adaptive navigation algorithm—it could recalibrate paths in less than 0.1 seconds'。",
+  "skill": "长对话·科技竞赛"
+ },
+ {
+  "id": "listening-v8-34",
+  "speech": "W: Tom, I've noticed you've been listening to English podcasts during your daily commute.\nM: Yes, it really helps my listening fluency. I started with 5-minute news clips and now listen to 30-minute academic discussions.\nW: Don't you find the speaking rate in academic debates a bit overwhelming?\nM: At first, yes. But I use the 0.8x speed option when encountering complex arguments, then replay at normal speed.",
+  "prompt": "长对话情境：Tom 在遇到复杂的学术讨论听力时采用的学习技巧是：",
+  "choices": [
+   "先以 0.8 倍速慢听理解再常速复听",
+   "只记录对话中出现的生词与拼写",
+   "完全依赖英文字幕不开启原音频",
+   "跳过复杂辩论只听简单新闻片段"
+  ],
+  "answer": 0,
+  "explanation": "Tom 说明：'I use the 0.8x speed option when encountering complex arguments, then replay at normal speed'。",
+  "skill": "情境·学习策略"
+ },
+ {
+  "id": "listening-v8-35",
+  "speech": "M: Excuse me, is this seat taken? The flight is completely full today.\nW: No, it's free. Are you traveling to Toronto for the international green energy summit?\nM: Exactly! I'm presenting our university's solar cell efficiency research on Wednesday morning.\nW: What a coincidence! I'm attending the wind power turbine panel in the same conference hall.",
+  "prompt": "长对话情境：两位旅客在飞机上的对话表明他们：",
+  "choices": [
+   "前往同一场国际绿色能源峰会参会",
+   "是同一所大学同专业的研究生同窗",
+   "正在商讨共同创办风力发电公司",
+   "因为航班延误而在候机厅初次相识"
+  ],
+  "answer": 0,
+  "explanation": "对话确认两人都是去 Toronto 参加国际绿色能源峰会。",
+  "skill": "长对话·机上交谈"
+ },
+ {
+  "id": "listening-v8-36",
+  "speech": "W: Mr. Roberts, our community garden project has gathered over fifty enthusiastic volunteers.\nM: That's remarkable news! Have we secured the water supply permit from the municipal department?\nW: Yes, the permit was approved yesterday, and the local hardware store donated twenty irrigation hoses.\nM: Excellent! Let's schedule the inaugural planting weekend for next Saturday morning at 8:00 AM.",
+  "prompt": "长对话情境：社区花园项目接下来确定的启动时间是：",
+  "choices": [
+   "下周六上午八点整开始首次种植",
+   "本周五下午向市政部门递交申请",
+   "下周日由五位志愿者进行管道测试",
+   "下周一上午与五金店商讨捐赠事宜"
+  ],
+  "answer": 0,
+  "explanation": "男士建议：'schedule the inaugural planting weekend for next Saturday morning at 8:00 AM'。",
+  "skill": "情境·社区营造"
+ }
+]

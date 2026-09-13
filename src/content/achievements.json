@@ -1,0 +1,58 @@
+[
+ {
+  "id": "first",
+  "seal": "始",
+  "name": "开卷有益",
+  "description": "完成第一次真实作答",
+  "conditionExpr": "e=>e.english+e.math+e.chinese>0"
+ },
+ {
+  "id": "ten",
+  "seal": "十",
+  "name": "一函既毕",
+  "description": "累计答对 10 个重点词",
+  "conditionExpr": "e=>e.english>=10"
+ },
+ {
+  "id": "review",
+  "seal": "温",
+  "name": "知错能回",
+  "description": "成功温故 5 个旧误",
+  "conditionExpr": "e=>e.wrongReviewed>=5"
+ },
+ {
+  "id": "math",
+  "seal": "算",
+  "name": "理清一式",
+  "description": "累计答对 3 道数学题",
+  "conditionExpr": "e=>e.math>=3"
+ },
+ {
+  "id": "chinese",
+  "seal": "文",
+  "name": "踩中得分点",
+  "description": "累计答对 3 道语文题",
+  "conditionExpr": "e=>e.chinese>=3"
+ },
+ {
+  "id": "boss",
+  "seal": "桃",
+  "name": "桃夭过卷",
+  "description": "击败一次桃夭 Boss",
+  "conditionExpr": "e=>e.bossWins>=1"
+ },
+ {
+  "id": "streak",
+  "seal": "恒",
+  "name": "七日不辍",
+  "description": "连续学习 7 天",
+  "conditionExpr": "e=>e.streak>=7"
+ },
+ {
+  "id": "master",
+  "seal": "百",
+  "name": "百词入册",
+  "description": "掌握 100 个重点词",
+  "conditionExpr": "e=>e.mastered>=100"
+ }
+]

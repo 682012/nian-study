@@ -1,0 +1,802 @@
+[
+ {
+  "id": "dialogue-01",
+  "category": "补全对话",
+  "level": "基础",
+  "title": "感谢要接得自然",
+  "context": "—Thank you for helping me carry the books.\n—____",
+  "prompt": "选择最恰当的应答。",
+  "options": [
+   "Never mind.",
+   "You’re welcome.",
+   "That’s right.",
+   "Good idea."
+  ],
+  "answer": 1,
+  "knowledge": "感谢与回应",
+  "strategy": "先判断前一句的交际功能：对方在道谢。",
+  "explanation": "You’re welcome 表示“不客气”，与感谢直接配对。",
+  "pitfall": "Never mind 常用于回应道歉或表示“没关系”，不是这里的最佳选择。",
+  "notebook": "看到 Thank you，优先寻找 You’re welcome / My pleasure。"
+ },
+ {
+  "id": "dialogue-02",
+  "category": "补全对话",
+  "level": "基础",
+  "title": "请求许可的回答",
+  "context": "—May I use your dictionary for a minute?\n—____. Here you are.",
+  "prompt": "选择最恰当的应答。",
+  "options": [
+   "Of course",
+   "I’m afraid so",
+   "Not at all",
+   "It doesn’t matter"
+  ],
+  "answer": 0,
+  "knowledge": "请求许可",
+  "strategy": "后句 Here you are 已经说明对方同意并递出词典。",
+  "explanation": "Of course 表示同意请求，与后面的递物动作一致。",
+  "pitfall": "I’m afraid so 常带遗憾地确认坏消息；Not at all 多用于回应感谢。",
+  "notebook": "对话题要利用后一句动作反推态度。"
+ },
+ {
+  "id": "dialogue-03",
+  "category": "补全对话",
+  "level": "基础",
+  "title": "建议句的固定搭配",
+  "context": "—I feel tired after studying for two hours.\n—____ take a short break?",
+  "prompt": "空格处最合适的是？",
+  "options": [
+   "Why not",
+   "Would you mind",
+   "How long",
+   "What about you"
+  ],
+  "answer": 0,
+  "knowledge": "提出建议",
+  "strategy": "空后直接接动词原形 take，锁定 Why not + 动词原形。",
+  "explanation": "Why not take…? 意为“为什么不……呢？”，用于给建议。",
+  "pitfall": "What about 后面通常接名词或动词 -ing，不能直接接 take。",
+  "notebook": "Why not do；What about doing——把后面的动词形式一起记。"
+ },
+ {
+  "id": "dialogue-04",
+  "category": "补全对话",
+  "level": "基础",
+  "title": "听到坏消息怎么接",
+  "context": "—I missed the school bus this morning.\n—____",
+  "prompt": "选择最自然的回应。",
+  "options": [
+   "That’s all right.",
+   "I’m sorry to hear that.",
+   "Well done!",
+   "The same to you."
+  ],
+  "answer": 1,
+  "knowledge": "同情与安慰",
+  "strategy": "missed the bus 是不顺利的消息，回应应表达遗憾或关心。",
+  "explanation": "I’m sorry to hear that 用于听到对方遭遇不好的事情。",
+  "pitfall": "That’s all right 常回应道歉；Well done 表示称赞。",
+  "notebook": "先判断消息是好是坏，再选情绪方向一致的应答。"
+ },
+ {
+  "id": "dialogue-05",
+  "category": "补全对话",
+  "level": "进阶",
+  "title": "问路对话看目的",
+  "context": "—Excuse me, could you tell me how to get to the library?\n—____. It’s across from the bank.",
+  "prompt": "选择最恰当的应答。",
+  "options": [
+   "Yes, please",
+   "Sure",
+   "No, I couldn’t",
+   "You’d better not"
+  ],
+  "answer": 1,
+  "knowledge": "问路与指路",
+  "strategy": "后句已经给出地点，前面应先表示愿意帮助。",
+  "explanation": "Sure 简洁自然，承接请求并引出路线说明。",
+  "pitfall": "Could you… 是礼貌请求，不是询问过去能力，不能机械回答 could/couldn’t。",
+  "notebook": "Could you…? 在对话中先按礼貌请求理解。"
+ },
+ {
+  "id": "grammar-01",
+  "category": "语法单选",
+  "level": "基础",
+  "title": "since 提醒现在完成时",
+  "context": "Li Hua ____ in this city since 2022.",
+  "prompt": "空格处应填？",
+  "options": [
+   "lives",
+   "lived",
+   "has lived",
+   "is living"
+  ],
+  "answer": 2,
+  "knowledge": "现在完成时",
+  "strategy": "圈出 since 2022：动作从过去开始并延续到现在。",
+  "explanation": "现在完成时结构是 have/has + 过去分词；主语 Li Hua 用 has。",
+  "pitfall": "不要只看句首主语就选一般现在时，时间标志更关键。",
+  "notebook": "since + 过去时间点，常用现在完成时。"
+ },
+ {
+  "id": "grammar-02",
+  "category": "语法单选",
+  "level": "基础",
+  "title": "可数名词前的冠词",
+  "context": "My sister wants to be ____ engineer in the future.",
+  "prompt": "空格处应填？",
+  "options": [
+   "a",
+   "an",
+   "the",
+   "/"
+  ],
+  "answer": 1,
+  "knowledge": "不定冠词",
+  "strategy": "engineer 是可数名词单数，且这里表示职业中的一个。",
+  "explanation": "engineer 以元音音素开头，所以用 an。",
+  "pitfall": "冠词看发音，不只看字母；university 虽以 u 开头却读 /juː/，用 a。",
+  "notebook": "a/an 看首个音素：元音音素前用 an。"
+ },
+ {
+  "id": "grammar-03",
+  "category": "语法单选",
+  "level": "基础",
+  "title": "比较级的信号词",
+  "context": "This box is ____ than that one.",
+  "prompt": "空格处应填？",
+  "options": [
+   "heavy",
+   "heavier",
+   "heaviest",
+   "more heavy"
+  ],
+  "answer": 1,
+  "knowledge": "形容词比较级",
+  "strategy": "than 是明显信号，空格需要比较级。",
+  "explanation": "heavy 变比较级时把 y 改 i 再加 -er：heavier。",
+  "pitfall": "双音节但以辅音字母+y结尾的常用 -ier，不用 more heavy。",
+  "notebook": "看到 than 先检查比较级；辅音+y：y→i+er。"
+ },
+ {
+  "id": "grammar-04",
+  "category": "语法单选",
+  "level": "基础",
+  "title": "情态动词后用原形",
+  "context": "You ____ wear a helmet when riding a bike. It keeps you safe.",
+  "prompt": "空格处最恰当的是？",
+  "options": [
+   "should",
+   "should to",
+   "are should",
+   "shoulds"
+  ],
+  "answer": 0,
+  "knowledge": "情态动词",
+  "strategy": "句意是在给安全建议，选择 should。",
+  "explanation": "情态动词 should 后直接接动词原形 wear。",
+  "pitfall": "情态动词没有第三人称单数变化，也不与 to 连用。",
+  "notebook": "情态动词 + 动词原形。"
+ },
+ {
+  "id": "grammar-05",
+  "category": "语法单选",
+  "level": "基础",
+  "title": "被动语态看承受者",
+  "context": "The classroom ____ every afternoon.",
+  "prompt": "空格处应填？",
+  "options": [
+   "cleans",
+   "is cleaned",
+   "cleaned",
+   "is cleaning"
+  ],
+  "answer": 1,
+  "knowledge": "一般现在时的被动语态",
+  "strategy": "教室不是清扫别人，而是被清扫。",
+  "explanation": "一般现在时被动语态为 am/is/are + 过去分词；classroom 是单数，用 is cleaned。",
+  "pitfall": "看到物作主语要检查它是动作执行者还是承受者。",
+  "notebook": "被动语态：主语承受动作，be + done。"
+ },
+ {
+  "id": "grammar-06",
+  "category": "语法单选",
+  "level": "基础",
+  "title": "enjoy 后接 doing",
+  "context": "Tom enjoys ____ English songs after class.",
+  "prompt": "空格处应填？",
+  "options": [
+   "listen",
+   "to listen",
+   "listening to",
+   "listened to"
+  ],
+  "answer": 2,
+  "knowledge": "动名词与固定搭配",
+  "strategy": "enjoy 后面接动词时要用 -ing；listen 还必须搭配 to。",
+  "explanation": "正确结构为 enjoy doing sth.，所以是 enjoys listening to songs。",
+  "pitfall": "只选 listening 会漏掉 listen to 的介词。",
+  "notebook": "enjoy doing；listen to sth.，两个搭配要同时过关。"
+ },
+ {
+  "id": "grammar-07",
+  "category": "语法单选",
+  "level": "进阶",
+  "title": "定语从句先看先行词",
+  "context": "The student ____ won the speech contest is my classmate.",
+  "prompt": "空格处应填？",
+  "options": [
+   "which",
+   "who",
+   "where",
+   "when"
+  ],
+  "answer": 1,
+  "knowledge": "定语从句关系词",
+  "strategy": "先行词 student 指人，关系词在从句中作主语。",
+  "explanation": "指人并在定语从句中作主语，用 who。",
+  "pitfall": "which 通常指物；where 和 when 分别偏地点、时间。",
+  "notebook": "定语从句先看先行词，再看关系词在从句中充当什么。"
+ },
+ {
+  "id": "grammar-08",
+  "category": "语法单选",
+  "level": "进阶",
+  "title": "条件句的主将从现",
+  "context": "If it ____ tomorrow, we will study in the library.",
+  "prompt": "空格处应填？",
+  "options": [
+   "rains",
+   "will rain",
+   "rained",
+   "is raining"
+  ],
+  "answer": 0,
+  "knowledge": "条件状语从句",
+  "strategy": "主句有 will，if 引导真实条件从句。",
+  "explanation": "真实条件句常用“主将从现”：从句用一般现在时 rains。",
+  "pitfall": "不能因为 tomorrow 就在 if 从句里直接用 will rain。",
+  "notebook": "if 条件句：主将从现。"
+ },
+ {
+  "id": "grammar-09",
+  "category": "语法单选",
+  "level": "基础",
+  "title": "主谓一致看真正主语",
+  "context": "There ____ two books and a pen on the desk.",
+  "prompt": "空格处应填？",
+  "options": [
+   "is",
+   "are",
+   "was",
+   "has"
+  ],
+  "answer": 1,
+  "knowledge": "there be 句型",
+  "strategy": "there be 常按靠近 be 的名词决定单复数；two books 是复数。",
+  "explanation": "这里表示现在存在，复数主语对应 are。",
+  "pitfall": "there be 不能和 have 混成 there has。",
+  "notebook": "there be 就近看名词，别写 there have。"
+ },
+ {
+  "id": "grammar-10",
+  "category": "语法单选",
+  "level": "进阶",
+  "title": "although 不和 but 连用",
+  "context": "____ the task was difficult, we finished it on time.",
+  "prompt": "空格处应填？",
+  "options": [
+   "Because",
+   "Although",
+   "So",
+   "But"
+  ],
+  "answer": 1,
+  "knowledge": "让步状语从句",
+  "strategy": "前半句“任务困难”与后半句“按时完成”形成让步转折。",
+  "explanation": "Although 表示“虽然”，能引导从句。",
+  "pitfall": "中文“虽然……但是……”在英语中通常不把 although 和 but 同时使用。",
+  "notebook": "although 引从句，后面主句不再加 but。"
+ },
+ {
+  "id": "cloze-01",
+  "category": "完形逻辑",
+  "level": "基础",
+  "title": "转折词决定方向",
+  "context": "It was raining heavily. ____，Ming still arrived at school on time.",
+  "prompt": "空格处最合适的是？",
+  "options": [
+   "However",
+   "Because",
+   "For example",
+   "Besides"
+  ],
+  "answer": 0,
+  "knowledge": "上下文转折",
+  "strategy": "前句是困难，后句是仍然准时，语意相反。",
+  "explanation": "However 表示转折，且常用逗号隔开。",
+  "pitfall": "Because 表因果但这里没有补充原因；Besides 表递进。",
+  "notebook": "完形先判断前后是转折、因果还是递进。"
+ },
+ {
+  "id": "cloze-02",
+  "category": "完形逻辑",
+  "level": "基础",
+  "title": "因果关系别选反",
+  "context": "The bus was late, ____ I walked to school.",
+  "prompt": "空格处最合适的是？",
+  "options": [
+   "but",
+   "so",
+   "or",
+   "although"
+  ],
+  "answer": 1,
+  "knowledge": "因果连接",
+  "strategy": "公交晚点是原因，步行去学校是结果。",
+  "explanation": "so 连接结果，符合逻辑。",
+  "pitfall": "although 后需要从句结构；but 表转折，不符合这里的因果。",
+  "notebook": "前因后果用 so；前果后因常用 because。"
+ },
+ {
+  "id": "cloze-03",
+  "category": "完形逻辑",
+  "level": "进阶",
+  "title": "代词要找到指代对象",
+  "context": "Jenny found a wallet near the gate. She took ____ to the school office.",
+  "prompt": "空格处应填？",
+  "options": [
+   "him",
+   "her",
+   "it",
+   "them"
+  ],
+  "answer": 2,
+  "knowledge": "代词指代",
+  "strategy": "空格指代前句的 a wallet，是单数物。",
+  "explanation": "单数物作宾语用 it。",
+  "pitfall": "不能只看最近的人名 Jenny 就选 her；代词指代要回看语义对象。",
+  "notebook": "代词题先问：它到底替代前文哪个名词？"
+ },
+ {
+  "id": "cloze-04",
+  "category": "完形逻辑",
+  "level": "进阶",
+  "title": "固定搭配嵌在语境里",
+  "context": "When I met a new word, I looked it ____ in the dictionary.",
+  "prompt": "空格处应填？",
+  "options": [
+   "at",
+   "up",
+   "after",
+   "for"
+  ],
+  "answer": 1,
+  "knowledge": "动词短语 look up",
+  "strategy": "语境是遇到生词后查词典。",
+  "explanation": "look up a word / look it up 表示“查阅单词”；代词放在 look 和 up 中间。",
+  "pitfall": "look for 是寻找某物，look after 是照顾。",
+  "notebook": "查单词 look up；代词夹中间：look it up。"
+ },
+ {
+  "id": "cloze-05",
+  "category": "完形逻辑",
+  "level": "进阶",
+  "title": "情感走向也能定位",
+  "context": "At first, Leo was nervous about speaking English. After weeks of practice, he became more ____.",
+  "prompt": "空格处最合适的是？",
+  "options": [
+   "careless",
+   "confident",
+   "silent",
+   "worried"
+  ],
+  "answer": 1,
+  "knowledge": "情感变化与上下文",
+  "strategy": "At first 与 After weeks of practice 构成变化线索。",
+  "explanation": "练习后应从 nervous 走向 confident，语意最连贯。",
+  "pitfall": "完形不只是词义题，要让人物前后变化合理。",
+  "notebook": "看到 at first / later / finally，先画出情绪变化线。"
+ },
+ {
+  "id": "reading-01",
+  "category": "阅读理解",
+  "level": "基础",
+  "title": "公告先抓时间",
+  "context": "School Library Notice\nOpening hours: Monday to Friday, 8:00–17:30.\nOn Wednesday, the library closes at 16:00 for staff training.",
+  "prompt": "When does the library close on Wednesday?",
+  "options": [
+   "At 8:00.",
+   "At 16:00.",
+   "At 17:30.",
+   "On Friday."
+  ],
+  "answer": 1,
+  "knowledge": "细节定位",
+  "strategy": "题干关键词是 Wednesday 和 close，回原文找同词。",
+  "explanation": "公告明确写 Wednesday closes at 16:00。",
+  "pitfall": "不要被通常闭馆时间 17:30 干扰，题目问的是特殊日期。",
+  "notebook": "公告题先看例外信息：special / except / on Wednesday。"
+ },
+ {
+  "id": "reading-02",
+  "category": "阅读理解",
+  "level": "基础",
+  "title": "主旨不是细节拼盘",
+  "context": "Mei used to study for three hours without stopping. She often forgot what she had read. Now she studies for twenty-five minutes, takes a short break, and reviews the key points. Her work is shorter but more effective.",
+  "prompt": "What is the passage mainly about?",
+  "options": [
+   "Mei dislikes reading.",
+   "Short, planned study can be more effective.",
+   "Students should study for three hours.",
+   "Breaks always waste time."
+  ],
+  "answer": 1,
+  "knowledge": "主旨大意",
+  "strategy": "找前后变化与作者最终评价 more effective。",
+  "explanation": "文章通过 Mei 的改变说明有计划的短时学习更有效。",
+  "pitfall": "主旨应覆盖整段，不能只抓“25分钟”这个细节。",
+  "notebook": "主旨题找反复出现的核心关系，不选只覆盖一句的答案。"
+ },
+ {
+  "id": "reading-03",
+  "category": "阅读理解",
+  "level": "进阶",
+  "title": "根据上下文猜词",
+  "context": "The first plan failed, but the team did not give up. They adjusted the schedule and tried again. Their persistence finally brought success.",
+  "prompt": "The word “persistence” is closest in meaning to ____.",
+  "options": [
+   "giving up quickly",
+   "continuing despite difficulty",
+   "changing the goal",
+   "working alone"
+  ],
+  "answer": 1,
+  "knowledge": "词义猜测",
+  "strategy": "前文有 did not give up、tried again，都是释义证据。",
+  "explanation": "persistence 指面对困难仍继续坚持。",
+  "pitfall": "猜词不能只看词形，要利用前后句的解释和结果。",
+  "notebook": "生词旁若出现同义动作或结果，它们就是词义证据。"
+ },
+ {
+  "id": "reading-04",
+  "category": "阅读理解",
+  "level": "进阶",
+  "title": "推断不能越界",
+  "context": "Before the presentation, Kai checked every slide twice and arrived twenty minutes early. When the projector failed, he calmly used the printed copies he had brought.",
+  "prompt": "What can we infer about Kai?",
+  "options": [
+   "He is careless.",
+   "He prepares carefully for problems.",
+   "He dislikes technology.",
+   "He knew the projector would fail."
+  ],
+  "answer": 1,
+  "knowledge": "人物推断",
+  "strategy": "证据是 twice、early、printed copies 和 calmly。",
+  "explanation": "这些细节共同说明 Kai 准备充分、能应对意外。",
+  "pitfall": "原文没有说他预知设备故障，也不能推出他讨厌科技。",
+  "notebook": "推断可以走半步，不能凭空走五步。"
+ },
+ {
+  "id": "reading-05",
+  "category": "阅读理解",
+  "level": "进阶",
+  "title": "写作意图看行动词",
+  "context": "Dear students, please bring your own bottle to school. Refill stations are available on every floor. By reducing single-use cups, we can keep our campus cleaner.",
+  "prompt": "Why is this message written?",
+  "options": [
+   "To sell bottles.",
+   "To invite students to reduce waste.",
+   "To close the refill stations.",
+   "To describe every classroom."
+  ],
+  "answer": 1,
+  "knowledge": "写作意图",
+  "strategy": "please bring 与 By reducing 指向号召行动。",
+  "explanation": "信息的目的不是介绍设施本身，而是鼓励减少一次性杯子。",
+  "pitfall": "意图题要区分“文中提到什么”和“作者为什么提它”。",
+  "notebook": "抓祈使句和呼吁词，通常能看见写作目的。"
+ },
+ {
+  "id": "fill-01",
+  "category": "语法填空",
+  "level": "基础",
+  "title": "动词变第三人称单数",
+  "context": "Every morning, Chen Yu ____ (walk) to school.",
+  "prompt": "括号中动词的正确形式是？",
+  "options": [
+   "walk",
+   "walks",
+   "walked",
+   "walking"
+  ],
+  "answer": 1,
+  "knowledge": "一般现在时",
+  "strategy": "Every morning 表示习惯；主语 Chen Yu 是第三人称单数。",
+  "explanation": "一般现在时第三人称单数谓语用 walks。",
+  "pitfall": "有提示词不等于照抄原形，先判断时态和主谓一致。",
+  "notebook": "频率时间 + 单数主语：动词记得加 -s/-es。"
+ },
+ {
+  "id": "fill-02",
+  "category": "语法填空",
+  "level": "基础",
+  "title": "介词后的动词形式",
+  "context": "Thank you for ____ (invite) me to the activity.",
+  "prompt": "括号中动词的正确形式是？",
+  "options": [
+   "invite",
+   "inviting",
+   "invited",
+   "to invite"
+  ],
+  "answer": 1,
+  "knowledge": "介词 + 动名词",
+  "strategy": "for 是介词，后接名词或动词 -ing。",
+  "explanation": "invite 变为 inviting。",
+  "pitfall": "不要见到“为了”就机械用 to do；这里是 Thank you for… 固定结构。",
+  "notebook": "介词后若接动词，通常用 -ing。"
+ },
+ {
+  "id": "fill-03",
+  "category": "语法填空",
+  "level": "进阶",
+  "title": "词性转换看空格位置",
+  "context": "The volunteers worked ____ (careful) to check every name.",
+  "prompt": "括号中单词的正确形式是？",
+  "options": [
+   "care",
+   "careful",
+   "carefully",
+   "careless"
+  ],
+  "answer": 2,
+  "knowledge": "副词修饰动词",
+  "strategy": "空格修饰 worked，需要副词。",
+  "explanation": "careful 是形容词，变副词 carefully 修饰动作。",
+  "pitfall": "不要只看中文“认真”就选形容词，要看它修饰名词还是动词。",
+  "notebook": "修饰动词用副词：work carefully。"
+ },
+ {
+  "id": "fill-04",
+  "category": "语法填空",
+  "level": "进阶",
+  "title": "被动语态的双重判断",
+  "context": "The new sports center ____ (complete) last month.",
+  "prompt": "括号中动词的正确形式是？",
+  "options": [
+   "completed",
+   "was completed",
+   "is completed",
+   "completing"
+  ],
+  "answer": 1,
+  "knowledge": "一般过去时被动语态",
+  "strategy": "last month 定过去；center 是被完成的对象。",
+  "explanation": "一般过去时被动为 was/were + 过去分词，单数用 was completed。",
+  "pitfall": "时态和语态要分别判断，不能只做其中一半。",
+  "notebook": "先定时间，再定主动或被动。"
+ },
+ {
+  "id": "fill-05",
+  "category": "语法填空",
+  "level": "进阶",
+  "title": "从句连接词看成分",
+  "context": "This is the book ____ helped me understand the topic.",
+  "prompt": "空格处最合适的是？",
+  "options": [
+   "who",
+   "that",
+   "where",
+   "when"
+  ],
+  "answer": 1,
+  "knowledge": "定语从句",
+  "strategy": "先行词 book 指物，空格在从句中作主语。",
+  "explanation": "that 可指物并作从句主语。",
+  "pitfall": "where 需要先行词是地点且在从句中作地点状语。",
+  "notebook": "关系词既要看先行词，也要看它在从句中缺什么。"
+ },
+ {
+  "id": "sentence-01",
+  "category": "完成句子",
+  "level": "基础",
+  "title": "期待做某事",
+  "context": "I look forward to ____ from you.（收到你的来信）",
+  "prompt": "空格处最合适的是？",
+  "options": [
+   "hear",
+   "hearing",
+   "heard",
+   "be heard"
+  ],
+  "answer": 1,
+  "knowledge": "look forward to doing",
+  "strategy": "这里的 to 是介词，不是不定式符号。",
+  "explanation": "固定搭配为 look forward to doing sth.，所以用 hearing。",
+  "pitfall": "带 to 的短语不一定接动词原形，要分清 to 的身份。",
+  "notebook": "look forward to + 名词/doing。"
+ },
+ {
+  "id": "sentence-02",
+  "category": "完成句子",
+  "level": "基础",
+  "title": "花费时间做某事",
+  "context": "It ____ me thirty minutes to finish the exercise.（花费）",
+  "prompt": "空格处最合适的是？",
+  "options": [
+   "took",
+   "spent",
+   "paid",
+   "costed"
+  ],
+  "answer": 0,
+  "knowledge": "It takes/took sb. time to do",
+  "strategy": "主语是形式主语 It，后面有 me + 时间 + to do。",
+  "explanation": "固定句型 It took me thirty minutes to…；语境为已完成，用过去时 took。",
+  "pitfall": "spend 的主语通常是人：I spent thirty minutes finishing…。",
+  "notebook": "It takes sb. time to do；sb. spends time doing。"
+ },
+ {
+  "id": "sentence-03",
+  "category": "完成句子",
+  "level": "进阶",
+  "title": "太……而不能",
+  "context": "The box is ____ heavy for me to carry.（太……而不能）",
+  "prompt": "空格处最合适的是？",
+  "options": [
+   "very",
+   "so",
+   "too",
+   "enough"
+  ],
+  "answer": 2,
+  "knowledge": "too…to…",
+  "strategy": "后面有 for me to carry，且句意是重到搬不动。",
+  "explanation": "too + 形容词 + for sb. to do 表示“太……而不能……”。",
+  "pitfall": "so…that 需要接完整从句；enough 通常放形容词后。",
+  "notebook": "too adj. to do；so adj. that + 句子。"
+ },
+ {
+  "id": "sentence-04",
+  "category": "完成句子",
+  "level": "进阶",
+  "title": "不仅……而且",
+  "context": "The activity was ____ useful ____ interesting.（不仅……而且）",
+  "prompt": "空格处最合适的是？",
+  "options": [
+   "either; or",
+   "neither; nor",
+   "not only; but also",
+   "both; or"
+  ],
+  "answer": 2,
+  "knowledge": "not only…but also…",
+  "strategy": "useful 与 interesting 是并列的正面特征。",
+  "explanation": "not only… but also… 表示“不仅……而且……”。",
+  "pitfall": "either…or… 表示二选一，neither…nor… 表示两者都不。",
+  "notebook": "并列递进：not only A but also B。"
+ },
+ {
+  "id": "sentence-05",
+  "category": "完成句子",
+  "level": "进阶",
+  "title": "建议某人做某事",
+  "context": "The teacher advised us ____ notes while reading.",
+  "prompt": "空格处最合适的是？",
+  "options": [
+   "take",
+   "taking",
+   "to take",
+   "took"
+  ],
+  "answer": 2,
+  "knowledge": "advise sb. to do",
+  "strategy": "空前有 advised us，结构需要宾语补足语。",
+  "explanation": "advise sb. to do sth. 表示建议某人做某事。",
+  "pitfall": "advise doing 可用，但中间没有 sb.；有宾语 us 时用 to take。",
+  "notebook": "advise doing；advise sb. to do。"
+ },
+ {
+  "id": "writing-01",
+  "category": "应用写作",
+  "level": "基础",
+  "title": "通知必须交代三要素",
+  "context": "学校英语角将在周五下午 4 点于图书馆举行。",
+  "prompt": "下面哪一句最适合写进活动通知？",
+  "options": [
+   "English is very important.",
+   "The English Corner will be held in the library at 4 p.m. this Friday.",
+   "I went to the library last Friday.",
+   "Would you like books?"
+  ],
+  "answer": 1,
+  "knowledge": "通知的信息完整性",
+  "strategy": "核对时间、地点、事件三个信息点是否齐全。",
+  "explanation": "B 同时交代活动、地点和时间，且语体清楚。",
+  "pitfall": "应用写作不是句子越难越好，漏信息会直接失分。",
+  "notebook": "通知先写清 what / when / where。"
+ },
+ {
+  "id": "writing-02",
+  "category": "应用写作",
+  "level": "基础",
+  "title": "邮件结尾要合身份",
+  "context": "你给老师写邮件询问作业要求。",
+  "prompt": "下列哪一句最适合作为结尾？",
+  "options": [
+   "Thanks for your time. I look forward to your reply.",
+   "Bye-bye, my dude!",
+   "You must answer me now.",
+   "No reply is needed."
+  ],
+  "answer": 0,
+  "knowledge": "邮件礼貌表达",
+  "strategy": "对象是老师，语气要礼貌但不生硬。",
+  "explanation": "A 表达感谢并期待回复，符合学生询问老师的语境。",
+  "pitfall": "语法正确不等于语体合适；称呼和语气要看对象。",
+  "notebook": "写作先确认写给谁，再选礼貌程度。"
+ },
+ {
+  "id": "writing-03",
+  "category": "应用写作",
+  "level": "进阶",
+  "title": "邀请信别漏掉明确邀请",
+  "context": "你想邀请外国朋友参加校园文化节。",
+  "prompt": "哪一句最能承担“发出邀请”的功能？",
+  "options": [
+   "The festival was interesting last year.",
+   "I’m writing to invite you to our School Culture Festival.",
+   "Our school has many classrooms.",
+   "You visited us before."
+  ],
+  "answer": 1,
+  "knowledge": "邀请信开头",
+  "strategy": "题目要求发出邀请，句中应有 invite 与具体活动。",
+  "explanation": "B 直接说明写信目的，清楚高效。",
+  "pitfall": "只介绍活动背景却不明确邀请，会丢掉任务信息点。",
+  "notebook": "邀请信开头可用 I’m writing to invite you to…。"
+ },
+ {
+  "id": "writing-04",
+  "category": "应用写作",
+  "level": "进阶",
+  "title": "连接词要匹配逻辑",
+  "context": "The work was difficult. ____，we learned a lot from it.",
+  "prompt": "写作中空格处最合适的是？",
+  "options": [
+   "However",
+   "Because",
+   "For example",
+   "First"
+  ],
+  "answer": 0,
+  "knowledge": "篇章连接词",
+  "strategy": "困难与收获之间形成转折。",
+  "explanation": "However 能把两个完整句子的转折关系写清楚。",
+  "pitfall": "连接词不是装饰，选错会让整段逻辑变形。",
+  "notebook": "however 转折；therefore 结果；for example 举例；besides 递进。"
+ },
+ {
+  "id": "writing-05",
+  "category": "应用写作",
+  "level": "进阶",
+  "title": "建议句要具体可执行",
+  "context": "你要给同学提出提高英语阅读的建议。",
+  "prompt": "哪一句最具体、最有用？",
+  "options": [
+   "English is good.",
+   "You should try harder.",
+   "Try reading one short article a day and underline the key words.",
+   "Reading is reading."
+  ],
+  "answer": 2,
+  "knowledge": "建议信内容",
+  "strategy": "好建议应包含明确频率或动作，而不是空泛评价。",
+  "explanation": "C 给出每日一篇、圈关键词两个可执行动作。",
+  "pitfall": "“努力一点”看似鼓励，却没有告诉对方下一步做什么。",
+  "notebook": "建议写成动作：多久一次 + 做什么 + 怎样检查。"
+ }
+]

@@ -1,0 +1,10 @@
+.app { max-width: 560px; margin: 0 auto; min-height: 100%; padding-bottom: 88px; }
+.topbar { display: flex; align-items: center; gap: 10px; padding: 14px 16px; background: var(--navy-900); color: var(--cream-50); position: sticky; top: 0; z-index: 20; }
+.brand { flex: 1; min-width: 0; } .brand strong { display: block; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.brand small { display: block; color: var(--cream-300); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.seal { width: 40px; height: 40px; border-radius: 10px; background: var(--jade); color: var(--gold-light); display: grid; place-items: center; font-family: var(--serif); font-size: 22px; flex: none; }
+.streak-badge { font-size: 12px; color: var(--gold-light); border: 1px solid rgba(219,194,140,.4); border-radius: 999px; padding: 4px 10px; white-space: nowrap; }
+.content { padding: 16px; }
+.tabbar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 560px; display: grid; grid-template-columns: repeat(4, 1fr); background: var(--surface); border-top: 1px solid var(--line); padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); z-index: 20; }
+.tabbar button { border: 0; background: none; color: var(--muted); font-size: 14px; padding: 6px; }
+.tabbar button.active { color: var(--jade); font-weight: 700; }

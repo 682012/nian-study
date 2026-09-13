@@ -1,0 +1,65 @@
+[
+ {
+  "id": "east",
+  "seal": "斋",
+  "name": "东斋",
+  "subtitle": "念安与你的书案",
+  "description": "每日对话、任务与短事件从这里发生。",
+  "progressKey": "data",
+  "status": "open"
+ },
+ {
+  "id": "english",
+  "seal": "译",
+  "name": "译语馆",
+  "subtitle": "822 词 + 七类题型",
+  "description": "词汇、语法、完形、阅读、翻译与应用写作。",
+  "progressKey": "english",
+  "status": "open"
+ },
+ {
+  "id": "math",
+  "seal": "算",
+  "name": "算学馆",
+  "subtitle": "九大模块 · 七步拆题",
+  "description": "从集合函数到向量、解析几何与概率统计。",
+  "progressKey": "math",
+  "status": "open"
+ },
+ {
+  "id": "chinese",
+  "seal": "文",
+  "name": "经史馆",
+  "subtitle": "四大板块 · 十五类题",
+  "description": "语言基础、古诗文、现代文阅读与应用表达。",
+  "progressKey": "chinese",
+  "status": "open"
+ },
+ {
+  "id": "review",
+  "seal": "拾",
+  "name": "拾遗阁",
+  "subtitle": "旧误回炉",
+  "description": "把反复翻车的词和题重新理顺。",
+  "progressKey": "review",
+  "status": "open"
+ },
+ {
+  "id": "culture",
+  "seal": "雅",
+  "name": "四时庭",
+  "subtitle": "诗词、文房与节气",
+  "description": "每日一笺，短而不空的传统文化内容。",
+  "progressKey": "culture",
+  "status": "open"
+ },
+ {
+  "id": "exam",
+  "seal": "试",
+  "name": "明试堂",
+  "subtitle": "三科八题阶段模拟",
+  "description": "英语、数学与阅读混合成卷，交卷后逐题复盘。",
+  "progressKey": "exam",
+  "status": "open"
+ }
+]

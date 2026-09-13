@@ -1,0 +1,13 @@
+:root {
+  --navy-950: #0b1b1c; --navy-900: #102829; --navy-800: #173638; --navy-700: #254a48;
+  --cream-50: #fffdf6; --cream-100: #f8f3e6; --cream-200: #e9dfca; --cream-300: #d4c5a7;
+  --ink: #20302e; --muted: #70746b; --gold: #b89555; --gold-light: #dbc28c;
+  --green: #477469; --jade: #285d4c; --red: #a94e3c; --peach: #c9836b;
+  --paper: #f5f3ec; --surface: #fffefa; --line: #dce1d6;
+  --shadow: 0 24px 70px #1e2b2721; --shadow-soft: 0 12px 36px #22302b14;
+  --sans: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
+  --serif: 'Noto Serif SC', 'Songti SC', STSong, 'Noto Sans CJK SC', serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body, #root { height: 100%; }
+body { font-family: var(--sans); background: var(--paper); color: var(--ink); }
