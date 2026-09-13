@@ -1,10 +1,11 @@
 import { MODES, PRESET_MODES } from '../quiz/modes';
 import { useProgress } from '../store/progress-store';
+import { pendingMistakeIds } from '../lib/progress';
 import { useSession } from '../store/session-store';
 
 export default function PracticePage() {
   const start = useSession((s) => s.start);
-  const mistakes = Object.keys(useProgress((p) => p.arcadeV1.mistakes)).length;
+  const mistakes = pendingMistakeIds(useProgress()).length;
   const card = (m: typeof MODES[number]) => (
     <button key={m.id} className="mode-card" onClick={() => start(m.id)}>
       <span className={`mode-seal tone-${m.tone}`}>{m.seal}</span>

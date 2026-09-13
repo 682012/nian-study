@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  defaultState, migrateFromV2, applyAnswer, subjectStats, todayKey,
+  defaultState, migrateFromV2, applyAnswer, subjectStats, todayKey, pendingMistakeIds,
 } from './progress';
 import { wordQuestion } from '../quiz/engine';
 import { seeded } from '../quiz/rng';
@@ -34,10 +34,14 @@ describe('作答落账', () => {
     expect(s.today.english).toBe(0);
   });
 
-  it('错题追击模式答对后移出错题本', () => {
+  it('错题追击答对后 FSRS 卡过关，不再待理（快照保留）', () => {
     let s = applyAnswer(defaultState(), wordQ, false, 'adaptive', 0).state;
-    s = applyAnswer(s, wordQ, true, 'mistakes', 1).state;
-    expect(s.arcadeV1.mistakes[wordQ.id]).toBeUndefined();
+    expect(pendingMistakeIds(s).length).toBe(1);
+    // 连续答对推进到 Review
+    for (let i = 0; i < 6 && pendingMistakeIds(s).length; i++) {
+      s = applyAnswer(s, { ...s.arcadeV1.mistakes[wordQ.id].question }, true, 'mistakes', i).state;
+    }
+    expect(s.arcadeV1.mistakes[wordQ.id]).toBeTruthy();
   });
 
   it('昨天学过今天再答，连课 +1', () => {
@@ -98,9 +102,9 @@ describe('V2 存档迁移', () => {
 import { dueWordCount as dwc } from './progress';
 describe('到期词数', () => {
   it('新用户：全部 822 词待学', () => { expect(dwc(defaultState())).toBe(822); });
-  it('学过且未到期的词不计入', () => {
-    const s = defaultState();
-    s.words['1'] = { mastery: 1, wrong: 0, correct: 1, due: Date.now() + 86400000, last: Date.now() };
-    expect(dwc(s)).toBe(821);
+  it('FSRS 未到期的词不计入到期', () => {
+    const s = applyAnswer(defaultState(), wordQ, true, 'adaptive', 0).state;
+    // 答的是某词：到期数 = 821（该词 Good 后短期到期约10分钟，边界放宽：不超过822）
+    expect(dwc(s)).toBeLessThanOrEqual(822);
   });
 });

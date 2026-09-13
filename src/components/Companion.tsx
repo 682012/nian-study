@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useProgress } from '../store/progress-store';
-import { subjectStats, dueWordCount } from '../lib/progress';
+import { subjectStats, dueWordCount, pendingMistakeIds } from '../lib/progress';
 import { nianRespond, type Snapshot } from '../lib/nian-local';
 import type { Subject } from '../quiz/types';
 
@@ -36,7 +36,7 @@ export default function Companion({ open, onClose }: { open: boolean; onClose: (
       .sort((a, b) => stats[a].rate - stats[b].rate || stats[a].attempts - stats[b].attempts)[0];
     return {
       hour: new Date().getHours(), streak: p.streak, todayAttempts: p.today.attempts,
-      dueWords: dueWordCount(p), totalMistakes: Object.keys(p.arcadeV1.mistakes).length,
+      dueWords: dueWordCount(p), totalMistakes: pendingMistakeIds(p).length,
       weakestSubject: weakest, weakestRate: stats[weakest].rate, bestCombo: p.arcadeV1.bestCombo,
     };
   };

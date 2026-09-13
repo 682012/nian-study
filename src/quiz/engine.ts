@@ -7,10 +7,11 @@ import {
 import { MATH_BUILDERS } from './math-builders';
 import { pick, pickWeighted, shuffle, seeded, normalizeAnswer, type Rng } from './rng';
 
-export interface WordRecord { mastery: number; wrong: number; due: number; last?: number; correct?: number; }
 export interface EngineContext {
   words?: Word[];
-  getWordRecord?: (id: number) => Partial<WordRecord> | undefined;
+  getWordCard?: (id: number) => import('ts-fsrs').Card | undefined;
+  dueWordIds?: number[];
+  pendingMistakes?: Question[];
 }
 
 function makeChoices(answer: string, candidates: string[], rng: Rng) {
@@ -19,22 +20,29 @@ function makeChoices(answer: string, candidates: string[], rng: Rng) {
   return { choices, answer: choices.indexOf(answer) };
 }
 
-function adaptiveWord(words: Word[], getRecord: EngineContext['getWordRecord'], rng: Rng): Word {
+function adaptiveWord(words: Word[], getCard: EngineContext['getWordCard'], rng: Rng): Word {
   const now = Date.now();
   return pickWeighted(words, (word) => {
-    const r = getRecord?.(word.id) ?? {};
-    const mastery = Math.max(0, Math.min(5, Number(r.mastery) || 0));
-    const wrong = Number(r.wrong) || 0;
-    const due = Number(r.due) || 0;
-    const unseen = !r.last && !r.correct && !r.wrong;
-    const overdue = due > 0 && due <= now;
-    return 1 + (5 - mastery) * 1.2 + Math.min(wrong, 5) * 1.8 + Number(unseen) * 2.2 + Number(overdue) * 7;
+    const card = getCard?.(word.id);
+    if (!card) return 3.2; // 新词
+    const dueAt = new Date(card.due).getTime();
+    if (dueAt > now) return Math.max(0.05, 1 / (1 + (card.stability || 0) * 0.15));
+    const overdueDays = Math.max(0, (now - dueAt) / 86_400_000);
+    if (card.state === 2) return 3 + overdueDays;      // Review 逾期
+    if (card.state === 3) return 6 + overdueDays;       // Relearning
+    if (card.state === 1) return 5;                      // Learning
+    return 2.2;                                           // New
   }, rng);
+}
+
+// 指定单词出题（每日卷按到期队列点名）
+export function wordQuestionFor(word: Word, kind: 'meaning' | 'listen' | 'dictation', rng: Rng = Math.random): Question {
+  return wordQuestion(kind, { words: [word, ...WORDS.filter((w) => w.id !== word.id)], getWordCard: () => undefined }, rng);
 }
 
 export function wordQuestion(kind: 'meaning' | 'listen' | 'dictation', ctx: EngineContext = {}, rng: Rng = Math.random): Question {
   const words = ctx.words ?? WORDS;
-  const word = adaptiveWord(words, ctx.getWordRecord, rng);
+  const word = adaptiveWord(words, ctx.getWordCard, rng);
   const head = word.word.split('/')[0];
   const others = words.filter((w) => w.id !== word.id);
   if (kind === 'listen') {
@@ -192,11 +200,20 @@ export function todayKey(d: Date = new Date()): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-// 每日固定卷：同一天同一进度得到同一张卷（V9 行为：作答改变权重后不会变成另一张卷）。
+// 每日固定卷：到期单词 + 到期错题 + 薄弱配卷。同一种子同一天同一张卷。
 export function buildDailyPaper(dateKey: string, stats: Record<Subject, SubjectStat>, ctx: EngineContext = {}): Question[] {
   const rng = seeded(`daily:${dateKey}`);
+  const parts: Question[] = [];
+  const wordKinds: Array<'meaning' | 'listen' | 'dictation'> = ['meaning', 'listen', 'dictation'];
+  for (const id of (ctx.dueWordIds ?? []).slice(0, 10)) {
+    const word = (ctx.words ?? WORDS).find((w) => w.id === id);
+    if (word) parts.push(wordQuestionFor(word, wordKinds[parts.length % 3], rng));
+  }
+  for (const q of (ctx.pendingMistakes ?? []).slice(0, 3)) parts.push({ ...q });
   const cycle = adaptiveCycle(stats);
-  return Array.from({ length: MODE_COUNTS.daily }, (_, i) => questionForType(cycle[i % cycle.length], ctx, rng));
+  let i = 0;
+  while (parts.length < MODE_COUNTS.daily) { parts.push(questionForType(cycle[i % cycle.length], ctx, rng)); i++; }
+  return shuffle(parts.slice(0, MODE_COUNTS.daily), rng);
 }
 
 export function checkAnswer(q: Question, response: string | number | string[]): boolean {

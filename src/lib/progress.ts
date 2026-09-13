@@ -1,5 +1,10 @@
 // 学习进度：V2 存档迁移、作答计分、统计。纯函数，不碰 localStorage，便于单测。
 import type { Question, Subject } from '../quiz/types';
+import { Rating } from 'ts-fsrs';
+import {
+  migrateWordCard, rateCard, ratingFromCorrect, wordCardId, questionCardId,
+  isMistakeCleared, isDue, type CardMap,
+} from './srs';
 
 export const DAY_MS = 86_400_000;
 export const V2_KEY = 'nian-study-progress-v2';
@@ -38,6 +43,7 @@ export interface ProgressState {
   history: Record<string, unknown>;
   today: Today;
   arcadeV1: Arcade;
+  srsCards: CardMap;
 }
 
 export function todayKey(d: Date = new Date()): string {
@@ -58,6 +64,7 @@ export function defaultState(): ProgressState {
     today: defaultToday(),
     arcadeV1: { attempts: 0, correct: 0, bestCombo: 0, bestEndless: 0, runs: 0,
       modes: {}, mistakes: {}, daily: {}, badges: [], skills: {}, recent: [] },
+    srsCards: {},
   };
 }
 
@@ -139,7 +146,19 @@ export function migrateFromV2(raw: unknown): ProgressState {
   }
 
   out.arcadeV1 = normalizeArcade(p.arcadeV1);
-  return out;
+  // 已有 FSRS 卡（V10 存档再加载）：以它为准，只补缺；V2/V9 旧档：全量迁移。
+  const existing = rec(p.srsCards);
+  const cards: CardMap = Object.keys(existing).length ? structuredClone(existing) as CardMap : {};
+  for (const [k, w] of Object.entries(out.words)) {
+    const cid = wordCardId(Number(k));
+    if (!cards[cid]) cards[cid] = migrateWordCard(w);
+  }
+  for (const id of Object.keys(out.arcadeV1.mistakes)) {
+    const cid = questionCardId(id);
+    if (!cards[cid]) cards[cid] = rateCard(undefined, Rating.Again);
+  }
+  out.srsCards = cards;
+  return ensureSrs(out);
 }
 
 export function awardBadges(arcade: Arcade): void {
@@ -167,6 +186,20 @@ function touchStreak(s: ProgressState): void {
   const prevKey = todayKey(prev);
   s.streak = s.lastStudyDay === prevKey ? s.streak + 1 : 1;
   s.lastStudyDay = today;
+}
+
+// 阶段1 的 V10 存档可能没有 srsCards：从已有 words/mistakes 补建。
+function ensureSrs(s: ProgressState): ProgressState {
+  const cards: CardMap = (s.srsCards && typeof s.srsCards === 'object') ? structuredClone(s.srsCards) : {};
+  for (const [k, w] of Object.entries(s.words)) {
+    const cid = wordCardId(Number(k));
+    if (!cards[cid]) cards[cid] = migrateWordCard(w);
+  }
+  for (const id of Object.keys(s.arcadeV1.mistakes)) {
+    const cid = questionCardId(id);
+    if (!cards[cid]) cards[cid] = rateCard(undefined, Rating.Again);
+  }
+  return { ...s, srsCards: cards };
 }
 
 // 作答落账，逻辑对齐 V9 recordAnswer；combo 为当前连击数（由答题会话维护）。
@@ -222,14 +255,17 @@ export function applyAnswer(prev: ProgressState, q: Question, correct: boolean, 
         w.wrong += 1; w.mastery = Math.max(0, w.mastery - 1); w.due = Date.now() + 10 * 60 * 1000;
       }
       s.words[String(q.wordId)] = w;
+      s.srsCards[wordCardId(q.wordId)] = rateCard(s.srsCards[wordCardId(q.wordId)], ratingFromCorrect(correct));
     }
   } else if (q.subject === 'math') { s.today.math += Number(correct); s.totals.math += Number(correct); }
   else { s.today.chinese += Number(correct); s.totals.chinese += Number(correct); }
 
-  if (correct) { if (mode === 'mistakes') delete arcade.mistakes[q.id]; }
-  else {
+  if (correct) {
+    if (mode === 'mistakes') s.srsCards[questionCardId(q.id)] = rateCard(s.srsCards[questionCardId(q.id)], Rating.Good);
+  } else {
     const prevM = arcade.mistakes[q.id];
     arcade.mistakes[q.id] = { question: { ...q }, wrongAt: Date.now(), attempts: (prevM?.attempts || 0) + 1 };
+    s.srsCards[questionCardId(q.id)] = rateCard(s.srsCards[questionCardId(q.id)], Rating.Again);
   }
   awardBadges(arcade);
   return { state: s, points, skillKey };
@@ -246,9 +282,21 @@ export function subjectStats(s: ProgressState, subject: Subject): { attempts: nu
   return { attempts, correct, rate: attempts ? correct / attempts : 0.58 };
 }
 
-export function dueWordCount(s: ProgressState, totalWords = 822, now = Date.now()): number {
+export function dueWordCount(s: ProgressState, totalWords = 822, now: Date = new Date()): number {
   let due = 0;
-  for (const w of Object.values(s.words)) if (!w.due || w.due <= now) due++;
-  // 从未学过的新词同样待学
-  return due + Math.max(0, totalWords - Object.keys(s.words).length);
+  for (let id = 1; id <= totalWords; id++) if (isDue(s.srsCards[wordCardId(id)], now)) due++;
+  return due;
+}
+
+// 到期/新词的单词 ID
+export function dueWordIds(s: ProgressState, now: Date = new Date()): number[] {
+  const ids: number[] = [];
+  for (let id = 1; id <= 822; id++) if (isDue(s.srsCards[wordCardId(id)], now)) ids.push(id);
+  return ids;
+}
+
+// 待理错题（快照仍在且 FSRS 卡未过关）
+export function pendingMistakeIds(s: ProgressState, now: Date = new Date()): string[] {
+  return Object.keys(s.arcadeV1.mistakes)
+    .filter((id) => !isMistakeCleared(s.srsCards[questionCardId(id)], now));
 }

@@ -7,7 +7,8 @@ import {
 import { FULL_MODE_MAP } from '../quiz/modes';
 import type { Rng } from '../quiz/rng';
 import { useProgress } from './progress-store';
-import { subjectStats } from '../lib/progress';
+import { subjectStats, dueWordIds, pendingMistakeIds } from '../lib/progress';
+import { wordCardId, type Card } from '../lib/srs';
 
 type Status = 'idle' | 'running' | 'finished';
 interface LastResult { correct: boolean; points: number; response: number | string | string[] }
@@ -34,9 +35,14 @@ function statsRecord(): Record<'english' | 'math' | 'chinese', SubjectStat> {
   return { english: subjectStats(p, 'english'), math: subjectStats(p, 'math'), chinese: subjectStats(p, 'chinese') };
 }
 
-function engineCtx(): EngineContext {
+function engineCtx(extra: Partial<EngineContext> = {}): EngineContext {
   const p = useProgress.getState();
-  return { getWordRecord: (id) => p.words[String(id)] };
+  return {
+    getWordCard: (id) => p.srsCards[wordCardId(id)] as Card | undefined,
+    dueWordIds: dueWordIds(p),
+    pendingMistakes: pendingMistakeIds(p).map((id) => p.arcadeV1.mistakes[id].question),
+    ...extra,
+  };
 }
 
 function buildQueue(mode: string): Question[] | null {
@@ -50,7 +56,8 @@ function buildQueue(mode: string): Question[] | null {
   }
 
   if (mode === 'mistakes') {
-    const items = Object.values(p.arcadeV1.mistakes)
+    const items = pendingMistakeIds(p)
+      .map((id) => p.arcadeV1.mistakes[id])
       .sort((a, b) => b.wrongAt - a.wrongAt).slice(0, meta.count).map((m) => m.question);
     return items.length ? items : null;
   }

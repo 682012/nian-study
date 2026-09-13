@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useProgress } from '../store/progress-store';
 import { useSession } from '../store/session-store';
-import { dueWordCount } from '../lib/progress';
+import { dueWordCount, pendingMistakeIds } from '../lib/progress';
 import { hash } from '../quiz/rng';
 import poems from '../content/poems.json';
 
@@ -18,7 +18,7 @@ export default function TodayPage({ onChat }: { onChat: () => void }) {
   const p = useProgress();
   const start = useSession((s) => s.start);
   const due = dueWordCount(p);
-  const mistakes = Object.keys(p.arcadeV1.mistakes).length;
+  const mistakes = pendingMistakeIds(p).length;
   const poem = useMemo(() => poems[hash(new Date().toISOString().slice(0, 10)) % poems.length], []);
   const tasks = [
     { seal: '译', title: '译语馆 · 重点词', sub: `真实 822 词笺 · 已答对 ${p.today.english} 词`, n: p.today.english, total: 30, mode: 'listen', tone: 'jade' },
