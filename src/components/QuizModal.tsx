@@ -3,6 +3,7 @@ import { useSession } from '../store/session-store';
 import { FULL_MODE_MAP } from '../quiz/modes';
 import type { Question } from '../quiz/types';
 import { speech } from '../lib/speech';
+import { useUi } from '../store/ui-store';
 
 function Notes({ q }: { q: Question }) {
   const n = q.notes;
@@ -89,6 +90,7 @@ function TokensBody({ q, answered }: { q: Question; answered: boolean }) {
 
 export default function QuizModal() {
   const { status, mode, queue, index, score, combo, bestCombo, lives, result, empty, next, quit, start } = useSession();
+  const openChat = useUi((s) => s.openChat);
   const meta = mode ? FULL_MODE_MAP[mode] : null;
 
   if (status === 'idle') {
@@ -165,6 +167,7 @@ export default function QuizModal() {
               </div>
               {q.type !== 'choice' && <p className="q-answer-line">正解：{q.expected || (typeof q.answer === 'number' ? q.choices?.[q.answer] : q.answer)}</p>}
               <p className="q-explain">{q.explanation}</p>
+              <button className="ask-nian" onClick={() => openChat({ prompt: q.passage ? `${q.passage}\n题目：${q.prompt}` : q.prompt, topic: q.skill || q.eyebrow, skill: q.skill, explanation: q.explanation })}>让念安换个讲法</button>
               <Notes q={q} />
               <button className="primary-btn next-btn" onClick={next}>
                 {index + 1 >= queue.length || (mode === 'endless' && lives <= 0) ? '收卷看结果' : '下一题 →'}

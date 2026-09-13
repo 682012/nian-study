@@ -1,34 +1,49 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useProgress } from '../store/progress-store';
+import { useUi, type ChatContext } from '../store/ui-store';
 import { subjectStats, dueWordCount, pendingMistakeIds } from '../lib/progress';
 import { nianRespond, type Snapshot } from '../lib/nian-local';
+import {
+  DEFAULT_SETTINGS, loadSettings, saveSettings, streamNian, type AiSettings, type ChatTurn,
+} from '../lib/ai-client';
+import SettingsModal from './SettingsModal';
 import type { Subject } from '../quiz/types';
 
 const MOOD_IMG: Record<string, string> = {
   idle: 'idle', welcome: 'welcome', teaching: 'teaching', thinking: 'thinking',
   correct: 'correct', celebrate: 'celebrate', break: 'break', tease: 'tease', invite: 'invite',
 };
+interface Msg { role: 'user' | 'nian'; text: string; mood?: string; cloud?: boolean; streaming?: boolean }
 
-interface Msg { role: 'user' | 'nian'; text: string; mood?: string }
-
-export default function Companion({ open, onClose }: { open: boolean; onClose: () => void }) {
+export default function Companion() {
+  const { chatOpen, chatContext, closeChat } = useUi();
   const p = useProgress();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
   const [mood, setMood] = useState('welcome');
   const [busy, setBusy] = useState(false);
+  const [settings, setSettings] = useState<AiSettings>(DEFAULT_SETTINGS);
+  const [showSettings, setShowSettings] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const contextHandled = useRef<string | null>(null);
 
+  useEffect(() => { setSettings(loadSettings()); }, [chatOpen]);
   useEffect(() => {
-    if (open && messages.length === 0) {
-      setMessages([{ role: 'nian', text: '来了？先做第一小卷，今天走多远等做完再定。想问什么，直接说。', mood: 'welcome' }]);
+    if (chatOpen && messages.length === 0) {
+      setMessages([{ role: 'nian', text: '来了？先做第一小卷，今天走多远等做完再定。哪道题卡住，直接发我。', mood: 'welcome' }]);
     }
-  }, [open]);
+  }, [chatOpen]);
   useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }); }, [messages, busy]);
 
-  if (!open) return null;
+  // 从错题反馈“问念安”进来：带题目上下文自动提问
+  useEffect(() => {
+    if (chatOpen && chatContext && contextHandled.current !== chatContext.prompt) {
+      contextHandled.current = chatContext.prompt;
+      void ask(chatContext.prompt, chatContext);
+    }
+  }, [chatOpen, chatContext]);
 
-  const snapshot = (): Snapshot => {
+  const snapshot = useMemo((): Snapshot => {
     const stats: Record<Subject, ReturnType<typeof subjectStats>> = {
       english: subjectStats(p, 'english'), math: subjectStats(p, 'math'), chinese: subjectStats(p, 'chinese'),
     };
@@ -39,49 +54,92 @@ export default function Companion({ open, onClose }: { open: boolean; onClose: (
       dueWords: dueWordCount(p), totalMistakes: pendingMistakeIds(p).length,
       weakestSubject: weakest, weakestRate: stats[weakest].rate, bestCombo: p.arcadeV1.bestCombo,
     };
+  }, [p]);
+
+  if (!chatOpen) return null;
+
+  const localReply = (text: string, ctx: ChatContext | null): Msg => {
+    const r = nianRespond(text, snapshot, ctx ? { prompt: ctx.prompt, topic: ctx.topic, skill: ctx.skill, explanation: ctx.explanation } : null);
+    setMood(r.mood);
+    return { role: 'nian', text: r.reply, mood: r.mood };
   };
 
-  const send = () => {
-    const text = input.trim();
-    if (!text || busy) return;
+  async function ask(text: string, ctx: ChatContext | null = null) {
+    const content = text.trim();
+    if (!content || busy) return;
     setBusy(true);
-    setMessages((m) => [...m, { role: 'user', text }]);
+    const history: ChatTurn[] = messages
+      .filter((m) => !m.streaming)
+      .slice(-8)
+      .map((m) => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.text }));
+    setMessages((m) => [...m, { role: 'user', text: content }]);
     setInput('');
-    // 轻微延迟模拟“想一下”，也给云 AI 接入留同一个位置
-    setTimeout(() => {
-      const r = nianRespond(text, snapshot());
-      setMood(r.mood);
-      setMessages((m) => [...m, { role: 'nian', text: r.reply, mood: r.mood }]);
+
+    if (!settings.enabled || !settings.apiKey) {
+      setTimeout(() => { setMessages((m) => [...m, localReply(content, ctx)]); setBusy(false); }, 220);
+      return;
+    }
+
+    const placeholderId = Date.now();
+    setMessages((m) => [...m, { role: 'nian', text: '', mood: 'thinking', cloud: true, streaming: true }]);
+    let acc = '';
+    try {
+      await streamNian(settings, {
+        message: content, history, snapshot: snapshot as unknown as Record<string, unknown>,
+        mistakeContext: ctx ? { prompt: ctx.prompt, topic: ctx.topic, skill: ctx.skill, explanation: ctx.explanation } : null,
+      }, {
+        onDelta: (delta) => {
+          acc += delta;
+          setMessages((m) => m.map((msg, i) => i === m.length - 1 && msg.streaming ? { ...msg, text: acc } : msg));
+        },
+      });
+      if (!acc.trim()) throw new Error('EMPTY');
+      setMessages((m) => m.map((msg) => msg.streaming ? { ...msg, streaming: false } : msg));
+    } catch {
+      // 云端失败：本地规则兜底，并提示
+      const fallback = localReply(content, ctx).text;
+      setMessages((m) => m.filter((_, i) => i !== m.length - 1).concat([
+        { role: 'nian', text: fallback, mood: 'thinking' },
+        { role: 'nian', text: '（云端暂时没接上，先用本地话回你；要点右上角齿轮检查网关和 Key。）', mood: 'idle' },
+      ]));
+    } finally {
       setBusy(false);
-    }, 260);
-  };
+      void placeholderId;
+    }
+  }
 
   return (
     <div className="chat-mask">
       <div className="chat-dialog">
         <header className="chat-head">
           <img src={`/assets/nian-song/${MOOD_IMG[mood] || 'idle'}.webp`} alt="" className="chat-avatar" />
-          <div><strong>林念安</strong><small>同窗在席 · 本地应答</small></div>
-          <button className="quiz-close" onClick={onClose} aria-label="关闭">×</button>
+          <div><strong>林念安</strong><small>{settings.enabled && settings.apiKey ? '云端在席' : '同窗在席 · 本地应答'}</small></div>
+          <button className="chat-gear" onClick={() => setShowSettings(true)} aria-label="设置">⚙</button>
+          <button className="quiz-close" onClick={closeChat} aria-label="关闭">×</button>
         </header>
         <div className="chat-body" ref={scrollRef}>
           {messages.map((m, i) => (
             <div key={i} className={`bubble-row ${m.role}`}>
               {m.role === 'nian' && <img src={`/assets/nian-song/${MOOD_IMG[m.mood || mood] || 'idle'}.webp`} className="bubble-avatar" alt="" />}
-              <div className="bubble">{m.text}</div>
+              <div className={`bubble ${m.streaming ? 'streaming' : ''}`}>
+                {m.text || (m.streaming ? '…' : '')}
+              </div>
             </div>
           ))}
-          {busy && <div className="bubble-row nian"><div className="bubble typing"><i /><i /><i /></div></div>}
+          {busy && !messages.some((m) => m.streaming) && <div className="bubble-row nian"><div className="bubble typing"><i /><i /><i /></div></div>}
         </div>
         <footer className="chat-input">
           <input
             value={input} placeholder="累了、想先学什么、哪道题不会……"
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && send()}
+            onKeyDown={(e) => e.key === 'Enter' && void ask(input)}
           />
-          <button className="primary-btn" onClick={send} disabled={!input.trim() || busy}>说</button>
+          <button className="primary-btn" onClick={() => void ask(input)} disabled={!input.trim() || busy}>说</button>
         </footer>
       </div>
+      {showSettings && (
+        <SettingsModal settings={settings} onClose={() => setShowSettings(false)} onSave={(s) => { setSettings(s); saveSettings(s); }} />
+      )}
     </div>
   );
 }

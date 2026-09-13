@@ -18,3 +18,15 @@
 .chat-input input:focus { border-color: var(--green); }
 .chat-input .primary-btn { width: auto; padding: 0 22px; }
 .chat-fab { position: fixed; right: 18px; bottom: 84px; width: 52px; height: 52px; border-radius: 50%; border: 0; background: var(--jade); color: var(--gold-light); font-family: var(--serif); font-size: 24px; box-shadow: var(--shadow); z-index: 30; }
+.settings-dialog { height: auto; max-height: 80vh; }
+.settings-body { padding: 16px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; }
+.settings-body label { font-size: 13px; color: var(--muted); display: flex; flex-direction: column; gap: 6px; }
+.settings-body input[type=password], .settings-body input:not([type]) { border: 1.5px solid var(--line); border-radius: 10px; padding: 11px 12px; font-size: 15px; background: var(--cream-50); outline: none; }
+.settings-body input:focus { border-color: var(--green); }
+.switch-row { flex-direction: row !important; align-items: center; justify-content: space-between; }
+.switch-row small { display: block; color: var(--muted); }
+.switch-row input { width: 20px; height: 20px; accent-color: var(--jade); }
+.settings-actions { display: flex; gap: 10px; } .settings-actions button { width: auto; flex: 1; }
+.test-result { font-size: 13px; padding: 8px 12px; border-radius: 10px; }
+.test-result.ok { background: #eef6ee; color: #3f7a52; } .test-result.no { background: #f9eeeb; color: #a04e3c; }
+.ask-nian { margin-top: 10px; border: 1px solid var(--green); background: #eef4f0; color: var(--jade); border-radius: 999px; padding: 7px 16px; font-size: 13px; }

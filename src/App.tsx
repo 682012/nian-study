@@ -5,6 +5,7 @@ import LibraryPage from './pages/LibraryPage';
 import CourtyardPage from './pages/CourtyardPage';
 import QuizModal from './components/QuizModal';
 import Companion from './components/Companion';
+import { useUi } from './store/ui-store';
 import { useProgress } from './store/progress-store';
 import { useSession } from './store/session-store';
 
@@ -16,12 +17,12 @@ const TABS = [
 ] as const;
 
 export default function App() {
-  const [chat, setChat] = useState(false);
   const startSession = useSession((s) => s.start);
+  const openChat = useUi((s) => s.openChat);
   useEffect(() => {
     const action = new URLSearchParams(location.search).get('action');
     if (action === 'daily' || action === 'adaptive') startSession(action);
-    if (action === 'chat') setChat(true);
+    if (action === 'chat') openChat();
   }, [startSession]);
   const [tab, setTab] = useState<typeof TABS[number]['id']>('today');
   const streak = useProgress((p) => p.streak);
@@ -33,7 +34,7 @@ export default function App() {
         <span className="streak-badge">连课 {streak} 天</span>
       </header>
       <main className="content">
-        {tab === 'today' && <TodayPage onChat={() => setChat(true)} />}
+        {tab === 'today' && <TodayPage onChat={() => openChat()} />}
         {tab === 'practice' && <PracticePage />}
         {tab === 'library' && <LibraryPage />}
         {tab === 'courtyard' && <CourtyardPage />}
@@ -42,8 +43,8 @@ export default function App() {
         {TABS.map((t) => <button key={t.id} className={tab === t.id ? 'active' : ''} onClick={() => setTab(t.id)}>{t.label}</button>)}
       </nav>
       <QuizModal />
-      <Companion open={chat} onClose={() => setChat(false)} />
-      {tab !== 'today' && <button className="chat-fab" onClick={() => setChat(true)}>安</button>}
+      <Companion />
+      {tab !== 'today' && <button className="chat-fab" onClick={() => openChat()}>安</button>}
     </div>
   );
 }
