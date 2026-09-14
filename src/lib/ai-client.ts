@@ -9,10 +9,10 @@ export interface AiSettings {
 }
 
 export const DEFAULT_SETTINGS: AiSettings = {
-  enabled: false,
-  baseUrl: 'https://api.openai.com/v1',
-  apiKey: '',
-  model: 'gpt-4o-mini',
+  enabled: true,          // 服务器已配私有网关，开箱即用；填自己的 Key 则走你的网关
+  baseUrl: '',            // 留空 = 用服务器默认网关
+  apiKey: '',             // 留空 = 用服务器密钥，Key 不会下发到浏览器
+  model: '',
 };
 
 export function loadSettings(): AiSettings {
@@ -45,7 +45,9 @@ export async function streamNian(s: AiSettings, req: AiRequest, h: StreamHandler
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
-      baseUrl: s.baseUrl, apiKey: s.apiKey, model: s.model,
+      ...(s.baseUrl ? { baseUrl: s.baseUrl } : {}),
+      ...(s.apiKey ? { apiKey: s.apiKey } : {}),
+      ...(s.model ? { model: s.model } : {}),
       message: req.message, history: req.history, snapshot: req.snapshot, mistakeContext: req.mistakeContext ?? null,
     }),
     signal: h.signal,
@@ -85,7 +87,9 @@ export async function testNian(s: AiSettings): Promise<{ ok: boolean; detail: st
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
-        baseUrl: s.baseUrl, apiKey: s.apiKey, model: s.model,
+        ...(s.baseUrl ? { baseUrl: s.baseUrl } : {}),
+        ...(s.apiKey ? { apiKey: s.apiKey } : {}),
+        ...(s.model ? { model: s.model } : {}),
         message: 'ping', history: [], snapshot: {}, mistakeContext: null,
       }),
     });

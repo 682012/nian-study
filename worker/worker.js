@@ -1,4 +1,4 @@
-const VERSION = "nian-v10.2-voice";
+const VERSION = "nian-v10.4-gateway";
 const JSON_HEADERS = {
   "content-type": "application/json; charset=utf-8",
   "cache-control": "no-store",
@@ -52,7 +52,7 @@ function cleanModel(value, fallback) {
 // BYO 网关：仅允许 https 公网地址，防 SSRF 与键位注入。
 function cleanBaseUrl(value) {
   const raw = String(value || "").trim().replace(/\/+$/, "");
-  if (!raw) return DEFAULT_BASE;
+  if (!raw) return "";
   let url;
   try { url = new URL(raw); } catch { return ""; }
   if (url.protocol !== "https:") return "";
@@ -92,10 +92,11 @@ function aiSystemPrompt(snapshot, mistakeContext) {
   return `你是学习应用“清晖书院”里的陪学角色林念安，陪广东中职学生备考“3+证书”考试（语文、数学、英语）。用简洁、自然、有一点书院气质的中文回答：先直接把学生的问题或题目讲懂，再给一个可执行的小步骤。讲题先说第一步怎么审题，关键推导不跳步；不确定的字音字形、文言释义、考试政策不要编造，如实说明。涉及自伤、医疗、法律或危险行为时，优先给安全建议并鼓励联系可信任的成年人或专业帮助。${summary}${mistake}`;
 }
 
-async function upstreamChat(body, apiKey, { stream }) {
-  const base = cleanBaseUrl(body?.baseUrl);
+async function upstreamChat(body, apiKey, { stream, env }) {
+  // 优先用请求方自带网关（BYO），否则用 Worker 配置的默认私有网关（key 不出服务器）
+  const base = cleanBaseUrl(body?.baseUrl) || cleanBaseUrl(env?.AI_BASE_URL) || DEFAULT_BASE;
   if (!base) return json({ error: "invalid base url", code: "INVALID_BASE_URL" }, 400);
-  const model = cleanModel(body?.model, "gpt-4o-mini");
+  const model = cleanModel(body?.model, env?.AI_MODEL || "gpt-4o-mini");
   if (!model) return json({ error: "invalid model", code: "INVALID_MODEL" }, 400);
   const payload = {
     model,
@@ -106,12 +107,19 @@ async function upstreamChat(body, apiKey, { stream }) {
       { role: "user", content: String(body?.message ?? "").trim().slice(0, 800) },
     ],
   };
-  return fetch(`${base}/chat/completions`, {
+  const doFetch = () => fetch(`${base}/chat/completions`, {
     method: "POST",
     headers: { authorization: `Bearer ${apiKey}`, "content-type": "application/json" },
     body: JSON.stringify(stream ? { ...payload, stream_options: { include_usage: false } } : payload),
     signal: AbortSignal.timeout(stream ? 30_000 : 20_000),
   });
+  let result = await doFetch();
+  // 部分上游渠道出口地区被拒（403 unsupported_country）：换新渠道重试一次
+  if (!stream && result.status === 403) {
+    const probe = await result.clone().text().catch(() => "");
+    if (probe.includes("unsupported_country") || probe.includes("request_forbidden")) result = await doFetch();
+  }
+  return result;
 }
 
 function safeNumber(value, min = 0, max = 1_000_000) {
@@ -144,7 +152,15 @@ async function handleAIStream(request, env) {
   if (!apiKey) return json({ error: "api key required", code: "API_KEY_REQUIRED" }, 401);
   let upstream;
   try {
-    upstream = await upstreamChat(body, apiKey, { stream: true });
+    upstream = await upstreamChat(body, apiKey, { stream: true, env });
+    if (upstream.status === 403) {
+      const probe = await upstream.text().catch(() => "");
+      if (probe.includes("unsupported_country") || probe.includes("request_forbidden")) {
+        upstream = await upstreamChat(body, apiKey, { stream: true, env });
+      } else {
+        return json({ error: "AI provider rejected the request", code: "UPSTREAM_AI_FAILED", status: 403 }, 502);
+      }
+    }
   } catch (error) {
     const timedOut = error?.name === "TimeoutError" || error?.name === "AbortError";
     return json({ error: timedOut ? "AI provider timed out" : "AI service unavailable", code: timedOut ? "UPSTREAM_TIMEOUT" : "UPSTREAM_UNAVAILABLE" }, 502);
@@ -169,7 +185,7 @@ async function handleAI(request, env) {
   const apiKey = cleanApiKey(body?.apiKey, env.OPENAI_API_KEY);
   if (!apiKey) return json({ error: "api key required", code: "API_KEY_REQUIRED" }, 401);
   try {
-    const upstream = await upstreamChat(body, apiKey, { stream: false });
+    const upstream = await upstreamChat(body, apiKey, { stream: false, env });
     if (!upstream.ok) return json({ error: "AI provider rejected the request", code: "UPSTREAM_AI_FAILED", status: upstream.status }, 502);
     const raw = await upstream.text();
     if (raw.length > 250_000) return json({ error: "AI response too large", code: "UPSTREAM_RESPONSE_TOO_LARGE" }, 502);

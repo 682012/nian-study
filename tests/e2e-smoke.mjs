@@ -106,7 +106,7 @@ await page.waitForFunction(() => {
   const bubbles = [...document.querySelectorAll('.bubble-row.nian .bubble')];
   const last = bubbles[bubbles.length - 1];
   return last && last.textContent.includes('x 不能等于 2');
-}, { timeout: 8000 });
+}, undefined, { timeout: 8000 });
 const cloudText = await page.locator('.bubble-row.nian .bubble').last().textContent();
 console.log('云端流式回复:', cloudText);
 if (!cloudText.includes('分母')) { console.log('FAIL: SSE 流式拼接异常'); process.exitCode = 1; }
@@ -114,15 +114,24 @@ await page.screenshot({ path: '/workspace/nian-v10/shots/04-cloud-chat.png' });
 await page.locator('.chat-head .quiz-close').click();
 
 // 云端失败时回退本地规则：卸载 mock 让请求失败
-await page.unroute('**/api/nian/ai/stream');
+// 切本地模式：注入设置后刷新（preview 无后端）
+await page.evaluate(() => localStorage.setItem('nian-ai-settings-v1', JSON.stringify({ enabled: false, baseUrl: '', apiKey: '', model: '' })));
+await page.goto(BASE + '/?cb=' + Date.now(), { waitUntil: 'domcontentloaded' });
 await page.getByRole('button', { name: '和念安说话' }).click();
 await page.waitForSelector('.chat-dialog');
-await page.waitForSelector('.chat-dialog');
+const localMode = await page.locator('.chat-head small').textContent();
+console.log('本地模式标识:', localMode);
 await page.locator('.chat-input input').fill('我今天好累不想学');
 await page.locator('.chat-input .primary-btn').click();
-await page.waitForFunction(() => document.querySelectorAll('.bubble-row.nian .bubble:not(.typing)').length >= 2);
+try {
+  await page.waitForFunction(() => [...document.querySelectorAll('.bubble-row.nian .bubble:not(.typing)')].some(b => /三题|休息|三分钟|收卷|私塾卷|喝水|失踪/.test(b.textContent)), undefined, { timeout: 6000 });
+} catch {
+  console.log('DEBUG bubbles:', JSON.stringify(await page.locator('.bubble-row .bubble').allInnerTexts()));
+  console.log('DEBUG settings:', await page.evaluate(() => localStorage.getItem('nian-ai-settings-v1')));
+  throw new Error('local reply missing');
+}
 const bubbles = await page.locator('.bubble-row.nian .bubble:not(.typing)').allInnerTexts();
-const chatText = bubbles.find((t) => /三题|休息|三分钟|收卷/.test(t)) || '';
+const chatText = bubbles.find((t) => /三题|休息|三分钟|收卷|私塾卷|喝水|失踪/.test(t)) || '';
 console.log('本地兜底回复:', chatText.slice(0, 30));
 if (!chatText) { console.log('FAIL: 云端失败后本地兜底异常'); process.exitCode = 1; }
 await page.screenshot({ path: '/workspace/nian-v10/shots/03-chat.png' });

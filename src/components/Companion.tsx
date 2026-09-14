@@ -75,7 +75,7 @@ export default function Companion() {
     setMessages((m) => [...m, { role: 'user', text: content }]);
     setInput('');
 
-    if (!settings.enabled || !settings.apiKey) {
+    if (!settings.enabled) {
       setTimeout(() => { setMessages((m) => [...m, localReply(content, ctx)]); setBusy(false); }, 220);
       return;
     }
@@ -113,7 +113,7 @@ export default function Companion() {
       <div className="chat-dialog">
         <header className="chat-head">
           <img src={`/assets/nian-song/${MOOD_IMG[mood] || 'idle'}.webp`} alt="" className="chat-avatar" />
-          <div><strong>林念安</strong><small>{settings.enabled && settings.apiKey ? '云端在席' : '同窗在席 · 本地应答'}</small></div>
+          <div><strong>林念安</strong><small>{settings.enabled ? '云端在席' : '同窗在席 · 本地应答'}</small></div>
           <button className="chat-gear" onClick={() => setShowSettings(true)} aria-label="设置">⚙</button>
           <button className="quiz-close" onClick={closeChat} aria-label="关闭">×</button>
         </header>
