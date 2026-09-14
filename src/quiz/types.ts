@@ -1,6 +1,6 @@
 // V10 统一题目模型。所有题库与程序化出题器都产出这一结构，答题 UI 只认它。
 export type Subject = 'english' | 'math' | 'chinese';
-export type QuestionType = 'choice' | 'input' | 'tokens';
+export type QuestionType = 'choice' | 'input' | 'tokens' | 'blank';
 
 export interface RubricPoint {
   point: string;
@@ -21,7 +21,7 @@ export interface Question {
   phonetic?: string;
   hint?: string;
   choices?: string[];       // type=choice
-  answer: number | string;  // choice: 选项下标；input: 归一化后的正确文本
+  answer: number | string | string[];  // choice: 下标；input: 归一化文本；blank: 等价答案数组
   tokens?: { label: string; index: number }[]; // type=tokens 被打乱的词块
   expected?: string;        // tokens/input 的归一化答案
   svg?: string;

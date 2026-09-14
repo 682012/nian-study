@@ -26,5 +26,26 @@ export const PRESET_MODES: ModeMeta[] = [
 
 export const MODE_MAP: Record<string, ModeMeta> = Object.fromEntries(MODES.map((m) => [m.id, m]));
 
-export const ALL_MODES = [...MODES, ...PRESET_MODES];
+
+
+// 填空专项（考纲第二大题）
+export const DICTATION_MODE: ModeMeta = { id: 'gushi', seal: '默', title: '古诗文默写', note: '高频名篇名句 · 逐字写对', count: 10, tone: 'rose', subject: 'chinese' };
+export const FILL_MODE: ModeMeta = { id: 'math-fill', seal: '空', title: '数学填空专项', note: '方程·三角·数列·几何 仿真填空', count: 10, tone: 'gold', subject: 'math' };
+
+// 数学考点专项（程序化出题，按 topic 过滤）
+export interface MathTopicGroup { id: string; title: string; seal: string; topics: string[] }
+export const MATH_TOPIC_GROUPS: MathTopicGroup[] = [
+  { id: 'mt-trig', title: '三角函数专项', seal: '角', topics: ['特殊角三角函数', '同角三角函数关系', '三角函数周期', '解三角形'] },
+  { id: 'mt-solid', title: '立体几何专项', seal: '体', topics: ['圆柱体积', '球的体积', '球的表面积', '圆锥体积', '平面几何'] },
+  { id: 'mt-func', title: '函数与不等式', seal: '函', topics: ['函数定义域', '二次函数顶点', '一次函数', '不等式', '指数运算', '对数运算', '增长率', '百分数'] },
+  { id: 'mt-seq', title: '数列专项', seal: '列', topics: ['等差数列', '数列求和', '等比数列通项', '等比数列求和'] },
+  { id: 'mt-vec', title: '向量与解析几何', seal: '向', topics: ['向量长度', '向量数量积', '向量加法', '坐标中点', '直线斜率', '圆的标准方程'] },
+  { id: 'mt-set', title: '集合·复数·统计概率', seal: '合', topics: ['集合运算', '充要条件', '复数加法', '虚数单位的幂', '平均数', '极差', '古典概率', '排列组合'] },
+];
+
+export const MATH_TOPIC_MODES: ModeMeta[] = [FILL_MODE, DICTATION_MODE, ...MATH_TOPIC_GROUPS.map((g) => ({
+  id: g.id, seal: g.seal, title: g.title, note: '按考纲考点无限仿真出题', count: 10, tone: 'gold', subject: 'math',
+}))];
+
+export const ALL_MODES = [...MODES, ...PRESET_MODES, ...MATH_TOPIC_MODES];
 export const FULL_MODE_MAP: Record<string, ModeMeta> = Object.fromEntries(ALL_MODES.map((m) => [m.id, m]));

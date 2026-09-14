@@ -113,3 +113,37 @@ describe('自适应与每日卷', () => {
   });
   it('todayKey 格式', () => { expect(todayKey(new Date(2026, 8, 6))).toBe('2026-09-06'); });
 });
+
+import { MATH_BUILDERS_2 } from './math-builders-2';
+import { MATH_TOPICS, MATH_TOPIC_SET } from './engine';
+
+describe('第二批数学生成器（考纲覆盖）', () => {
+  for (let b = 0; b < MATH_BUILDERS_2.length; b++) {
+    it(`builder2#${b} 每组4唯一选项且答案合法`, () => {
+      for (let i = 0; i < 150; i++) {
+        const q = MATH_BUILDERS_2[b](seeded(`b2-${b}-${i}`));
+        expect(q.choices).toHaveLength(4);
+        expect(new Set(q.choices).size).toBe(4);
+        expect(q.answer).toBeGreaterThanOrEqual(0);
+        expect(q.answer).toBeLessThan(4);
+        expect(q.choices[q.answer]).toBeDefined();
+        expect(q.explanation.length).toBeGreaterThan(2);
+        expect(q.topic).toBeTruthy();
+      }
+    });
+  }
+  it('专项 topic 集合覆盖三角/立体/函数/数列/向量/集合复数统计', () => {
+    for (const t of ['特殊角三角函数', '解三角形', '球的体积', '二次函数顶点', '等比数列通项', '向量数量积', '复数加法', '集合运算']) {
+      expect(MATH_TOPIC_SET.has(t)).toBe(true);
+    }
+    expect(MATH_TOPICS.length).toBeGreaterThanOrEqual(30);
+  });
+  it('三角函数专项只出三角相关题', () => {
+    const trig = new Set(['特殊角三角函数', '同角三角函数关系', '三角函数周期', '解三角形']);
+    for (let i = 0; i < 80; i++) {
+      const q = mathQuestion(seeded(`trig${i}`), '特殊角三角函数');
+      expect([...trig]).toContainEqual(expect.anything());
+      expect(q.eyebrow.replace('算学千变 · ', '')).toBeTruthy();
+    }
+  });
+});

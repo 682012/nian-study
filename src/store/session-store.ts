@@ -4,7 +4,7 @@ import {
   questionForType, adaptiveCycle, buildDailyPaper, checkAnswer, todayKey,
   type GeneratorType, type EngineContext, type SubjectStat,
 } from '../quiz/engine';
-import { FULL_MODE_MAP } from '../quiz/modes';
+import { FULL_MODE_MAP, MATH_TOPIC_GROUPS } from '../quiz/modes';
 import type { Rng } from '../quiz/rng';
 import { useProgress } from './progress-store';
 import { subjectStats, dueWordIds, pendingMistakeIds } from '../lib/progress';

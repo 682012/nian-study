@@ -5,6 +5,10 @@ import {
   ENGLISH_PRESET, MATH_PRESET, APPRECIATE_BANK,
 } from './sources';
 import { MATH_BUILDERS } from './math-builders';
+import { MATH_BUILDERS_2 } from './math-builders-2';
+import { mathFillQuestion } from './math-fill';
+import { gradeBlank } from './blank-grade';
+import { DICTATION_BANK } from './sources';
 import { pick, pickWeighted, shuffle, seeded, normalizeAnswer, type Rng } from './rng';
 
 export interface EngineContext {
@@ -112,14 +116,25 @@ export function chineseQuestion(rng: Rng = Math.random): Question {
   };
 }
 
-export function mathQuestion(rng: Rng = Math.random): Question {
-  const built = pick(MATH_BUILDERS, rng)(rng);
+const ALL_MATH_BUILDERS = [...MATH_BUILDERS, ...MATH_BUILDERS_2] as Array<(rng: Rng) => {
+  topic: string; prompt: string; choices: string[]; answer: number; explanation: string; svg?: string;
+}>;
+
+export function mathQuestion(rng: Rng = Math.random, topic?: string): Question {
+  const realPool = topic
+    ? ALL_MATH_BUILDERS.filter((fn) => MATH_TOPIC_SET.has(topic) && fn(seeded(topic)).topic === topic)
+    : ALL_MATH_BUILDERS;
+  const fn = pick(realPool.length ? realPool : ALL_MATH_BUILDERS, rng);
+  const built = fn(rng);
   return {
     id: `math-gen-${built.topic}-${Math.floor(rng() * 1e8)}`, subject: 'math', kind: 'math', type: 'choice',
     eyebrow: `算学千变 · ${built.topic}`, prompt: built.prompt, choices: built.choices, answer: built.answer,
     svg: built.svg, explanation: built.explanation,
   };
 }
+
+export const MATH_TOPIC_SET = new Set(ALL_MATH_BUILDERS.flatMap((fn) => [fn(seeded('topic')).topic]));
+export const MATH_TOPICS = Array.from(MATH_TOPIC_SET).sort();
 
 export function englishPresetQuestion(rng: Rng = Math.random): Question {
   const q = pick(ENGLISH_PRESET, rng);
@@ -152,7 +167,7 @@ export function appreciateQuestion(rng: Rng = Math.random): Question {
 
 export type GeneratorType =
   | 'meaning' | 'listen' | 'dictation' | 'sentence' | 'listening'
-  | 'math' | 'chinese' | 'reading' | 'english-preset' | 'math-preset' | 'appreciate';
+  | 'math' | 'chinese' | 'reading' | 'english-preset' | 'math-preset' | 'appreciate' | 'math-fill' | 'gushi';
 
 export function questionForType(type: GeneratorType, ctx: EngineContext, rng: Rng): Question {
   switch (type) {
@@ -165,6 +180,11 @@ export function questionForType(type: GeneratorType, ctx: EngineContext, rng: Rn
     case 'english-preset': return englishPresetQuestion(rng);
     case 'math-preset': return mathPresetQuestion(rng);
     case 'appreciate': return appreciateQuestion(rng);
+    case 'math-fill': return mathFillQuestion(rng);
+    case 'gushi': {
+      const d = pick(DICTATION_BANK, rng);
+      return { id: d.id, subject: 'chinese', kind: '古诗文默写', type: 'blank', eyebrow: `默写 · ${d.source}`, prompt: d.prompt, answer: d.accepts, explanation: `出自${d.source}。注意易错字，逐字写对。` };
+    }
   }
 }
 
@@ -219,6 +239,7 @@ export function buildDailyPaper(dateKey: string, stats: Record<Subject, SubjectS
 export function checkAnswer(q: Question, response: string | number | string[]): boolean {
   if (q.type === 'choice') return Number(response) === q.answer;
   if (q.type === 'input') return normalizeAnswer(String(response)) === normalizeAnswer(q.expected ?? q.answer);
+  if (q.type === 'blank') return gradeBlank(String(response), q.answer as string[]);
   if (q.type === 'tokens') {
     const ordered = (response as string[]);
     return normalizeAnswer(ordered.join(' ')) === normalizeAnswer(q.expected ?? q.answer);

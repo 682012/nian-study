@@ -48,6 +48,24 @@ function ChoiceBody({ q, answered, onPick }: { q: Question; answered: boolean; o
   );
 }
 
+function BlankBody({ q, answered }: { q: Question; answered: boolean }) {
+  const [value, setValue] = useState('');
+  const respond = useSession((s) => s.respond);
+  const isBlank = q.type === 'blank';
+  return (
+    <div className="q-input-wrap">
+      {q.hint && <div className="q-hint">{q.hint}</div>}
+      <input
+        className="q-input" autoComplete="off" autoCapitalize="off" spellCheck={false}
+        placeholder={isBlank ? '在横线上填写答案' : '把听到的写在这里'} value={value} disabled={answered}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => { if (e.key === 'Enter' && value.trim() && !answered) respond(value); }}
+      />
+      {!answered && <button className="primary-btn" disabled={!value.trim()} onClick={() => respond(value)}>落笔</button>}
+    </div>
+  );
+}
+
 function InputBody({ q, answered }: { q: Question; answered: boolean }) {
   const [value, setValue] = useState('');
   const respond = useSession((s) => s.respond);
@@ -156,7 +174,7 @@ export default function QuizModal() {
           {q.svg && <div className="q-svg" dangerouslySetInnerHTML={{ __html: q.svg }} />}
 
           {q.type === 'choice' && <ChoiceBody q={q} answered={answered} onPick={(i) => useSession.getState().respond(i)} />}
-          {q.type === 'input' && <InputBody q={q} answered={answered} />}
+          {(q.type === 'input' || q.type === 'blank') && <BlankBody q={q} answered={answered} />}
           {q.type === 'tokens' && <TokensBody q={q} answered={answered} />}
 
           {answered && (
@@ -165,7 +183,7 @@ export default function QuizModal() {
                 <strong>{result!.correct ? '落笔准确' : '先别急，看这一步'}</strong>
                 <span>+{result!.points} 学识</span>
               </div>
-              {q.type !== 'choice' && <p className="q-answer-line">正解：{q.expected || (typeof q.answer === 'number' ? q.choices?.[q.answer] : q.answer)}</p>}
+              {(q.type === 'input' || q.type === 'blank' || q.type === 'tokens') && <p className="q-answer-line">正解：{q.expected || (Array.isArray(q.answer) ? q.answer.join(' 或 ') : typeof q.answer === 'number' ? q.choices?.[q.answer] : q.answer)}</p>}
               <p className="q-explain">{q.explanation}</p>
               <button className="ask-nian" onClick={() => openChat({ prompt: q.passage ? `${q.passage}\n题目：${q.prompt}` : q.prompt, topic: q.skill || q.eyebrow, skill: q.skill, explanation: q.explanation })}>让念安换个讲法</button>
               <Notes q={q} />

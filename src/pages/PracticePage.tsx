@@ -1,4 +1,4 @@
-import { MODES, PRESET_MODES } from '../quiz/modes';
+import { MODES, PRESET_MODES, MATH_TOPIC_MODES } from '../quiz/modes';
 import { useProgress } from '../store/progress-store';
 import { pendingMistakeIds } from '../lib/progress';
 import { useSession } from '../store/session-store';
@@ -19,6 +19,8 @@ export default function PracticePage() {
       <div className="page-head"><h1>挑一馆，开始练。</h1><p>听、写、算、读；从基础温习到一卷小测。</p></div>
       <h2 className="section-title">日常十二馆</h2>
       <div className="mode-grid">{MODES.map(card)}</div>
+      <h2 className="section-title">数学考点专项 · 考纲全覆盖</h2>
+      <div className="mode-grid">{MATH_TOPIC_MODES.map(card)}</div>
       <h2 className="section-title">精编卷 · 七步讲透</h2>
       <div className="mode-grid">{PRESET_MODES.map(card)}</div>
     </div>
