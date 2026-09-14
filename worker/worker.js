@@ -1,4 +1,4 @@
-const VERSION = "nian-v10.1-ai";
+const VERSION = "nian-v10.2-voice";
 const JSON_HEADERS = {
   "content-type": "application/json; charset=utf-8",
   "cache-control": "no-store",
@@ -8,6 +8,10 @@ const JSON_HEADERS = {
 const subjectNames = { english: "英语", math: "数学", chinese: "语文" };
 const MAX_JSON_BYTES = 32_768;
 const DEFAULT_BASE = "https://api.openai.com/v1";
+const MIMO_API_BASE = "https://api.xiaomimimo.com/v1";
+const DEFAULT_TTS = Object.freeze({ model: "mimo-v2.5-tts", voice: "冰糖" });
+const EDGE_TTS_BRIDGE_URL = "http://tts.682012ysh.loc.cc/v1/audio/speech";
+const EDGE_VOICES = Object.freeze({ zh: "zh-CN-XiaoxiaoNeural", en: "en-US-AvaNeural" });
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: JSON_HEADERS });
@@ -219,6 +223,84 @@ async function handleNian(request) {
   return json({ ...respond(message, normalizeSnapshot(body.snapshot), body.mistakeContext), version: VERSION });
 }
 
+function base64ToBytes(value) {
+  try {
+    const binary = atob(String(value).replace(/\s+/g, ""));
+    const bytes = new Uint8Array(binary.length);
+    for (let k = 0; k < binary.length; k++) bytes[k] = binary.charCodeAt(k);
+    return bytes;
+  } catch { return new Uint8Array(); }
+}
+
+async function fetchUpstream(path, base, apiKey, payload, timeoutMs = 20000) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(`${base}${path}`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${apiKey}`, "content-type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+  } finally { clearTimeout(timeout); }
+}
+
+async function handleDefaultTTS(text, env) {
+  const apiKey = cleanApiKey(env?.MIMO_API_KEY);
+  if (!apiKey) return json({ error: "default voice is not configured on the server", code: "DEFAULT_VOICE_UNAVAILABLE" }, 503);
+  try {
+    const upstream = await fetchUpstream("/chat/completions", MIMO_API_BASE, apiKey, {
+      model: DEFAULT_TTS.model,
+      messages: [{ role: "assistant", content: text }],
+      audio: { format: "mp3", voice: DEFAULT_TTS.voice },
+    });
+    if (!upstream.ok) return json({ error: "speech provider rejected the request", code: "UPSTREAM_TTS_FAILED", status: upstream.status }, 502);
+    const payload = await upstream.json().catch(() => null);
+    const data = payload?.choices?.[0]?.message?.audio?.data;
+    if (typeof data !== "string" || !data) return json({ error: "speech provider returned invalid audio", code: "INVALID_AUDIO_RESPONSE" }, 502);
+    const bytes = base64ToBytes(data);
+    if (!bytes.length || bytes.length > 12 * 1024 * 1024) return json({ error: "speech provider returned invalid audio", code: "INVALID_AUDIO_RESPONSE" }, 502);
+    return new Response(bytes, { status: 200, headers: { "content-type": "audio/mpeg", "cache-control": "no-store", "x-content-type-options": "nosniff", "x-nian-version": VERSION } });
+  } catch (error) {
+    const timedOut = error?.name === "AbortError" || error?.name === "TimeoutError";
+    return json({ error: timedOut ? "speech provider timed out" : "speech service unavailable", code: timedOut ? "UPSTREAM_TIMEOUT" : "UPSTREAM_UNAVAILABLE" }, 502);
+  }
+}
+
+function handleVoiceKey(request, env) {
+  const site = request.headers.get("sec-fetch-site");
+  if (site && !["same-origin", "same-site", "none"].includes(site)) return json({ error: "cross-site request rejected", code: "CROSS_SITE_REJECTED" }, 403);
+  if (cleanApiKey(env?.EDGE_TTS_TOKEN)) return json({ provider: "edgetts", url: "/api/nian/edgetts" });
+  if (cleanApiKey(env?.MIMO_API_KEY)) return json({ provider: "mimo", model: DEFAULT_TTS.model, voice: DEFAULT_TTS.voice });
+  return json({ provider: "none" });
+}
+
+async function handleEdgeTTS(request, env) {
+  const parsed = await readJson(request);
+  if (parsed.error) return parsed.error;
+  const text = typeof parsed.body?.text === "string" ? parsed.body.text.replace(/\s+/g, " ").trim().slice(0, 800) : "";
+  if (!text) return json({ error: "text required", code: "TEXT_REQUIRED" }, 400);
+  const token = cleanApiKey(env?.EDGE_TTS_TOKEN);
+  if (!token) return json({ error: "edge voice is not configured on the server", code: "EDGE_VOICE_UNAVAILABLE" }, 503);
+  const lang = typeof parsed.body?.lang === "string" ? parsed.body.lang.toLowerCase() : "zh-cn";
+  const voice = lang.startsWith("en") ? EDGE_VOICES.en : EDGE_VOICES.zh;
+  try {
+    const upstream = await fetch(EDGE_TTS_BRIDGE_URL, {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-bridge-token": token },
+      body: JSON.stringify({ input: text, voice, engine: "edge", response_format: "mp3" }),
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!upstream.ok) return json({ error: "speech provider rejected the request", code: "UPSTREAM_TTS_FAILED", status: upstream.status }, 502);
+    const type = upstream.headers.get("content-type") || "";
+    if (!/^audio\//i.test(type) && !/octet-stream/i.test(type)) return json({ error: "speech provider returned invalid audio", code: "INVALID_AUDIO_RESPONSE" }, 502);
+    return new Response(upstream.body, { status: 200, headers: { "content-type": type || "audio/mpeg", "cache-control": "no-store", "x-content-type-options": "nosniff", "x-nian-version": VERSION } });
+  } catch (error) {
+    const timedOut = error?.name === "AbortError" || error?.name === "TimeoutError";
+    return json({ error: timedOut ? "speech provider timed out" : "speech service unavailable", code: timedOut ? "UPSTREAM_TIMEOUT" : "UPSTREAM_UNAVAILABLE" }, 502);
+  }
+}
+
 async function handleTTS(request, env) {
   const parsed = await readJson(request);
   if (parsed.error) return parsed.error;
@@ -226,25 +308,20 @@ async function handleTTS(request, env) {
   const text = typeof body?.text === "string" ? body.text.replace(/\s+/g, " ").trim().slice(0, 800) : "";
   if (!text) return json({ error: "text required", code: "TEXT_REQUIRED" }, 400);
   const apiKey = cleanApiKey(body?.apiKey, env.OPENAI_API_KEY);
-  if (!apiKey) return json({ error: "api key required", code: "API_KEY_REQUIRED" }, 401);
+  if (!apiKey) return handleDefaultTTS(text, env);
   const base = cleanBaseUrl(body?.baseUrl);
   if (!base) return json({ error: "invalid base url", code: "INVALID_BASE_URL" }, 400);
   const model = cleanModel(body?.model, "gpt-4o-mini-tts");
   const voice = cleanModel(body?.voice, "alloy");
   if (!model || !voice) return json({ error: "invalid model or voice", code: "INVALID_TTS_CONFIG" }, 400);
   try {
-    const upstream = await fetch(`${base}/audio/speech`, {
-      method: "POST",
-      headers: { authorization: `Bearer ${apiKey}`, "content-type": "application/json" },
-      body: JSON.stringify({ model, input: text, voice, response_format: "mp3" }),
-      signal: AbortSignal.timeout(20_000),
-    });
+    const upstream = await fetchUpstream("/audio/speech", base, apiKey, { model, input: text, voice, response_format: "mp3" });
     if (!upstream.ok) return json({ error: "speech provider rejected the request", code: "UPSTREAM_TTS_FAILED", status: upstream.status }, 502);
     const type = upstream.headers.get("content-type") || "audio/mpeg";
     if (!/^audio\//i.test(type) && !/octet-stream/i.test(type)) return json({ error: "speech provider returned invalid audio", code: "INVALID_AUDIO_RESPONSE" }, 502);
     return new Response(upstream.body, { status: 200, headers: { "content-type": type, "cache-control": "no-store", "x-content-type-options": "nosniff", "x-nian-version": VERSION } });
   } catch (error) {
-    const timedOut = error?.name === "TimeoutError" || error?.name === "AbortError";
+    const timedOut = error?.name === "AbortError" || error?.name === "TimeoutError";
     return json({ error: timedOut ? "speech provider timed out" : "speech service unavailable", code: timedOut ? "UPSTREAM_TIMEOUT" : "UPSTREAM_UNAVAILABLE" }, 502);
   }
 }
@@ -257,6 +334,8 @@ export default {
     if (url.pathname === "/api/nian/ai") return handleAI(request, env);
     if (url.pathname === "/api/nian/ai/stream") return handleAIStream(request, env);
     if (url.pathname === "/api/nian/tts") return handleTTS(request, env);
+    if (url.pathname === "/api/nian/edgetts") return handleEdgeTTS(request, env);
+    if (url.pathname === "/api/nian/voice-config") return handleVoiceKey(request, env);
     return env.ASSETS.fetch(request);
   },
 };
