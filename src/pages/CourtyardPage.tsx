@@ -2,6 +2,7 @@ import poems from '../content/poems.json';
 import festivals from '../content/festivals.json';
 import achievements from '../content/achievements.json';
 import StudyRecordCard from '../components/StudyRecordCard';
+import DownloadCard from '../components/DownloadCard';
 
 export default function CourtyardPage() {
   return (
@@ -30,6 +31,7 @@ export default function CourtyardPage() {
         {achievements.map((a) => <div className={`badge ${a.id === 'first' ? 'on' : ''}`} key={a.id}><span>{a.seal}</span><strong>{a.name}</strong><small>{a.description}</small></div>)}
       </div>
       <StudyRecordCard />
+      <DownloadCard />
     </div>
   );
 }
