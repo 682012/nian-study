@@ -9,6 +9,19 @@ const subjectNames = { english: "英语", math: "数学", chinese: "语文" };
 const MAX_JSON_BYTES = 32_768;
 const MAX_SCAN_BYTES = 6_000_000; // 卷子图片 base64 专用上限（独立端点）
 const SCAN_IMAGE_MAX = 4_500_000; // 单张图片 dataURL 长度上限
+
+// ---- StepFun（阶跃星辰 · Step Plan）语音合成 ----
+const STEPFUN_BASE = "https://api.stepfun.com/step_plan/v1";
+const DEFAULT_STEPFUN_TTS = Object.freeze({ model: "stepaudio-2.5-tts", voice: "linjiajiejie" });
+const STEPFUN_INSTRUCTION_DEFAULT = "你是学生的青梅竹马同桌念安，温柔耐心，像并排坐着讲题一样，语气平稳亲切，不浮夸。";
+// stepaudio-2.5-tts 把括号 () 内容当指令不发音：朗读前剥掉，避免整段文本被吞
+function stripSpeechInstructions(text, max = 1000) {
+  return String(text || "")
+    .replace(/[（(][^()（）]*[）)]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, max);
+}
 const DEFAULT_BASE = "https://api.openai.com/v1";
 const MIMO_API_BASE = "https://api.xiaomimimo.com/v1";
 const DEFAULT_TTS = Object.freeze({ model: "mimo-v2.5-tts", voice: "冰糖" });
@@ -372,7 +385,41 @@ async function handleAIScan(request, env) {
   return json({ ok: true, questions, version: VERSION });
 }
 
-async function handleDefaultTTS(text, env) {
+async function handleStepfunTTS(text, env, lang = "zh") {
+  const apiKey = cleanApiKey(env?.STEPFUN_API_KEY);
+  if (!apiKey) return null;
+  const base = cleanBaseUrl(env?.STEPFUN_BASE) || STEPFUN_BASE;
+  const model = cleanModel(env?.STEPFUN_TTS_MODEL, DEFAULT_STEPFUN_TTS.model) || DEFAULT_STEPFUN_TTS.model;
+  const voice = cleanModel(env?.STEPFUN_VOICE, DEFAULT_STEPFUN_TTS.voice) || DEFAULT_STEPFUN_TTS.voice;
+  const instruction = typeof env?.STEPFUN_INSTRUCTION === "string" && env.STEPFUN_INSTRUCTION.trim()
+    ? env.STEPFUN_INSTRUCTION.trim().slice(0, 200) : STEPFUN_INSTRUCTION_DEFAULT;
+  const isZh = !lang || lang.toLowerCase().startsWith("zh");
+  const payload = {
+    model,
+    voice,
+    input: stripSpeechInstructions(text),
+    response_format: "mp3",
+    sample_rate: 24000,
+    text_normalization: isZh ? "enhanced" : "standard",
+  };
+  if (isZh && model.startsWith("stepaudio")) payload.instruction = instruction;
+  try {
+    const upstream = await fetchUpstream("/audio/speech", base, apiKey, payload, 20000);
+    if (!upstream.ok) return null;
+    const type = upstream.headers.get("content-type") || "";
+    if (!/^audio\//i.test(type) && !/octet-stream/i.test(type)) return null;
+    const bytes = await upstream.arrayBuffer();
+    if (!bytes.byteLength || bytes.byteLength > 12 * 1024 * 1024) return null;
+    return new Response(bytes, { status: 200, headers: { "content-type": type || "audio/mpeg", "cache-control": "no-store", "x-content-type-options": "nosniff", "x-nian-version": VERSION } });
+  } catch { return null; }
+}
+
+async function handleDefaultTTS(text, env, lang) {
+  // 中文首选 StepFun（音色贴人设、支持情绪指令），英文/失败回退 MiMo
+  if (!lang || lang.toLowerCase().startsWith("zh")) {
+    const step = await handleStepfunTTS(text, env, "zh");
+    if (step) return step;
+  }
   const apiKey = cleanApiKey(env?.MIMO_API_KEY);
   if (!apiKey) return json({ error: "default voice is not configured on the server", code: "DEFAULT_VOICE_UNAVAILABLE" }, 503);
   try {
@@ -397,20 +444,18 @@ async function handleDefaultTTS(text, env) {
 function handleVoiceKey(request, env) {
   const site = request.headers.get("sec-fetch-site");
   if (site && !["same-origin", "same-site", "none"].includes(site)) return json({ error: "cross-site request rejected", code: "CROSS_SITE_REJECTED" }, 403);
-  if (cleanApiKey(env?.EDGE_TTS_TOKEN)) return json({ provider: "edgetts", url: "/api/nian/edgetts" });
+  // 首选 StepFun（中文音色贴人设）；没配则 MiMo；只有 Edge 时保留 edgetts（英文神经语音）
+  if (cleanApiKey(env?.STEPFUN_API_KEY)) return json({ provider: "stepfun", model: cleanModel(env?.STEPFUN_TTS_MODEL, DEFAULT_STEPFUN_TTS.model) || DEFAULT_STEPFUN_TTS.model, voice: cleanModel(env?.STEPFUN_VOICE, DEFAULT_STEPFUN_TTS.voice) || DEFAULT_STEPFUN_TTS.voice });
   if (cleanApiKey(env?.MIMO_API_KEY)) return json({ provider: "mimo", model: DEFAULT_TTS.model, voice: DEFAULT_TTS.voice });
+  if (cleanApiKey(env?.EDGE_TTS_TOKEN)) return json({ provider: "edgetts", url: "/api/nian/edgetts" });
   return json({ provider: "none" });
 }
 
-async function handleEdgeTTS(request, env) {
-  const parsed = await readJson(request);
-  if (parsed.error) return parsed.error;
-  const text = typeof parsed.body?.text === "string" ? parsed.body.text.replace(/\s+/g, " ").trim().slice(0, 800) : "";
-  if (!text) return json({ error: "text required", code: "TEXT_REQUIRED" }, 400);
+async function edgeTTSSpeech(text, lang, env) {
   const token = cleanApiKey(env?.EDGE_TTS_TOKEN);
-  if (!token) return json({ error: "edge voice is not configured on the server", code: "EDGE_VOICE_UNAVAILABLE" }, 503);
-  const lang = typeof parsed.body?.lang === "string" ? parsed.body.lang.toLowerCase() : "zh-cn";
-  const voice = lang.startsWith("en") ? EDGE_VOICES.en : EDGE_VOICES.zh;
+  if (!token) return null;
+  const normalizedLang = lang.toLowerCase();
+  const voice = normalizedLang.startsWith("en") ? EDGE_VOICES.en : EDGE_VOICES.zh;
   try {
     const upstream = await fetch(EDGE_TTS_BRIDGE_URL, {
       method: "POST",
@@ -418,14 +463,22 @@ async function handleEdgeTTS(request, env) {
       body: JSON.stringify({ input: text, voice, engine: "edge", response_format: "mp3" }),
       signal: AbortSignal.timeout(15000),
     });
-    if (!upstream.ok) return json({ error: "speech provider rejected the request", code: "UPSTREAM_TTS_FAILED", status: upstream.status }, 502);
+    if (!upstream.ok) return null;
     const type = upstream.headers.get("content-type") || "";
-    if (!/^audio\//i.test(type) && !/octet-stream/i.test(type)) return json({ error: "speech provider returned invalid audio", code: "INVALID_AUDIO_RESPONSE" }, 502);
+    if (!/^audio\//i.test(type) && !/octet-stream/i.test(type)) return null;
     return new Response(upstream.body, { status: 200, headers: { "content-type": type || "audio/mpeg", "cache-control": "no-store", "x-content-type-options": "nosniff", "x-nian-version": VERSION } });
-  } catch (error) {
-    const timedOut = error?.name === "AbortError" || error?.name === "TimeoutError";
-    return json({ error: timedOut ? "speech provider timed out" : "speech service unavailable", code: timedOut ? "UPSTREAM_TIMEOUT" : "UPSTREAM_UNAVAILABLE" }, 502);
-  }
+  } catch { return null; }
+}
+
+async function handleEdgeTTS(request, env) {
+  const parsed = await readJson(request);
+  if (parsed.error) return parsed.error;
+  const text = typeof parsed.body?.text === "string" ? parsed.body.text.replace(/\s+/g, " ").trim().slice(0, 800) : "";
+  if (!text) return json({ error: "text required", code: "TEXT_REQUIRED" }, 400);
+  const lang = typeof parsed.body?.lang === "string" ? parsed.body.lang : "zh-CN";
+  const resp = await edgeTTSSpeech(text, lang, env);
+  if (resp) return resp;
+  return json({ error: "edge voice is not configured on the server", code: "EDGE_VOICE_UNAVAILABLE" }, 503);
 }
 
 async function handleTTS(request, env) {
@@ -434,23 +487,32 @@ async function handleTTS(request, env) {
   const body = parsed.body;
   const text = typeof body?.text === "string" ? body.text.replace(/\s+/g, " ").trim().slice(0, 800) : "";
   if (!text) return json({ error: "text required", code: "TEXT_REQUIRED" }, 400);
-  const apiKey = cleanApiKey(body?.apiKey, env.OPENAI_API_KEY);
-  if (!apiKey) return handleDefaultTTS(text, env);
-  const base = cleanBaseUrl(body?.baseUrl);
-  if (!base) return json({ error: "invalid base url", code: "INVALID_BASE_URL" }, 400);
-  const model = cleanModel(body?.model, "gpt-4o-mini-tts");
-  const voice = cleanModel(body?.voice, "alloy");
-  if (!model || !voice) return json({ error: "invalid model or voice", code: "INVALID_TTS_CONFIG" }, 400);
-  try {
-    const upstream = await fetchUpstream("/audio/speech", base, apiKey, { model, input: text, voice, response_format: "mp3" });
-    if (!upstream.ok) return json({ error: "speech provider rejected the request", code: "UPSTREAM_TTS_FAILED", status: upstream.status }, 502);
-    const type = upstream.headers.get("content-type") || "audio/mpeg";
-    if (!/^audio\//i.test(type) && !/octet-stream/i.test(type)) return json({ error: "speech provider returned invalid audio", code: "INVALID_AUDIO_RESPONSE" }, 502);
-    return new Response(upstream.body, { status: 200, headers: { "content-type": type, "cache-control": "no-store", "x-content-type-options": "nosniff", "x-nian-version": VERSION } });
-  } catch (error) {
-    const timedOut = error?.name === "AbortError" || error?.name === "TimeoutError";
-    return json({ error: timedOut ? "speech provider timed out" : "speech service unavailable", code: timedOut ? "UPSTREAM_TIMEOUT" : "UPSTREAM_UNAVAILABLE" }, 502);
+  const lang = typeof body?.lang === "string" ? body.lang : "zh";
+  // BYO：用户自带 key+base 才走他们的网关；带 key 不带 base 是配置错误，明确报错
+  const byoKey = cleanApiKey(body?.apiKey);
+  const byoBase = cleanBaseUrl(body?.baseUrl);
+  if (byoKey || byoBase) {
+    if (!byoKey || !byoBase) return json({ error: "invalid base url", code: "INVALID_BASE_URL" }, 400);
+    const model = cleanModel(body?.model, "gpt-4o-mini-tts");
+    const voice = cleanModel(body?.voice, "alloy");
+    if (!model || !voice) return json({ error: "invalid model or voice", code: "INVALID_TTS_CONFIG" }, 400);
+    try {
+      const upstream = await fetchUpstream("/audio/speech", byoBase, byoKey, { model, input: text, voice, response_format: "mp3" }, 20000);
+      if (!upstream.ok) return json({ error: "speech provider rejected the request", code: "UPSTREAM_TTS_FAILED", status: upstream.status }, 502);
+      const type = upstream.headers.get("content-type") || "audio/mpeg";
+      if (!/^audio\//.test(type) && !/octet-stream/i.test(type)) return json({ error: "speech provider returned invalid audio", code: "INVALID_AUDIO_RESPONSE" }, 502);
+      return new Response(upstream.body, { status: 200, headers: { "content-type": type, "cache-control": "no-store", "x-content-type-options": "nosniff", "x-nian-version": VERSION } });
+    } catch (error) {
+      const timedOut = error?.name === "AbortError" || error?.name === "TimeoutError";
+      return json({ error: timedOut ? "speech provider timed out" : "speech service unavailable", code: timedOut ? "UPSTREAM_TIMEOUT" : "UPSTREAM_UNAVAILABLE" }, 502);
+    }
   }
+  // 服务器默认链：英文优先 Edge 神经语音（发音准）；中文与 Edge 不可用时 StepFun → MiMo
+  if (lang.toLowerCase().startsWith("en")) {
+    const edge = await edgeTTSSpeech(text, lang, env);
+    if (edge) return edge;
+  }
+  return handleDefaultTTS(text, env, lang);
 }
 
 export default {

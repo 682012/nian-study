@@ -1,7 +1,8 @@
-// 朗读优先级：服务器默认云语音（Edge 神经语音，MiMo 兜底）→ 系统 speechSynthesis。
+// 朗读优先级：StepFun 云语音（服务端按语言分流：英→Edge 神经语音，中→StepFun→MiMo）→ 系统 speechSynthesis。
 // 用户在对话设置里的 BYO TTS 走 /api/nian/tts（云念安设置面板，后续接线）。
 type VoiceConfig =
   | { provider: 'edgetts'; url: string }
+  | { provider: 'stepfun'; model: string; voice: string }
   | { provider: 'mimo' }
   | { provider: 'none' };
 
@@ -13,6 +14,7 @@ function fetchConfig(): Promise<VoiceConfig> {
     configPromise = fetch('/api/nian/voice-config')
       .then((r) => (r.ok ? r.json() : { provider: 'none' }))
       .then((d): VoiceConfig => (d?.provider === 'edgetts' && typeof d.url === 'string' ? { provider: 'edgetts', url: d.url }
+        : d?.provider === 'stepfun' ? { provider: 'stepfun', model: String(d.model || ''), voice: String(d.voice || '') }
         : d?.provider === 'mimo' ? { provider: 'mimo' } : { provider: 'none' }))
       .catch(() => ({ provider: 'none' } as VoiceConfig));
   }
@@ -58,8 +60,9 @@ export const speech = {
         await playCloud(cfg.url, { text, lang });
         return;
       }
-      if (cfg.provider === 'mimo') {
-        await playCloud('/api/nian/tts', { text });
+      if (cfg.provider === 'stepfun' || cfg.provider === 'mimo') {
+        // 带上 lang：服务端据此分流（英文优先 Edge 神经语音，中文走 StepFun/MiMo）
+        await playCloud('/api/nian/tts', { text, lang });
         return;
       }
     } catch {

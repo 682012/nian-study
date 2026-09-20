@@ -106,3 +106,54 @@ export function clearScanBank(store: KVLike = defaultKV()): void {
 export function notifyChange(): void {
   try { window.dispatchEvent(new Event('scan-bank-change')); } catch { /* node 环境 */ }
 }
+
+// ---- 拍过的卷子（缩略图 + 可选原图）----
+export const SCAN_SHOTS_KEY = 'nian-scan-shots-v1';
+export const SHOT_CAP = 12; // 缩略图很便宜，留最近 12 张
+
+export interface ScanShot {
+  id: string;
+  at: number;
+  count: number;      // 这一卷导入的题数
+  source: string;
+  thumb: string;      // 小图 dataURL（回看列表用）
+  image?: string;     // 压缩原图 dataURL（可选，占空间）
+}
+
+export function loadShots(store: KVLike = defaultKV()): ScanShot[] {
+  let raw: string | null = null;
+  try { raw = store.getItem(SCAN_SHOTS_KEY); } catch { return []; }
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((s): s is ScanShot => !!s && typeof s === 'object' && typeof s.id === 'string' && typeof s.thumb === 'string' && s.thumb.startsWith('data:image/'))
+      .slice(-SHOT_CAP);
+  } catch { return []; }
+}
+
+function persistShots(shots: ScanShot[], store: KVLike): void {
+  try { store.setItem(SCAN_SHOTS_KEY, JSON.stringify(shots.slice(-SHOT_CAP))); } catch { /* 存满就丢，不崩 */ }
+  notifyChange();
+}
+
+// 同一卷重复入库只更新条数，不叠加记录
+export function saveShot(shot: ScanShot, store: KVLike = defaultKV()): void {
+  const shots = loadShots(store).filter((s) => s.id !== shot.id);
+  shots.push(shot);
+  persistShots(shots, store);
+}
+
+export function removeShot(id: string, store: KVLike = defaultKV()): void {
+  persistShots(loadShots(store).filter((s) => s.id !== id), store);
+}
+
+export function clearShots(store: KVLike = defaultKV()): void {
+  persistShots([], store);
+}
+
+// 导出用：题库 + 卷子记录的 JSON（不含图片，保持小巧）
+export function exportBankJson(store: KVLike = defaultKV()): string {
+  return JSON.stringify({ app: 'nian-study', kind: 'scan-bank', exportedAt: Date.now(), questions: loadScanBank(store) }, null, 1);
+}

@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { fileToCompressedDataUrl } from '../lib/image-fit';
+import { fileToCompressedDataUrl, makeThumbDataUrl } from '../lib/image-fit';
 import { ScanError, scanPaperImage } from '../lib/scan-client';
-import { clearScanBank, loadScanBank, removeScanQuestion, saveScanQuestions } from '../lib/scan-bank';
+import {
+  clearScanBank, exportBankJson, loadScanBank, loadShots, removeScanQuestion, removeShot, saveScanQuestions, saveShot,
+} from '../lib/scan-bank';
 import type { ScannedQ } from '../quiz/scan-parse';
 import { useSession } from '../store/session-store';
 
@@ -15,13 +17,17 @@ export default function ScanModal({ onClose }: { onClose: () => void }) {
   const [hint, setHint] = useState('');
   const [items, setItems] = useState<ScannedQ[]>([]);
   const [checked, setChecked] = useState<boolean[]>([]);
+  const [keepImage, setKeepImage] = useState(false);
   const [error, setError] = useState('');
   const [added, setAdded] = useState(0);
   const [bank, setBank] = useState<ScannedQ[]>(() => loadScanBank());
+  const [shots, setShots] = useState(() => loadShots());
+  const [preview, setPreview] = useState<string>('');
+  const imageRef = useRef<string>('');
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const sync = () => setBank(loadScanBank());
+    const sync = () => { setBank(loadScanBank()); setShots(loadShots()); };
     window.addEventListener('scan-bank-change', sync);
     return () => window.removeEventListener('scan-bank-change', sync);
   }, []);
@@ -32,6 +38,7 @@ export default function ScanModal({ onClose }: { onClose: () => void }) {
     setPhase('scanning');
     try {
       const image = await fileToCompressedDataUrl(file);
+      imageRef.current = image;
       const qs = await scanPaperImage(image, hint);
       setItems(qs);
       setChecked(qs.map(() => true));
@@ -46,17 +53,39 @@ export default function ScanModal({ onClose }: { onClose: () => void }) {
     setItems((prev) => prev.map((q, j) => (j === i ? { ...q, ...next } : q)));
   };
 
-  const save = () => {
+  const save = async () => {
     const chosen = items.filter((_, i) => checked[i]);
     const { added: n } = saveScanQuestions(chosen);
     setAdded(n);
+    // 留档：缩略图 always（几 KB）；原图按开关（占空间，最多随 12 条记录淘汰）
+    const thumb = await makeThumbDataUrl(imageRef.current);
+    if (thumb) {
+      saveShot({
+        id: `shot-${Date.now()}`,
+        at: Date.now(),
+        count: chosen.length,
+        source: chosen[0]?.source || '',
+        thumb,
+        image: keepImage ? imageRef.current : undefined,
+      });
+    }
     setBank(loadScanBank());
+    setShots(loadShots());
     setPhase('done');
   };
 
   const startPractice = () => {
     onClose();
     useSession.getState().start('scan-bank');
+  };
+
+  const exportJson = () => {
+    const blob = new Blob([exportBankJson()], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `我的卷子-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
   };
 
   return (
@@ -85,7 +114,7 @@ export default function ScanModal({ onClose }: { onClose: () => void }) {
               />
               {error && <p className="scan-error">{error}</p>}
               <div className="scan-actions">
-                <button className="ghost-btn" onClick={() => setPhase('manage')}>管理已有 {bank.length} 题</button>
+                <button className="ghost-btn" onClick={() => setPhase('manage')}>管理已有 {bank.length} 题 · {shots.length} 卷</button>
               </div>
             </>
           )}
@@ -101,6 +130,10 @@ export default function ScanModal({ onClose }: { onClose: () => void }) {
           {phase === 'review' && (
             <>
               <p className="scan-tip">认出 {items.length} 题。校对一下再入库——答案下标、填空答案都可以改。</p>
+              <label className="scan-keep">
+                <input type="checkbox" checked={keepImage} onChange={(e) => setKeepImage(e.target.checked)} />
+                同时留下这张卷子的原图（占空间；不留也只存一小张缩略图供回看）
+              </label>
               <div className="scan-list">
                 {items.map((q, i) => (
                   <article className="scan-item" key={q.id}>
@@ -145,7 +178,7 @@ export default function ScanModal({ onClose }: { onClose: () => void }) {
                 ))}
               </div>
               <div className="scan-actions">
-                <button className="primary-btn" disabled={!checked.some(Boolean)} onClick={save}>入库 {checked.filter(Boolean).length} 题</button>
+                <button className="primary-btn" disabled={!checked.some(Boolean)} onClick={() => void save()}>入库 {checked.filter(Boolean).length} 题</button>
                 <button className="ghost-btn" onClick={() => setPhase('pick')}>再拍一张</button>
               </div>
             </>
@@ -154,6 +187,7 @@ export default function ScanModal({ onClose }: { onClose: () => void }) {
           {phase === 'done' && (
             <div className="scan-done">
               <p>已存入 <strong>{added}</strong> 题，「我的卷子」现在共 {bank.length} 题。</p>
+              <p className="scan-tip">这一卷的缩略图已留在「管理题库」里，随时回看；题目存在本机，换设备用导出备份。</p>
               <div className="scan-actions">
                 <button className="primary-btn" onClick={startPractice}>去练习</button>
                 <button className="ghost-btn" onClick={() => setPhase('pick')}>再拍一张</button>
@@ -164,6 +198,25 @@ export default function ScanModal({ onClose }: { onClose: () => void }) {
 
           {phase === 'manage' && (
             <>
+              {shots.length > 0 && (
+                <>
+                  <p className="scan-tip">最近拍的卷子（缩略图本机保留，点图看原图）</p>
+                  <div className="scan-shots">
+                    {[...shots].reverse().map((s) => (
+                      <div className="scan-shot" key={s.id}>
+                        <button className="scan-shot-thumb" onClick={() => setPreview(s.image || s.thumb)} title="看大图">
+                          <img src={s.thumb} alt={`卷子 ${s.count} 题`} />
+                        </button>
+                        <div className="scan-shot-meta">
+                          <span>{new Date(s.at).toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' })} · {s.count} 题</span>
+                          <span className="muted">{s.source || '未注明出处'}{s.image ? ' · 有原图' : ''}</span>
+                        </div>
+                        <button className="scan-del" onClick={() => removeShot(s.id)}>删</button>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
               <p className="scan-tip">已导入 {bank.length} 题（上限 300，超出会淘汰最旧的）。</p>
               <div className="scan-list">
                 {bank.map((q) => (
@@ -179,10 +232,18 @@ export default function ScanModal({ onClose }: { onClose: () => void }) {
                 {!bank.length && <p className="muted">还是空的，去拍一张卷子吧。</p>}
               </div>
               <div className="scan-actions">
+                <button className="ghost-btn" onClick={exportJson} disabled={!bank.length}>导出题库 JSON</button>
                 <button className="ghost-btn" onClick={() => setPhase('pick')}>返回</button>
                 {bank.length > 0 && <button className="ghost-btn" onClick={() => { if (confirm('清空后不能恢复，确定吗？')) clearScanBank(); }}>清空题库</button>}
               </div>
             </>
+          )}
+
+          {preview && (
+            <div className="scan-preview" onClick={() => setPreview('')}>
+              <img src={preview} alt="卷子原图" />
+              <span className="scan-preview-close">点任意处关闭</span>
+            </div>
           )}
         </div>
       </div>

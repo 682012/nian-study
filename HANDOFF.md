@@ -51,16 +51,18 @@ GH_TOKEN=$(cat /workspace/.secrets/gh_token) COMMIT_MSG="说明" \
 ```
 源码仓库 /workspace/nian-v10/app 也正常 git commit 留痕。
 
-## 4. 当前进度（截至 2026-09-20 夜，125 单测绿，线上含「扫卷入库」）
+## 4. 当前进度（截至 2026-09-20 深夜，132 单测绿）
 - **组卷去重**：`src/quiz/queue.ts`（`uniqueFill`/`dedupeQueue`/`dedupeKey`，题库题按 id、程序化题按题干+选项指纹）；session-store 所有模式接入，同一张卷内不再出现重复题。
 - **数学考点专项 bug 修复**：`mt-*` 六个模式原来落到 `questionForType('mt-trig')`（无此 case，队列全是 undefined，点进去必崩）；现在按 `MATH_TOPIC_GROUPS` 的 topic 走 `mathQuestion(rng, topic)`。
 - **卷子扫描**：Worker 新端点 `/api/nian/ai/scan`（多模态 image_url，body 上限 6MB，超时 45s，模型取 用户设置 model → `env.AI_SCAN_MODEL` → `env.AI_MODEL` → gpt-4o-mini；遇到上游 image/vision 报错返回 `UPSTREAM_SCAN_UNSUPPORTED`）；前端 `src/components/ScanModal.tsx`（拍照/选图→canvas 压缩→识别→逐题可校对→入库）；个人题库 key **`nian-scan-bank-v1`**（localStorage，上限 300 条，不动 `nian-study-progress-v2`）；练习模式 `scan-bank`「我的卷子」。
-- **2026-09-20 实测**：默认网关模型支持图片输入——英文数学卷照片 5 题全部识别（3 选择+2 填空），答案全对；缺图请求正确 400 `IMAGE_REQUIRED`。
-- 测试 125 绿（新增 queue/scan-parse/scan-bank/image-fit 四组共 28 个）；DOM 级冒烟见下。
-- 数学选择生成器 41 个（原 19 + math-builders-2.ts 新增 22），覆盖集合/充要条件/定义域/二次函数/三角/解三角形/等比数列/向量/立体几何(圆柱圆锥球)/复数/圆方程/指数对数/统计等。
-- 数学填空：`src/quiz/math-fill.ts` 12 生成器；题型 `'blank'`；判分 `src/quiz/blank-grade.ts`（分数/小数/±/全角/去空格等价）。
-- 语文古诗文默写：`src/content/dictation.json` 20 题，生成器类型 `'gushi'`（注意别和英文听写的 `'dictation'` 混用）。
-- 练习页有「数学考点专项」6 组分区 + 数学填空专项 + 古诗文默写 + 我的卷子（模式定义在 src/quiz/modes.ts）。
+- **拍过的卷子留档**：`nian-scan-shots-v1`（localStorage，上限 12 卷）：每次入库自动存一张缩略图（回看用），可选「留原图」；管理页可看大图、删单卷、**导出题库 JSON**（导出不含图片）。
+- **语音（StepFun）**：Worker 接 StepFun Step Plan 订阅端点。`voice-config` 优先级 **stepfun → mimo → edgetts → none**；中文朗读走 `stepaudio-2.5-tts`（默认音色 `linjiajiejie` 邻家姐姐，全局 instruction 是念安人设，`text_normalization=enhanced`）；英文优先 Edge 神经语音，Edge 不可用回退 MiMo；客户端 `speech.ts` 新增 `stepfun` provider，`/api/nian/tts` 带 `lang` 分流。
+  - 环境要求：secret `STEPFUN_API_KEY`（已配）；可选覆写 `STEPFUN_TTS_MODEL`/`STEPFUN_VOICE`/`STEPFUN_BASE`/`STEPFUN_INSTRUCTION`。
+  - 坑1：`stepaudio-2.5-tts` 把**括号 () 内容当指令不发音**，worker 的 `stripSpeechInstructions()` 先剥再送。
+  - 坑2（修了一个潜伏 bug）：`handleTTS` 原来「服务端有 `OPENAI_API_KEY` 就走 BYO 分支且必须带 baseUrl，否则 400」——导致只要服务器配了默认网关 Key，`/api/nian/tts` 默认链永远 400（线上实际一直靠 edgetts 通道）。现在改为：请求自带 key+base 才走 BYO，否则一律走服务器默认链。
+- **2026-09-20 实测**：扫描端点英文数学卷 5 题全识别、答案全对；TTS 中文 200 audio/mpeg、含括号文本正常合成、英文有音频、缺文本 400。
+- 测试 132 绿（queue/scan-parse/scan-bank/scan-shots/image-fit 五组）；DOM 级冒烟见第 8 节。
+- 数学选择生成器 41 个；数学填空 12 生成器；古诗文默写 20 题；练习页含数学考点专项 6 组 + 填空 + 默写 + 我的卷子。
 - FSRS 调度、822 词迁移、Worker AI 反代（SSE/403换渠道/本地兜底）、TTS 三路降级均已在线。
 
 ## 5. 待办（按提分性价比排序）
@@ -68,8 +70,9 @@ GH_TOKEN=$(cat /workspace/.secrets/gh_token) COMMIT_MSG="说明" \
 2. 数学解答题：分步提示 + 采分点 + AI 批改（占 50 分，最大头）。
 3. 语文/英语作文：AI 批改（要点覆盖、格式、语言，先保及格再优化）。
 4. 历年真题 PDF 结构化成精编题库；日常扩容主力已切到「扫卷入库」（用户拍卷→我的卷子），扫描识别质量可继续打磨（手写/公式题）。
-5. 题库扩容：填空题、默写继续加量；干扰项质量回归。可选：「扫卷入库」加手动录入兜底（识别失败时学生自己录）。
-6. 若默认网关模型更换，回归一次扫描端点（`/api/nian/ai/scan` 需要模型支持图片输入）。
+5. 题库扩容：填空题、默写继续加量；干扰项质量回归。
+6. 待用户真机确认：中文卷子拍照识别质量（沙盒无中文字体，只能自动测英文卷）；StepFun 中文音色听感（默认 linjiajiejie，不喜欢可换 `STEPFUN_VOICE`，音色 id 见 platform.stepfun.com 文档「获取官方音色详情」）。
+7. 备用视觉模型：`step-3.7-flash`（Step Plan，enable_vision_input=true）可作扫描端点兜底渠道，默认网关限流时切。
 
 ## 6. 新增一种题型的最小清单（照抄别漏）
 1. 出题：在 src/quiz/ 加生成器，返回标准 Question（type 若新需在 engine.ts 的 QuestionType/GeneratorType 联合类型登记）。

@@ -94,3 +94,15 @@
 .scan-actions { display: flex; flex-direction: column; gap: 10px; }
 .scan-done p { font-size: 15px; line-height: 1.8; }
 .mode-card.scan-entry { border-style: dashed; }
+
+/* ---- 扫卷入库：留档与导出 ---- */
+.scan-keep { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; line-height: 1.6; color: var(--navy-900); }
+.scan-shots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.scan-shot { border: 1.5px solid var(--line); border-radius: 12px; padding: 8px; display: flex; flex-direction: column; gap: 6px; background: var(--surface); }
+.scan-shot-thumb { border: 0; background: none; padding: 0; cursor: zoom-in; }
+.scan-shot-thumb img { width: 100%; display: block; border-radius: 8px; border: 1px solid var(--line); }
+.scan-shot-meta { display: flex; flex-direction: column; font-size: 11px; color: var(--navy-900); line-height: 1.5; }
+.scan-shot .scan-del { margin-left: 0; align-self: flex-start; }
+.scan-preview { position: fixed; inset: 0; background: rgba(11,27,28,.9); z-index: 60; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 20px; }
+.scan-preview img { max-width: 100%; max-height: 82vh; border-radius: 12px; }
+.scan-preview-close { color: #dfe8e3; font-size: 13px; }
