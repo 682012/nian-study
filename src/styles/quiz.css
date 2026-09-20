@@ -64,3 +64,33 @@
 .result-sub { color: var(--muted); font-size: 14px; margin: 10px 0 20px; }
 .result-actions { display: flex; flex-direction: column; gap: 10px; }
 .quiz-empty p { margin-bottom: 8px; } .quiz-empty .primary-btn { margin-top: 12px; }
+
+/* ---- 扫卷入库 ---- */
+.scan-dialog { max-height: 92vh; }
+.scan-body { padding: 18px 20px 28px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+.scan-tip { font-size: 13px; line-height: 1.8; color: var(--muted); margin: 0; }
+.scan-hint-row { display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--navy-900); }
+.scan-hint-row select, .scan-item-head select { flex: 1; padding: 9px 10px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--surface); font-size: 14px; }
+.scan-file { font-size: 14px; }
+.scan-error { background: #fdeceb; color: #93483a; border-radius: 10px; padding: 10px 12px; font-size: 13px; line-height: 1.7; margin: 0; }
+.scan-scanning { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 40px 0; color: var(--muted); font-size: 14px; }
+.scan-scanning .ghost-btn { max-width: 160px; }
+.scan-spinner { width: 34px; height: 34px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--jade); animation: scan-spin .8s linear infinite; }
+@keyframes scan-spin { to { transform: rotate(360deg); } }
+.scan-list { display: flex; flex-direction: column; gap: 12px; }
+.scan-item { border: 1.5px solid var(--line); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 8px; background: var(--surface); }
+.scan-item-slim { gap: 6px; }
+.scan-item-head { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.scan-check { display: flex; align-items: center; gap: 5px; font-weight: 600; color: var(--navy-900); }
+.scan-item-head select { flex: 0 1 auto; }
+.scan-del { margin-left: auto; background: none; border: 0; color: #93483a; font-size: 13px; cursor: pointer; }
+.scan-tag { font-size: 12px; background: var(--paper); border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; color: var(--muted); }
+.scan-item-prompt { font-size: 13px; line-height: 1.7; color: #3f4d48; }
+.scan-prompt, .scan-choice-input, .scan-accepts, .scan-source, .scan-explain { width: 100%; border: 1.5px solid var(--line); border-radius: 10px; padding: 8px 10px; font-size: 14px; line-height: 1.6; background: var(--paper); color: var(--navy-900); font-family: inherit; resize: vertical; }
+.scan-choices { display: flex; flex-direction: column; gap: 6px; }
+.scan-choice-row { display: flex; align-items: center; gap: 8px; }
+.scan-radio { display: flex; align-items: center; gap: 3px; font-size: 13px; font-weight: 600; color: var(--jade); min-width: 34px; }
+.scan-item-foot { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.scan-actions { display: flex; flex-direction: column; gap: 10px; }
+.scan-done p { font-size: 15px; line-height: 1.8; }
+.mode-card.scan-entry { border-style: dashed; }

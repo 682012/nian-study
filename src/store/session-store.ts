@@ -1,11 +1,14 @@
 import { create } from 'zustand';
 import type { Question } from '../quiz/types';
 import {
-  questionForType, adaptiveCycle, buildDailyPaper, checkAnswer, todayKey,
+  questionForType, adaptiveCycle, buildDailyPaper, checkAnswer, todayKey, mathQuestion,
   type GeneratorType, type EngineContext, type SubjectStat,
 } from '../quiz/engine';
 import { FULL_MODE_MAP, MATH_TOPIC_GROUPS } from '../quiz/modes';
-import type { Rng } from '../quiz/rng';
+import { dedupeQueue, uniqueFill } from '../quiz/queue';
+import { scanQToQuestion } from '../quiz/scan-parse';
+import { loadScanBank } from '../lib/scan-bank';
+import { pick, type Rng } from '../quiz/rng';
 import { useProgress } from './progress-store';
 import { subjectStats, dueWordIds, pendingMistakeIds } from '../lib/progress';
 import { wordCardId, type Card } from '../lib/srs';
@@ -16,6 +19,7 @@ interface LastResult { correct: boolean; points: number; response: number | stri
 interface SessionState {
   status: Status;
   mode: string | null;
+  emptyMode: string | null;
   queue: Question[];
   index: number;
   score: number;
@@ -45,49 +49,64 @@ function engineCtx(extra: Partial<EngineContext> = {}): EngineContext {
   };
 }
 
+function cycleMake(cycle: GeneratorType[]): () => Question | undefined {
+  let i = 0;
+  return () => questionForType(cycle[i++ % cycle.length], engineCtx(), Math.random);
+}
+
 function buildQueue(mode: string): Question[] | null {
   const p = useProgress.getState();
   const meta = FULL_MODE_MAP[mode];
   if (!meta) return null;
 
   if (mode === 'exam') {
-    const cycle: GeneratorType[] = ['english-preset', 'math-preset', 'appreciate'];
-    return Array.from({ length: meta.count }, (_, i) => questionForType(cycle[i % cycle.length], engineCtx(), Math.random));
+    return uniqueFill(cycleMake(['english-preset', 'math-preset', 'appreciate']), meta.count);
   }
 
   if (mode === 'mistakes') {
     const items = pendingMistakeIds(p)
       .map((id) => p.arcadeV1.mistakes[id])
       .sort((a, b) => b.wrongAt - a.wrongAt).slice(0, meta.count).map((m) => m.question);
-    return items.length ? items : null;
+    return items.length ? dedupeQueue(items) : null;
   }
 
   if (mode === 'daily') {
     const dq = p.arcadeV1.dailyQueue;
     if (dq?.date === todayKey() && dq.questions.length === meta.count) return dq.questions;
-    const qs = buildDailyPaper(todayKey(), statsRecord(), engineCtx());
+    const qs = dedupeQueue(buildDailyPaper(todayKey(), statsRecord(), engineCtx()), cycleMake(['listening', 'math', 'chinese']));
     useProgress.setState((s) => ({ arcadeV1: { ...s.arcadeV1, dailyQueue: { date: todayKey(), questions: qs } } }));
     return qs;
   }
 
   if (mode === 'adaptive') {
-    const cycle = adaptiveCycle(statsRecord());
-    return Array.from({ length: meta.count }, (_, i) => questionForType(cycle[i % cycle.length], engineCtx(), Math.random));
+    return uniqueFill(cycleMake(adaptiveCycle(statsRecord())), meta.count);
   }
   if (mode === 'mixed' || mode === 'endless') {
     const cycle: GeneratorType[] = ['listen', 'math', 'reading', 'meaning', 'math', 'chinese', 'listening', 'sentence', 'dictation'];
-    return Array.from({ length: meta.count }, (_, i) => questionForType(cycle[i % cycle.length], engineCtx(), Math.random));
+    return uniqueFill(cycleMake(cycle), meta.count);
   }
-  return Array.from({ length: meta.count }, () => questionForType(mode as GeneratorType, engineCtx(), Math.random));
+  // 数学考点专项：按分组的 topic 过滤程序化出题
+  const group = MATH_TOPIC_GROUPS.find((g) => g.id === mode);
+  if (group) {
+    const topics = group.topics;
+    return uniqueFill(() => mathQuestion(Math.random, topics[Math.floor(Math.random() * topics.length)]), meta.count, meta.count * 8);
+  }
+  // 我的卷子：扫描导入的个人题库
+  if (mode === 'scan-bank') {
+    const bank = loadScanBank();
+    if (!bank.length) return null;
+    return uniqueFill(() => scanQToQuestion(pick(bank, Math.random)), Math.min(meta.count, bank.length), Math.max(meta.count, bank.length) * 4);
+  }
+  return uniqueFill(() => questionForType(mode as GeneratorType, engineCtx(), Math.random), meta.count);
 }
 
 export const useSession = create<SessionState>()((set, get) => ({
-  status: 'idle', mode: null, queue: [], index: 0, score: 0, combo: 0, bestCombo: 0, lives: 0, empty: false, result: null,
+  status: 'idle', mode: null, emptyMode: null, queue: [], index: 0, score: 0, combo: 0, bestCombo: 0, lives: 0, empty: false, result: null,
 
   start: (mode) => {
     const queue = buildQueue(mode);
-    if (!queue) { set({ status: 'idle', empty: true }); return; }
-    set({ status: 'running', mode, queue, index: 0, score: 0, combo: 0, bestCombo: 0, lives: mode === 'endless' ? 3 : 0, empty: false, result: null });
+    if (!queue) { set({ status: 'idle', empty: true, emptyMode: mode }); return; }
+    set({ status: 'running', mode, queue, index: 0, score: 0, combo: 0, bestCombo: 0, lives: mode === 'endless' ? 3 : 0, empty: false, emptyMode: null, result: null });
   },
 
   respond: (response) => {
@@ -117,5 +136,5 @@ export const useSession = create<SessionState>()((set, get) => ({
     set({ index: s.index + 1, result: null });
   },
 
-  quit: () => set({ status: 'idle', mode: null, queue: [], index: 0, result: null, empty: false }),
+  quit: () => set({ status: 'idle', mode: null, queue: [], index: 0, result: null, empty: false, emptyMode: null }),
 }));

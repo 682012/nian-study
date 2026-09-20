@@ -107,7 +107,7 @@ function TokensBody({ q, answered }: { q: Question; answered: boolean }) {
 }
 
 export default function QuizModal() {
-  const { status, mode, queue, index, score, combo, bestCombo, lives, result, empty, next, quit, start } = useSession();
+  const { status, mode, queue, index, score, combo, bestCombo, lives, result, empty, emptyMode, next, quit, start } = useSession();
   const openChat = useUi((s) => s.openChat);
   const meta = mode ? FULL_MODE_MAP[mode] : null;
 
@@ -116,8 +116,17 @@ export default function QuizModal() {
     return (
       <div className="quiz-mask" role="dialog" aria-modal="true">
         <div className="quiz-dialog quiz-empty">
-          <p>拾遗簿里暂时没有旧误。</p>
-          <p className="muted">先去开一卷，真正答错的题会自己进来。</p>
+          {emptyMode === 'scan-bank' ? (
+            <>
+              <p>「我的卷子」还是空的。</p>
+              <p className="muted">去练习页点「扫卷入库」，拍一张真题卷子就开练。</p>
+            </>
+          ) : (
+            <>
+              <p>拾遗簿里暂时没有旧误。</p>
+              <p className="muted">先去开一卷，真正答错的题会自己进来。</p>
+            </>
+          )}
           <button className="primary-btn" onClick={quit}>好</button>
         </div>
       </div>

@@ -7,6 +7,8 @@ const JSON_HEADERS = {
 
 const subjectNames = { english: "英语", math: "数学", chinese: "语文" };
 const MAX_JSON_BYTES = 32_768;
+const MAX_SCAN_BYTES = 6_000_000; // 卷子图片 base64 专用上限（独立端点）
+const SCAN_IMAGE_MAX = 4_500_000; // 单张图片 dataURL 长度上限
 const DEFAULT_BASE = "https://api.openai.com/v1";
 const MIMO_API_BASE = "https://api.xiaomimimo.com/v1";
 const DEFAULT_TTS = Object.freeze({ model: "mimo-v2.5-tts", voice: "冰糖" });
@@ -17,24 +19,24 @@ function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: JSON_HEADERS });
 }
 
-function requestGuard(request) {
+function requestGuard(request, maxBytes = MAX_JSON_BYTES) {
   const site = request.headers.get("sec-fetch-site");
   if (site && !["same-origin", "same-site", "none"].includes(site)) return json({ error: "cross-site request rejected", code: "CROSS_SITE_REJECTED" }, 403);
   if (request.method !== "POST") return json({ error: "method not allowed", code: "METHOD_NOT_ALLOWED" }, 405);
   const contentType = request.headers.get("content-type") || "";
   if (!contentType.toLowerCase().includes("application/json")) return json({ error: "json required", code: "JSON_REQUIRED" }, 415);
   const declaredLength = Number(request.headers.get("content-length"));
-  if (Number.isFinite(declaredLength) && declaredLength > MAX_JSON_BYTES) return json({ error: "request too large", code: "REQUEST_TOO_LARGE" }, 413);
+  if (Number.isFinite(declaredLength) && declaredLength > maxBytes) return json({ error: "request too large", code: "REQUEST_TOO_LARGE" }, 413);
   return null;
 }
 
-async function readJson(request) {
-  const guarded = requestGuard(request);
+async function readJson(request, maxBytes = MAX_JSON_BYTES) {
+  const guarded = requestGuard(request, maxBytes);
   if (guarded) return { error: guarded };
   let raw;
   try { raw = await request.text(); }
   catch { return { error: json({ error: "invalid request body", code: "INVALID_BODY" }, 400) }; }
-  if (new TextEncoder().encode(raw).byteLength > MAX_JSON_BYTES) return { error: json({ error: "request too large", code: "REQUEST_TOO_LARGE" }, 413) };
+  if (new TextEncoder().encode(raw).byteLength > maxBytes) return { error: json({ error: "request too large", code: "REQUEST_TOO_LARGE" }, 413) };
   try { return { body: JSON.parse(raw) }; }
   catch { return { error: json({ error: "invalid json", code: "INVALID_JSON" }, 400) }; }
 }
@@ -261,6 +263,115 @@ async function fetchUpstream(path, base, apiKey, payload, timeoutMs = 20000) {
   } finally { clearTimeout(timeout); }
 }
 
+// ---- 卷子扫描（多模态：图片 → 结构化题目 JSON）----
+function scanSystemPrompt(hint) {
+  const subjectHint = hint ? `学生提示这份卷子属于：${hint.slice(0, 40)}，优先按此判科目。` : "";
+  return `你是试卷结构化引擎。学生发来一张试卷照片，请把其中适合练习的题目转录成 JSON。${subjectHint}
+严格要求：
+1. 只输出一个 JSON 数组，不要任何解释文字、不要 Markdown 围栏。数组最多 20 个元素。
+2. 每个元素字段：subject（"english"|"math"|"chinese"）、type（"choice" 四选一 | "blank" 填空）、prompt（题干全文，含必要上下文）、choices（type=choice 时给 4 个字符串选项）、answer（choice 时为正确项下标 0-3 的整数；blank 时不设）、accepts（type=blank 时给字符串数组，列可接受的等价答案）、explanation（一句话解析，80 字内）、source（出处，如"2023 年真题"）。
+3. 只转录卷面上完整成立的题目；题干被裁掉、选项不全、答案无法百分百确定的，整题跳过。
+4. 数学公式与符号按卷面原样转录为纯文本（如 x²、√3、∠ABC、≤）；不要自造答案，不要合并多题。
+5. 科目判断：数学算式/图形题归 math，英语题归 english，语文诗文/阅读归 chinese。`;
+}
+
+function extractFirstJsonArray(text) {
+  const t = String(text || "");
+  const fenced = t.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  for (const candidate of [fenced && fenced[1], t]) {
+    if (!candidate) continue;
+    const start = candidate.indexOf("[");
+    const end = candidate.lastIndexOf("]");
+    if (start < 0 || end <= start) continue;
+    try {
+      const parsed = JSON.parse(candidate.slice(start, end + 1));
+      if (Array.isArray(parsed)) return parsed;
+    } catch { /* 换下一个候选 */ }
+  }
+  return null;
+}
+
+const cleanScanText = (v, max) => (typeof v === "string" ? v.trim().slice(0, max) : "");
+
+// 轻量规范化：字段缺失/越界的条目直接丢，客户端还会再校验一遍。
+function normalizeScanQuestions(arr) {
+  if (!Array.isArray(arr)) return [];
+  const out = [];
+  for (const item of arr.slice(0, 20)) {
+    if (!item || typeof item !== "object" || Array.isArray(item)) continue;
+    const it = item;
+    const subject = ["english", "math", "chinese"].includes(it.subject) ? it.subject : "";
+    const prompt = cleanScanText(it.prompt ?? it.question, 1200);
+    if (!subject || !prompt) continue;
+    const base = { subject, prompt, explanation: cleanScanText(it.explanation, 800), source: cleanScanText(it.source, 120) };
+    if (it.type === "blank") {
+      const accepts = Array.isArray(it.accepts) ? it.accepts : Array.isArray(it.answer) ? it.answer : [it.answer];
+      const answers = accepts.map((a) => cleanScanText(a, 200)).filter(Boolean);
+      if (!answers.length) continue;
+      out.push({ ...base, type: "blank", answer: answers });
+      continue;
+    }
+    const rawChoices = Array.isArray(it.choices) ? it.choices : Array.isArray(it.options) ? it.options : [];
+    const choices = rawChoices.map((c) => cleanScanText(c, 500)).filter(Boolean);
+    const answer = Number(it.answer);
+    if (choices.length < 2 || !Number.isInteger(answer) || answer < 0 || answer >= choices.length) continue;
+    out.push({ ...base, type: "choice", choices, answer });
+  }
+  return out;
+}
+
+async function handleAIScan(request, env) {
+  const parsed = await readJson(request, MAX_SCAN_BYTES);
+  if (parsed.error) return parsed.error;
+  const body = parsed.body;
+  const image = typeof body?.image === "string" ? body.image.trim() : "";
+  if (!/^data:image\/(jpe?g|png|webp);base64,[a-z0-9+/=\s]+$/i.test(image)) {
+    return json({ error: "a jpg/png/webp image is required", code: "IMAGE_REQUIRED" }, 400);
+  }
+  if (image.length > SCAN_IMAGE_MAX) return json({ error: "image too large", code: "IMAGE_TOO_LARGE" }, 413);
+  const apiKey = cleanApiKey(body?.apiKey, env.OPENAI_API_KEY);
+  if (!apiKey) return json({ error: "api key required", code: "API_KEY_REQUIRED" }, 401);
+  const base = cleanBaseUrl(body?.baseUrl) || cleanBaseUrl(env?.AI_BASE_URL) || DEFAULT_BASE;
+  const model = cleanModel(body?.model, env?.AI_SCAN_MODEL || env?.AI_MODEL || "gpt-4o-mini");
+  if (!base || !model) return json({ error: "invalid scan config", code: "INVALID_SCAN_CONFIG" }, 400);
+  const hint = typeof body?.hint === "string" ? body.hint.trim().slice(0, 40) : "";
+  const payload = {
+    model,
+    stream: false,
+    messages: [
+      { role: "system", content: scanSystemPrompt(hint) },
+      { role: "user", content: [
+        { type: "text", text: "请识别这张试卷图片，按系统要求输出 JSON 数组。" },
+        { type: "image_url", image_url: { url: image.replace(/\s+/g, "") } },
+      ] },
+    ],
+  };
+  let upstream;
+  try {
+    upstream = await fetchUpstream("/chat/completions", base, apiKey, payload, 45_000);
+  } catch (error) {
+    const timedOut = error?.name === "AbortError" || error?.name === "TimeoutError";
+    return json({ error: timedOut ? "AI provider timed out" : "AI service unavailable", code: timedOut ? "UPSTREAM_TIMEOUT" : "UPSTREAM_UNAVAILABLE" }, 502);
+  }
+  if (!upstream.ok) {
+    const probe = await upstream.clone().text().catch(() => "");
+    // 模型不支持图片输入时，上游通常报 400 且正文含 image/vision 字样
+    if (/image|vision|multimodal|unsupported/i.test(probe)) {
+      return json({ error: "current model cannot read images; switch to a vision-capable model in settings", code: "UPSTREAM_SCAN_UNSUPPORTED" }, 502);
+    }
+    return json({ error: "AI provider rejected the request", code: "UPSTREAM_AI_FAILED", status: upstream.status }, 502);
+  }
+  const data = await upstream.json().catch(() => null);
+  const content = data?.choices?.[0]?.message?.content;
+  const text = typeof content === "string" ? content : Array.isArray(content) ? content.map((c) => typeof c?.text === "string" ? c.text : "").join("\n") : "";
+  const arr = extractFirstJsonArray(text);
+  const questions = normalizeScanQuestions(arr);
+  if (!questions.length) {
+    return json({ ok: true, questions: [], raw: text.slice(0, 6000), code: "EMPTY_SCAN", version: VERSION });
+  }
+  return json({ ok: true, questions, version: VERSION });
+}
+
 async function handleDefaultTTS(text, env) {
   const apiKey = cleanApiKey(env?.MIMO_API_KEY);
   if (!apiKey) return json({ error: "default voice is not configured on the server", code: "DEFAULT_VOICE_UNAVAILABLE" }, 503);
@@ -348,6 +459,7 @@ export default {
     if (url.pathname === "/api/health") return json({ ok: true, version: VERSION });
     if (url.pathname === "/api/nian/respond") return handleNian(request);
     if (url.pathname === "/api/nian/ai") return handleAI(request, env);
+    if (url.pathname === "/api/nian/ai/scan") return handleAIScan(request, env);
     if (url.pathname === "/api/nian/ai/stream") return handleAIStream(request, env);
     if (url.pathname === "/api/nian/tts") return handleTTS(request, env);
     if (url.pathname === "/api/nian/edgetts") return handleEdgeTTS(request, env);

@@ -32,6 +32,9 @@ export const MODE_MAP: Record<string, ModeMeta> = Object.fromEntries(MODES.map((
 export const DICTATION_MODE: ModeMeta = { id: 'gushi', seal: '默', title: '古诗文默写', note: '高频名篇名句 · 逐字写对', count: 10, tone: 'rose', subject: 'chinese' };
 export const FILL_MODE: ModeMeta = { id: 'math-fill', seal: '空', title: '数学填空专项', note: '方程·三角·数列·几何 仿真填空', count: 10, tone: 'gold', subject: 'math' };
 
+// 我的卷子（扫描导入的个人题库；题量随导入数变化，count 只是上限）
+export const SCAN_MODE: ModeMeta = { id: 'scan-bank', seal: '卷', title: '我的卷子', note: '拍下真题卷子，导入后在这里反复练', count: 12, tone: 'night' };
+
 // 数学考点专项（程序化出题，按 topic 过滤）
 export interface MathTopicGroup { id: string; title: string; seal: string; topics: string[] }
 export const MATH_TOPIC_GROUPS: MathTopicGroup[] = [
@@ -47,5 +50,5 @@ export const MATH_TOPIC_MODES: ModeMeta[] = [FILL_MODE, DICTATION_MODE, ...MATH_
   id: g.id, seal: g.seal, title: g.title, note: '按考纲考点无限仿真出题', count: 10, tone: 'gold', subject: 'math',
 }))];
 
-export const ALL_MODES = [...MODES, ...PRESET_MODES, ...MATH_TOPIC_MODES];
+export const ALL_MODES = [...MODES, ...PRESET_MODES, ...MATH_TOPIC_MODES, SCAN_MODE];
 export const FULL_MODE_MAP: Record<string, ModeMeta> = Object.fromEntries(ALL_MODES.map((m) => [m.id, m]));
