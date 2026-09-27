@@ -276,6 +276,242 @@ async function fetchUpstream(path, base, apiKey, payload, timeoutMs = 20000) {
   } finally { clearTimeout(timeout); }
 }
 
+// ---- 解答题过程批改（AI 按采分点评分）----
+function gradeSystemPrompt(prompt, solution, rubric) {
+  const rubricLines = rubric.map((r, i) => `${i + 1}. [${r.score}分] ${r.point}`).join("\n");
+  const solutionText = solution.join("\n");
+  return `你是一名资深高考数学阅卷组长。请严格对照试题、标准解答全过程与采分点规则，对考生的解答过程进行客观评分。
+
+【题目】
+${prompt}
+
+【标准解答】
+${solutionText}
+
+【采分点规则】
+${rubricLines}
+
+【批改与输出硬性约束】
+1. 逐条判定考生的解题步骤是否落实了对应采分点。若思路正确且写出关键等式/结果，给全分；若有严重逻辑漏洞或结果错误，得 0 分；score 必须为整数且在 [0, max] 范围内，严禁超过该采分点 max 分值。
+2. 必须输出且仅输出一个合法的 JSON 对象，绝对不要包含任何前言、后记或 Markdown 围栏。
+3. JSON 格式规范：
+{
+  "points": [
+    {
+      "point": "采分点说明",
+      "score": 得分整数,
+      "max": 满分整数,
+      "comment": "针对考生的具体点评，简练（≤50字）"
+    }
+  ],
+  "total": 得分总和整数,
+  "summary": "一句话整体评价与丢分原因（≤100字）"
+}
+4. points 数组必须完整对应所有采分点，不得遗漏、合并或拆分。`;
+}
+
+function validateGradeReply(raw, rubric) {
+  if (!Array.isArray(rubric) || rubric.length === 0) {
+    return null;
+  }
+
+  let obj = null;
+  if (typeof raw === "object" && raw !== null && !Array.isArray(raw)) {
+    obj = raw;
+  } else if (typeof raw === "string") {
+    const trimmed = raw.trim();
+    const fencedMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+    const candidate = fencedMatch ? fencedMatch[1].trim() : trimmed;
+
+    try {
+      obj = JSON.parse(candidate);
+    } catch {
+      const start = candidate.indexOf("{");
+      const end = candidate.lastIndexOf("}");
+      if (start !== -1 && end > start) {
+        try {
+          obj = JSON.parse(candidate.slice(start, end + 1));
+        } catch {
+          return null;
+        }
+      } else {
+        return null;
+      }
+    }
+  } else {
+    return null;
+  }
+
+  if (!obj || typeof obj !== "object" || !Array.isArray(obj.points)) {
+    return null;
+  }
+
+  const rawPoints = obj.points;
+  if (rawPoints.length < rubric.length) {
+    return null;
+  }
+
+  const matchedPoints = [];
+  const usedIndices = new Set();
+
+  for (let i = 0; i < rubric.length; i++) {
+    const r = rubric[i];
+    const rMax = typeof r.score === "number" && Number.isFinite(r.score) ? Math.max(0, Math.round(r.score)) : 0;
+
+    let foundIdx = rawPoints.findIndex((p, idx) => {
+      if (usedIndices.has(idx) || !p || typeof p !== "object") return false;
+      const ptName = p.point;
+      return typeof ptName === "string" && ptName.trim() === r.point.trim();
+    });
+
+    if (foundIdx === -1) {
+      if (i < rawPoints.length && !usedIndices.has(i)) {
+        foundIdx = i;
+      }
+    }
+
+    if (foundIdx === -1) {
+      return null;
+    }
+
+    usedIndices.add(foundIdx);
+    const item = rawPoints[foundIdx] || {};
+
+    const rawScore = Number(item.score);
+    let score = Number.isFinite(rawScore) ? Math.round(rawScore) : 0;
+    score = Math.max(0, Math.min(rMax, score));
+
+    const comment = typeof item.comment === "string" ? item.comment.trim() : "";
+
+    matchedPoints.push({
+      point: r.point,
+      score,
+      max: rMax,
+      comment,
+    });
+  }
+
+  const total = matchedPoints.reduce((sum, p) => sum + p.score, 0);
+  const max = rubric.reduce((sum, r) => sum + (typeof r.score === "number" ? r.score : 0), 0);
+  const summary = typeof obj.summary === "string" ? obj.summary.trim().slice(0, 120) : "";
+
+  return {
+    points: matchedPoints,
+    total,
+    max,
+    summary,
+  };
+}
+
+async function handleAIGrade(request, env) {
+  if (request.method !== "POST") {
+    return json({ ok: false, code: "METHOD_NOT_ALLOWED" }, 405);
+  }
+
+  const parsed = await readJson(request);
+  if (parsed.error) return parsed.error;
+  const body = parsed.body || {};
+  const { prompt, solution, rubric, work } = body;
+
+  if (typeof prompt !== "string" || prompt.length > 600) {
+    return json({ ok: false, code: "INVALID_GRADE_INPUT", error: "prompt 必须为字符串且长度 ≤ 600" }, 400);
+  }
+
+  if (
+    !Array.isArray(solution) ||
+    solution.length > 12 ||
+    solution.some((line) => typeof line !== "string" || line.length > 200)
+  ) {
+    return json({ ok: false, code: "INVALID_GRADE_INPUT", error: "solution 必须为数组且 ≤ 12 行，每行 ≤ 200 字" }, 400);
+  }
+
+  if (
+    !Array.isArray(rubric) ||
+    rubric.length < 1 ||
+    rubric.length > 8 ||
+    rubric.some(
+      (r) =>
+        !r ||
+        typeof r.point !== "string" ||
+        r.point.length > 60 ||
+        typeof r.score !== "number" ||
+        !Number.isInteger(r.score) ||
+        r.score < 1 ||
+        r.score > 13 ||
+        (r.keywords &&
+          (!Array.isArray(r.keywords) ||
+            r.keywords.length > 8 ||
+            r.keywords.some((k) => typeof k !== "string")))
+    )
+  ) {
+    return json({ ok: false, code: "INVALID_GRADE_INPUT", error: "rubric 必须为 1..8 条规范采分点" }, 400);
+  }
+
+  if (typeof work !== "string" || work.length < 1 || work.length > 1500) {
+    return json({ ok: false, code: "INVALID_GRADE_INPUT", error: "work 必须为 1..1500 字" }, 400);
+  }
+
+  const apiKey = cleanApiKey(body?.apiKey, env.OPENAI_API_KEY);
+  const baseUrl = cleanBaseUrl(body?.baseUrl) || cleanBaseUrl(env?.AI_BASE_URL) || DEFAULT_BASE;
+  const model = cleanModel(body?.model, env?.AI_MODEL || "gpt-4o-mini");
+
+  if (!apiKey) {
+    return json({ ok: false, code: "API_KEY_REQUIRED" }, 401);
+  }
+
+  const systemContent = gradeSystemPrompt(prompt, solution, rubric);
+  const messages = [
+    { role: "system", content: systemContent },
+    { role: "user", content: `【学生解答过程】\n${work}` },
+  ];
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+  try {
+    const base = cleanBaseUrl(body?.baseUrl) || cleanBaseUrl(env?.AI_BASE_URL) || DEFAULT_BASE;
+    const upstreamRes = await fetchUpstream("/chat/completions", base, apiKey, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        messages,
+        temperature: 0.2,
+      }),
+      signal: controller.signal,
+    });
+
+    if (!upstreamRes.ok) {
+      const errText = await upstreamRes.text().catch(() => "");
+      return json({ ok: false, code: "UPSTREAM_AI_FAILED", status: upstreamRes.status, error: errText }, 502);
+    }
+
+    const data = await upstreamRes.json();
+    const rawReply = data?.choices?.[0]?.message?.content;
+    if (!rawReply || typeof rawReply !== "string") {
+      return json({ ok: false, code: "INVALID_AI_RESPONSE", error: "模型未返回有效文本" }, 502);
+    }
+
+    const validated = validateGradeReply(rawReply, rubric);
+    if (!validated) {
+      return json({ ok: false, code: "INVALID_AI_RESPONSE" }, 502);  // 校验失败，客户端回退本地批改
+    }
+
+    return json({ ok: true, data: validated });
+  } catch (err) {
+    if (err && err.name === "AbortError") {
+      return json({ ok: false, code: "UPSTREAM_TIMEOUT" }, 502);
+    }
+    return json({ ok: false, code: "UPSTREAM_UNAVAILABLE", error: String(err) }, 502);
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+
 // ---- 卷子扫描（多模态：图片 → 结构化题目 JSON）----
 function scanSystemPrompt(hint) {
   const subjectHint = hint ? `学生提示这份卷子属于：${hint.slice(0, 40)}，优先按此判科目。` : "";
@@ -522,6 +758,7 @@ export default {
     if (url.pathname === "/api/nian/respond") return handleNian(request);
     if (url.pathname === "/api/nian/ai") return handleAI(request, env);
     if (url.pathname === "/api/nian/ai/scan") return handleAIScan(request, env);
+    if (url.pathname === "/api/nian/ai/grade") return handleAIGrade(request, env);
     if (url.pathname === "/api/nian/ai/stream") return handleAIStream(request, env);
     if (url.pathname === "/api/nian/tts") return handleTTS(request, env);
     if (url.pathname === "/api/nian/edgetts") return handleEdgeTTS(request, env);

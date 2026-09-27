@@ -7,6 +7,8 @@ import {
 import { MATH_BUILDERS } from './math-builders';
 import { MATH_BUILDERS_2 } from './math-builders-2';
 import { mathFillQuestion } from './math-fill';
+import { mathSolveQuestion } from './math-solve';
+import { gradeSolve } from './solve-grade';
 import { gradeBlank } from './blank-grade';
 import { grammarFillQuestion, completeSentenceQuestion, gradeEnglish, EN_FILL_KINDS } from './english-fill';
 import { DICTATION_BANK } from './sources';
@@ -169,7 +171,7 @@ export function appreciateQuestion(rng: Rng = Math.random): Question {
 export type GeneratorType =
   | 'meaning' | 'listen' | 'dictation' | 'sentence' | 'listening'
   | 'math' | 'chinese' | 'reading' | 'english-preset' | 'math-preset' | 'appreciate' | 'math-fill' | 'gushi'
-  | 'grammar-fill' | 'complete-sentence';
+  | 'grammar-fill' | 'complete-sentence' | 'math-solve';
 
 export function questionForType(type: GeneratorType, ctx: EngineContext, rng: Rng): Question {
   switch (type) {
@@ -183,6 +185,7 @@ export function questionForType(type: GeneratorType, ctx: EngineContext, rng: Rn
     case 'math-preset': return mathPresetQuestion(rng);
     case 'appreciate': return appreciateQuestion(rng);
     case 'math-fill': return mathFillQuestion(rng);
+    case 'math-solve': return mathSolveQuestion(rng);
     case 'grammar-fill': return grammarFillQuestion(rng);
     case 'complete-sentence': return completeSentenceQuestion(rng);
     case 'gushi': {
@@ -217,7 +220,7 @@ export function adaptiveCycle(stats: Record<Subject, SubjectStat>): GeneratorTyp
 
 export const MODE_COUNTS: Record<string, number> = {
   adaptive: 12, listen: 12, listening: 10, dictation: 10, sentence: 8,
-  math: 12, chinese: 12, reading: 8, mixed: 15, daily: 20, 'grammar-fill': 10, 'complete-sentence': 8, endless: 100, mistakes: 12,
+  math: 12, chinese: 12, reading: 8, mixed: 15, daily: 20, 'grammar-fill': 10, 'math-solve': 4, 'complete-sentence': 8, endless: 100, mistakes: 12,
 };
 
 export function todayKey(d: Date = new Date()): string {
@@ -243,6 +246,7 @@ export function buildDailyPaper(dateKey: string, stats: Record<Subject, SubjectS
 export function checkAnswer(q: Question, response: string | number | string[]): boolean {
   if (q.type === 'choice') return Number(response) === q.answer;
   if (q.type === 'input') return normalizeAnswer(String(response)) === normalizeAnswer(q.expected ?? q.answer);
+  if (q.type === 'solve') return gradeSolve(q, response as string[]).full;
   if (q.type === 'blank') {
     return EN_FILL_KINDS.has(q.kind)
       ? gradeEnglish(String(response), q.answer as string[])

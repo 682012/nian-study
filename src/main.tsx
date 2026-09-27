@@ -6,6 +6,7 @@ import './styles/app.css';
 import './styles/pages.css';
 import './styles/quiz.css';
 import './styles/chat.css';
+import './styles/solve-add.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

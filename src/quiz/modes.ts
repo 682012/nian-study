@@ -35,6 +35,9 @@ export const FILL_MODE: ModeMeta = { id: 'math-fill', seal: '空', title: '数�
 // 我的卷子（扫描导入的个人题库；题量随导入数变化，count 只是上限）
 export const SCAN_MODE: ModeMeta = { id: 'scan-bank', seal: '卷', title: '我的卷子', note: '拍下真题卷子，导入后在这里反复练', count: 12, tone: 'night' };
 
+// 数学解答题专项（考纲解答 4 题 50 分，分步给分）
+export const SOLVE_MODE: ModeMeta = { id: 'math-solve', seal: '解', title: '数学解答题', note: '考纲解答 4 题 50 分 · 分步给分', count: 4, tone: 'gold', subject: 'math' };
+
 // 数学考点专项（程序化出题，按 topic 过滤）
 export interface MathTopicGroup { id: string; title: string; seal: string; topics: string[] }
 export const MATH_TOPIC_GROUPS: MathTopicGroup[] = [
@@ -46,7 +49,7 @@ export const MATH_TOPIC_GROUPS: MathTopicGroup[] = [
   { id: 'mt-set', title: '集合·复数·统计概率', seal: '合', topics: ['集合运算', '充要条件', '复数加法', '虚数单位的幂', '平均数', '极差', '古典概率', '排列组合'] },
 ];
 
-export const MATH_TOPIC_MODES: ModeMeta[] = [FILL_MODE, DICTATION_MODE, ...MATH_TOPIC_GROUPS.map((g) => ({
+export const MATH_TOPIC_MODES: ModeMeta[] = [SOLVE_MODE, FILL_MODE, DICTATION_MODE, ...MATH_TOPIC_GROUPS.map((g) => ({
   id: g.id, seal: g.seal, title: g.title, note: '按考纲考点无限仿真出题', count: 10, tone: 'gold', subject: 'math',
 }))];
 

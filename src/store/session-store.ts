@@ -9,12 +9,13 @@ import { dedupeQueue, uniqueFill } from '../quiz/queue';
 import { scanQToQuestion } from '../quiz/scan-parse';
 import { loadScanBank } from '../lib/scan-bank';
 import { pick, type Rng } from '../quiz/rng';
+import { gradeSolve, type SolveResult } from '../quiz/solve-grade';
 import { useProgress } from './progress-store';
 import { subjectStats, dueWordIds, pendingMistakeIds } from '../lib/progress';
 import { wordCardId, type Card } from '../lib/srs';
 
 type Status = 'idle' | 'running' | 'finished';
-interface LastResult { correct: boolean; points: number; response: number | string | string[] }
+export interface LastResult { correct: boolean; points: number; response: number | string | string[]; solve?: SolveResult }
 
 interface SessionState {
   status: Status;
@@ -29,7 +30,7 @@ interface SessionState {
   empty: boolean;
   result: LastResult | null;
   start: (mode: string) => void;
-  respond: (response: number | string | string[]) => void;
+  respond: (response: number | string | string[], meta?: { hintsUsed?: boolean[] }) => void;
   next: () => void;
   quit: () => void;
 }
@@ -109,15 +110,22 @@ export const useSession = create<SessionState>()((set, get) => ({
     set({ status: 'running', mode, queue, index: 0, score: 0, combo: 0, bestCombo: 0, lives: mode === 'endless' ? 3 : 0, empty: false, emptyMode: null, result: null });
   },
 
-  respond: (response) => {
+  respond: (response, meta) => {
     const s = get();
     if (s.status !== 'running' || s.result) return;
     const q = s.queue[s.index];
-    const correct = checkAnswer(q, response);
+    let solve: SolveResult | undefined;
+    let correct: boolean;
+    if (q.type === 'solve') {
+      solve = gradeSolve(q, response as string[], meta?.hintsUsed);
+      correct = solve.full;
+    } else {
+      correct = checkAnswer(q, response);
+    }
     const points = useProgress.getState().answer(q, correct, s.mode!, s.combo);
     const combo = correct ? s.combo + 1 : 0;
     const lives = s.lives > 0 && !correct ? s.lives - 1 : s.lives;
-    set({ result: { correct, points, response }, score: s.score + Number(correct), combo, bestCombo: Math.max(s.bestCombo, combo), lives });
+    set({ result: { correct, points, response, solve }, score: s.score + Number(correct), combo, bestCombo: Math.max(s.bestCombo, combo), lives });
   },
 
   next: () => {

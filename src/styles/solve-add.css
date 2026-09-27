@@ -1,0 +1,355 @@
+/* ---- 数学解答题专项样式 (SPEC §5) ---- */
+.q-solve-root { display: flex; flex-direction: column; gap: 14px; margin-top: 8px; }
+
+.q-solve-score-banner {
+  background: linear-gradient(135deg, rgba(79, 138, 99, 0.12) 0%, rgba(212, 175, 55, 0.14) 100%);
+  border: 1.5px solid var(--jade);
+  border-radius: 14px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: center;
+}
+.q-solve-score-title { font-size: 13px; color: var(--navy-900); font-weight: 600; }
+.q-solve-score-num { font-size: 22px; color: var(--navy-900); font-family: var(--serif); }
+.q-solve-score-num strong { font-size: 32px; color: var(--jade); margin-right: 2px; }
+.q-solve-score-unit { font-size: 13px; color: var(--muted); margin-left: 4px; font-family: var(--sans); }
+.q-solve-score-desc { font-size: 12px; color: var(--muted); }
+
+.q-solve-steps { display: flex; flex-direction: column; gap: 12px; }
+
+.q-solve-card {
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color .15s, background .15s;
+}
+.q-solve-card.q-solve-step-ok { border-color: #bcd8c4; background: #f4faf5; }
+.q-solve-card.q-solve-step-no { border-color: #e2c3bb; background: #fdf6f5; }
+
+.q-solve-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+.q-solve-step-tag {
+  flex: none;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--navy-900);
+  border-radius: 6px;
+  padding: 2px 7px;
+  letter-spacing: .5px;
+}
+.q-solve-step-ask { flex: 1; min-width: 0; font-weight: 600; color: var(--navy-900); line-height: 1.5; }
+
+.q-solve-badge {
+  flex: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--jade);
+  background: rgba(79, 138, 99, 0.12);
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+.q-solve-badge.hinted {
+  color: #a66c52;
+  background: rgba(166, 108, 82, 0.14);
+}
+
+.q-solve-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.q-solve-input-field {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+.q-solve-input {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 15px;
+}
+.q-solve-unit {
+  position: absolute;
+  right: 12px;
+  color: var(--muted);
+  font-size: 14px;
+  pointer-events: none;
+}
+.q-solve-input-field:has(.q-solve-unit) .q-solve-input {
+  padding-right: 36px;
+}
+
+.q-solve-hint-btn {
+  flex: none;
+  border: 1px solid var(--cream-300);
+  background: var(--paper);
+  color: var(--navy-800);
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+}
+.q-solve-hint-btn:hover { border-color: var(--jade); color: var(--jade); }
+.q-solve-hint-btn.active {
+  background: #fdf5ef;
+  border-color: #d69f88;
+  color: #a66c52;
+  cursor: default;
+}
+
+.q-solve-keypad {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.q-solve-key {
+  border: 1px solid var(--cream-300);
+  background: var(--cream-50);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 14px;
+  font-family: var(--serif);
+  color: var(--navy-900);
+  cursor: pointer;
+  user-select: none;
+  transition: background .12s, border-color .12s;
+}
+.q-solve-key:hover {
+  background: var(--cream-100);
+  border-color: var(--jade);
+}
+.q-solve-key:active {
+  transform: scale(.96);
+}
+
+.q-solve-hint-box {
+  background: #fdf8f4;
+  border: 1px dashed #e4c2b2;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #7b4f3b;
+  line-height: 1.6;
+}
+.q-solve-hint-label { font-weight: 700; margin-right: 4px; }
+
+.q-solve-step-result {
+  border-top: 1px dashed var(--line);
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+.q-solve-step-status-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.q-solve-mark { font-weight: 700; }
+.q-solve-mark.ok { color: #2d7a46; }
+.q-solve-mark.no { color: var(--red); }
+.q-solve-got-score { color: var(--navy-900); }
+.q-solve-got-score strong { color: var(--jade); font-size: 15px; }
+.q-solve-hinted-tag { color: #a66c52; margin-left: 4px; font-size: 11px; }
+
+.q-solve-step-ans { color: var(--navy-900); line-height: 1.6; }
+.q-solve-step-ans strong { color: var(--jade); font-family: var(--serif); }
+.q-solve-step-explain { color: #4a5650; line-height: 1.6; }
+
+.q-solve-submit-btn { margin-top: 4px; }
+
+.q-solve-post-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+.q-solve-pitfall-box {
+  background: #fff8f5;
+  border: 1px solid #f3d4c7;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #8c4232;
+  line-height: 1.6;
+}
+.q-solve-pitfall-box strong { color: #93483a; }
+
+.q-solve-fold {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  overflow: hidden;
+}
+.q-solve-fold-toggle {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 11px 14px;
+  background: none;
+  border: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--navy-900);
+  cursor: pointer;
+  text-align: left;
+}
+.q-solve-fold-toggle i {
+  font-style: normal;
+  font-size: 11px;
+  color: var(--muted);
+}
+.q-solve-fold-toggle:hover {
+  background: rgba(0,0,0,.02);
+}
+.q-solve-fold-content {
+  border-top: 1px solid var(--line);
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.8;
+  color: #3f4d48;
+}
+
+.q-solve-solution-list {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.q-solve-solution-list li {
+  line-height: 1.7;
+}
+
+.q-solve-review-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.q-solve-review-tip { font-size: 12px; color: var(--muted); line-height: 1.6; }
+.q-solve-textarea-wrap { position: relative; }
+.q-solve-work-textarea {
+  width: 100%;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px 24px;
+  font-size: 14px;
+  line-height: 1.6;
+  background: var(--paper);
+  color: var(--navy-900);
+  font-family: inherit;
+  resize: vertical;
+  box-sizing: border-box;
+}
+.q-solve-work-textarea:focus {
+  outline: none;
+  border-color: var(--jade);
+}
+.q-solve-char-count {
+  position: absolute;
+  bottom: 8px;
+  right: 10px;
+  font-size: 11px;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.q-solve-grade-btn {
+  padding: 11px;
+  font-size: 14px;
+}
+
+.q-solve-grade-result {
+  margin-top: 4px;
+  border: 1.5px solid var(--jade);
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: #f7faf8;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.q-solve-grade-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: var(--navy-900);
+}
+.q-solve-offline-tag {
+  font-size: 11px;
+  background: #fbf0e8;
+  color: #a66c52;
+  border: 1px solid #ebd2c5;
+  border-radius: 6px;
+  padding: 1px 7px;
+}
+.q-solve-grade-total {
+  font-size: 14px;
+  color: var(--navy-900);
+}
+.q-solve-grade-total strong {
+  font-size: 18px;
+  color: var(--jade);
+}
+.q-solve-grade-summary {
+  font-size: 13px;
+  color: #43544d;
+  background: rgba(79, 138, 99, 0.08);
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+.q-solve-rubric-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+.q-solve-rubric-item {
+  border: 1px solid #e1e9e4;
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.q-solve-rubric-item-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 13px;
+}
+.q-solve-rubric-name { font-weight: 600; color: var(--navy-900); }
+.q-solve-rubric-score { font-size: 12px; font-weight: 700; color: var(--jade); }
+.q-solve-rubric-comment { font-size: 12px; color: var(--muted); }
+
+/* 移动端 <=480px 适配 */
+@media (max-width: 480px) {
+  .q-solve-card { padding: 10px 12px; gap: 8px; }
+  .q-solve-card-head { flex-wrap: wrap; }
+  .q-solve-step-ask { width: 100%; order: 3; font-size: 13px; }
+  .q-solve-badge { margin-left: auto; }
+  .q-solve-input-row { flex-direction: column; align-items: stretch; gap: 6px; }
+  .q-solve-hint-btn { width: 100%; text-align: center; padding: 7px 10px; }
+  .q-solve-keypad { justify-content: space-between; }
+  .q-solve-key { flex: 1 1 calc(16.6% - 5px); text-align: center; padding: 6px 0; }
+  .q-solve-score-banner { padding: 10px 12px; }
+  .q-solve-score-num strong { font-size: 26px; }
+}

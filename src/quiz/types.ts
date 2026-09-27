@@ -1,11 +1,28 @@
 // V10 统一题目模型。所有题库与程序化出题器都产出这一结构，答题 UI 只认它。
 export type Subject = 'english' | 'math' | 'chinese';
-export type QuestionType = 'choice' | 'input' | 'tokens' | 'blank';
+export type QuestionType = 'choice' | 'input' | 'tokens' | 'blank' | 'solve';
 
 export interface RubricPoint {
   point: string;
   score: number;
   keywords: string[];
+}
+
+export interface SolveStep {
+  ask: string;          // 本步要求，如「求角 C 的度数」
+  accepts: string[];    // 等价答案，交给 gradeBlank 判；首项为标准写法
+  unit?: string;        // 显示在输入框后；不参与判分
+  score: number;        // 本步分值
+  hint: string;         // 提示（看了本步最多得 floor(score/2)）
+  explain: string;      // 本步解析（交卷后显示）
+}
+export interface SolveData {
+  topic: string;
+  total: number;        // = steps 分值之和，12 或 13
+  steps: SolveStep[];   // 3–5 步
+  solution: string[];   // 标准解答全过程（逐行）
+  rubric: RubricPoint[];// 采分点，分值和 = total
+  pitfall?: string;
 }
 
 export interface Question {
@@ -29,6 +46,7 @@ export interface Question {
   skill?: string;
   rubric?: RubricPoint[] | null;
   wordId?: number;
+  solve?: SolveData;        // type=solve 时必有
   // 精编题七步讲解
   notes?: {
     knowledge?: string; strategy?: string; explanation?: string;
