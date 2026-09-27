@@ -465,24 +465,12 @@ async function handleAIGrade(request, env) {
     { role: "user", content: `【学生解答过程】\n${work}` },
   ];
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 30000);
-
   try {
-    const base = cleanBaseUrl(body?.baseUrl) || cleanBaseUrl(env?.AI_BASE_URL) || DEFAULT_BASE;
-    const upstreamRes = await fetchUpstream("/chat/completions", base, apiKey, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model,
-        messages,
-        temperature: 0.2,
-      }),
-      signal: controller.signal,
-    });
+    const upstreamRes = await fetchUpstream("/chat/completions", baseUrl, apiKey, {
+      model,
+      messages,
+      temperature: 0.2,
+    }, 30000);
 
     if (!upstreamRes.ok) {
       const errText = await upstreamRes.text().catch(() => "");
@@ -506,8 +494,6 @@ async function handleAIGrade(request, env) {
       return json({ ok: false, code: "UPSTREAM_TIMEOUT" }, 502);
     }
     return json({ ok: false, code: "UPSTREAM_UNAVAILABLE", error: String(err) }, 502);
-  } finally {
-    clearTimeout(timeoutId);
   }
 }
 
