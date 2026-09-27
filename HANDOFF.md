@@ -53,11 +53,10 @@ GH_TOKEN=$(cat /workspace/.secrets/gh_token) COMMIT_MSG="说明" \
 源码仓库 /workspace/nian-v10/app 也正常 git commit 留痕。
 
 ## 4. 当前进度（截至 2026-09-27 深夜，186 单测绿）
-- **2026-09-27 深夜 数学解答题上线（SPEC-解答题.md 全流程）**：`math-solve.ts` 6 个参数化生成器（解三角形/等差/等比/利润应用/直线与圆/三角性质，分步 12-13 分）；`solve-grade.ts` 按步判分（提示减半、无连带扣分）；`gradeBlank` 扩展（k√n、π、°、变量前缀、含 n 表达式代入法，± 回归已修）；`/api/nian/ai/grade` 过程批改端点 + `grade-client.ts`（离线回退 localGrade）；`SolveBody` 分步 UI + 符号键盘。模式「数学解答题」在数学考点专项首位。
-- **2026-09-27 晚 数学解答题上线**：参数化生成器 `src/quiz/math-solve.ts`（解三角形/等差/等比/函数应用/直线与圆/三角函数性质 6 类，变式无限）；分步作答+采分点给分 `src/quiz/solve-grade.ts`（gradeSolve/localGrade）；`gradeBlank` 扩展 k√n、kπ、°、前缀剥离、含 n 表达式代入法（旧测试全保留，含 ± 单值兼容）；UI `SolveBody`（逐步卡、提示减半、标准解答折叠、AI 过程批改回退离线）；Worker 新端点 `/api/nian/ai/grade`（30s 超时、响应钳制校验）；模式 `math-solve` 在数学考点专项首位。部署 `a2e74f89`。
+- **2026-09-27 深夜 数学解答题上线（SPEC-解答题.md 全流程）**：`math-solve.ts` 6 个参数化生成器（解三角形/等差/等比/利润应用/直线与圆/三角性质，分步 12-13 分）；`solve-grade.ts` 按步判分（提示减半、无连带扣分）；`gradeBlank` 扩展（k√n、π、°、变量前缀、含 n 表达式代入法，± 回归已修）；`/api/nian/ai/grade` 过程批改端点 + `grade-client.ts`（离线回退 localGrade）；`SolveBody` 分步 UI + 符号键盘。模式「数学解答题」在数学考点专项首位。 批改端点修复（fetchUpstream 传参致上游缺 model）后线上实测通过：故意错一问，AI 按采分点扣分正确。部署 `5053b810`，GitHub `28989905`。
 - **2026-09-27 英语考纲Ⅴ/Ⅵ上线**：`src/quiz/english-fill.ts` + 题库 `content/grammar-fill.json`（40 题，时态语态/非谓语/词性/比较级/代词/冠介连/关系词）与 `content/complete-sentence.json`（30 题，汉译英补全，多译法）。题型走 `blank`，但 `checkAnswer` 按 `EN_FILL_KINDS` 分流到 `gradeEnglish`（NFKC、大小写、弯引号、标点、缩写 can't/doesn't/it's 展开、多��格）。模式 `grammar-fill`(10 题)/`complete-sentence`(8 题)，练习页新分区「英语考纲专项」，`adaptiveCycle` 英语池已纳入。测试 `english-fill.test.ts`。
 - **2026-09-27 数学数值修复**：球体积改分数显示（32/3π），勾股题成对取勾股数；`math-sweep.test.ts` 每个生成器 200 组扫描乱码小数/重复选项/越界答案。
-- 线上版本 `73c12fb0`（bundle md5 与本地一致，US 节点验证）；GitHub `8e544f62`。
+- 线上版本 `5053b810`（JS md5 前缀 a4f2e16a6ea8 与本地一致）；GitHub `28989905`。
 - 网络坑：workers.dev 从工作区/HB/手机直连均超时，线上验证走 US 节点 curl。
 - **组卷去重**：`src/quiz/queue.ts`（`uniqueFill`/`dedupeQueue`/`dedupeKey`，题库题按 id、程序化题按题干+选项指纹）；session-store 所有模式接入，同一张卷内不再出现重复题。
 - **数学考点专项 bug 修复**：`mt-*` 六个模式原来落到 `questionForType('mt-trig')`（无此 case，队列全是 undefined，点进去必崩）；现在按 `MATH_TOPIC_GROUPS` 的 topic 走 `mathQuestion(rng, topic)`。
