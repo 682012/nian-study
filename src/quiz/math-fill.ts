@@ -19,10 +19,10 @@ const FILL_BUILDERS: Array<(rng: Rng) => Fill> = [
     return { topic: '等比数列求和', prompt: `等比数列 1,2,4,8,… 的前 ${n} 项和 S${n} = ____。`, accepts: [String(v)], explain: `S${n}=2^${n}-1=${v}。` }; },
   (rng) => { const x = pick([1, 2, 3] as const, rng), y = pick([2, 3, 4] as const, rng);
     return { topic: '向量数量积', prompt: `a=(${x},0)，b=(0,${y}) 互相垂直，则 a·b = ____。`, accepts: ['0'], explain: `垂直向量数量积为 0（坐标相乘也是 ${x}×0+0×${y}=0）。` }; },
-  (rng) => { const r = pick([2, 3] as const, rng); const v = (4 / 3) * r ** 3;
+  (rng) => { const r = pick([2, 3] as const, rng); const v = r === 3 ? '36' : '32/3';
     return { topic: '球的体积', prompt: `半径为 ${r} 的球，体积 V = ____π。（填系数）`, accepts: [String(v)], explain: `V=(4/3)πR³=(4/3)×${r}³π=${v}π。` }; },
   (rng) => { const data = [2, 4, 6, 8]; return { topic: '平均数', prompt: `数据 ${data.join('，')} 的平均数是 ____。`, accepts: ['5'], explain: `(2+4+6+8)/4=5。` }; },
-  (rng) => { const a = pick([3, 5] as const, rng), b = pick([4, 12] as const, rng); const c = Math.sqrt(a * a + b * b);
+  (rng) => { const [a, b] = pick([[3, 4], [5, 12], [6, 8], [8, 15]] as const, rng); const c = Math.sqrt(a * a + b * b);
     return { topic: '勾股定理', prompt: `直角三角形两直角边为 ${a}、${b}，斜边为 ____。`, accepts: [String(c)], explain: `c=√(${a}²+${b}²)=${c}。` }; },
   (rng) => { const n = pick([2, 3, 4] as const, rng); const map: Record<number, string> = { 2: '-1', 3: '-i', 4: '1' };
     return { topic: '虚数单位的幂', prompt: `i^${n} = ____。`, accepts: [map[n]], explain: `i²=-1，i³=-i，i⁴=1。` }; },

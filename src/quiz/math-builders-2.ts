@@ -27,6 +27,11 @@ function mutateAnswer(answer: string, shift: number): string {
   return answer.replace(/-?\d+/g, (m) => String(Number(m) + shift));
 }
 
+// n/3 的最简显示：整除给整数，否则给「n/3」分数（避免 10.666… 这种乱码小数）
+export function frac3(n: number): string {
+  return n % 3 === 0 ? String(n / 3) : `${n}/3`;
+}
+
 function choice(answer: string, distractors: string[], rng: Rng): { choices: string[]; answer: number } {
   const pool = new Set<string>();
   // 先加给定干扰项，强制排除正确答案
@@ -168,12 +173,12 @@ const builders2: Array<(rng: Rng) => Built2> = [
     const r = pick([2, 3] as const, rng);
     const want = pick(['V', 'S'] as const, rng);
     if (want === 'V') {
-      const ans = (4 / 3) * r ** 3;
-      const o = choice(`${ans}π`, [`4×${r}²π`, `${r ** 3}π`, `${(4 / 3) * r ** 2}π`], rng);
+      const ans = frac3(4 * r ** 3);
+      const o = choice(`${ans}π`, [`${4 * r * r}π`, `${r ** 3}π`, `${frac3(4 * r ** 2)}π`], rng);
       return { topic: '球的体积', prompt: `球的半径 R=${r}，体积 V=？（保留 π）`, ...o, explanation: `V=(4/3)πR³=(4/3)×${r}³π=${ans}π。` };
     }
     const ans = 4 * r ** 2;
-    const o = choice(`${ans}π`, [`${(4 / 3) * r ** 3}π`, `${r ** 2}π`, `2×${r}²π`], rng);
+    const o = choice(`${ans}π`, [`${frac3(4 * r ** 3)}π`, `${r ** 2}π`, `${2 * r * r}π`], rng);
     return { topic: '球的表面积', prompt: `球的半径 R=${r}，表面积 S=？（保留 π）`, ...o, explanation: `S=4πR²=4×${r}²π=${ans}π。` };
   },
   // 圆锥体积

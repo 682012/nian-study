@@ -1,0 +1,368 @@
+[
+ {
+  "id": "gf-01",
+  "sentence": "Mr. Li ____ (buy) a new computer for his son yesterday.",
+  "accepts": [
+   "bought"
+  ],
+  "point": "一般过去时",
+  "explain": "yesterday 提示一般过去时，buy 的过去式为 bought。"
+ },
+ {
+  "id": "gf-02",
+  "sentence": "Tom often ____ (go) to the library to read books on weekends.",
+  "accepts": [
+   "goes"
+  ],
+  "point": "一般现在时",
+  "explain": "often 和主语 Tom 提示第三人称单数形式 goes。"
+ },
+ {
+  "id": "gf-03",
+  "sentence": "Look! The children ____ (play) happily on the playground.",
+  "accepts": [
+   "are playing"
+  ],
+  "point": "现在进行时",
+  "explain": "Look 提示正在发生，主语是复数，用 are playing。"
+ },
+ {
+  "id": "gf-04",
+  "sentence": "She has already ____ (finish) her homework, so she can watch TV now.",
+  "accepts": [
+   "finished"
+  ],
+  "point": "现在完成时",
+  "explain": "has 与 already 构成现在完成时，后接过去分词 finished。"
+ },
+ {
+  "id": "gf-05",
+  "sentence": "They ____ (visit) the science museum tomorrow morning.",
+  "accepts": [
+   "will visit",
+   "are going to visit",
+   "are visiting"
+  ],
+  "point": "一般将来时",
+  "explain": "tomorrow 提示将来时，填 will visit 或 are going to visit。"
+ },
+ {
+  "id": "gf-06",
+  "sentence": "The famous bridge ____ (build) by local workers fifty years ago.",
+  "accepts": [
+   "was built"
+  ],
+  "point": "一般过去时的被动语态",
+  "explain": "ago 提示过去时，主语与动词是被动关系，填 was built。"
+ },
+ {
+  "id": "gf-07",
+  "sentence": "English ____ (speak) widely in international business today.",
+  "accepts": [
+   "is spoken"
+  ],
+  "point": "一般现在时的被动语态",
+  "explain": "表示客观事实且为被动关系，主语是单数，填 is spoken。"
+ },
+ {
+  "id": "gf-08",
+  "sentence": "I ____ (write) an email when my mother called me last night.",
+  "accepts": [
+   "was writing"
+  ],
+  "point": "过去进行时",
+  "explain": "when 引导的过去动作发生时，主句正在进行，填 was writing。"
+ },
+ {
+  "id": "gf-09",
+  "sentence": "He got up early this morning in order to ____ (catch) the first bus.",
+  "accepts": [
+   "catch"
+  ],
+  "point": "动词不定式",
+  "explain": "in order to 意为“为了”，后接动词原形 catch。"
+ },
+ {
+  "id": "gf-10",
+  "sentence": "____ (swim) in summer is a great way to keep healthy.",
+  "accepts": [
+   "swimming"
+  ],
+  "point": "动名词作主语",
+  "explain": "动词在句首作主语表示习惯或抽象动作，用动名词 swimming。"
+ },
+ {
+  "id": "gf-11",
+  "sentence": "My sister enjoys ____ (listen) to light music before going to bed.",
+  "accepts": [
+   "listening"
+  ],
+  "point": "动名词作宾语",
+  "explain": "enjoy doing sth. 是固定用法，填 listening。"
+ },
+ {
+  "id": "gf-12",
+  "sentence": "The students decided ____ (clean) the classroom together after class.",
+  "accepts": [
+   "to clean"
+  ],
+  "point": "动词不定式作宾语",
+  "explain": "decide to do sth. 为固定搭配，填 to clean。"
+ },
+ {
+  "id": "gf-13",
+  "sentence": "I found a wallet ____ (drop) on the ground near the gate.",
+  "accepts": [
+   "dropped"
+  ],
+  "point": "过去分词作宾补/定语",
+  "explain": "wallet 与 drop 是被动关系，用过去分词 dropped 作宾补。"
+ },
+ {
+  "id": "gf-14",
+  "sentence": "Our English teacher told us ____ (read) aloud every morning.",
+  "accepts": [
+   "to read"
+  ],
+  "point": "动词不定式作宾补",
+  "explain": "tell sb. to do sth. 为固定搭配，填 to read。"
+ },
+ {
+  "id": "gf-15",
+  "sentence": "Thank you for ____ (help) me with my math problem.",
+  "accepts": [
+   "helping"
+  ],
+  "point": "介词后接动名词",
+  "explain": "for 为介词，后面接动名词形式 helping。"
+ },
+ {
+  "id": "gf-16",
+  "sentence": "The train moved ____ (slow) through the thick fog.",
+  "accepts": [
+   "slowly"
+  ],
+  "point": "副词修饰动词",
+  "explain": "修饰动词 moved 需用副词形式 slowly。"
+ },
+ {
+  "id": "gf-17",
+  "sentence": "Thomas Edison was a great American ____ (invent).",
+  "accepts": [
+   "inventor"
+  ],
+  "point": "动词变名词",
+  "explain": "不定冠词 a 修饰表示人的单数名词，填 inventor。"
+ },
+ {
+  "id": "gf-18",
+  "sentence": "Money cannot always bring true ____ (happy) to people.",
+  "accepts": [
+   "happiness"
+  ],
+  "point": "形容词变名词",
+  "explain": "作动词 bring 的宾语，需用名词形式 happiness。"
+ },
+ {
+  "id": "gf-19",
+  "sentence": "The local police gave us some ____ (help) advice on road safety.",
+  "accepts": [
+   "helpful"
+  ],
+  "point": "名词变形容词",
+  "explain": "修饰名词 advice 需用形容词形式 helpful（有帮助的）。"
+ },
+ {
+  "id": "gf-20",
+  "sentence": "This movie is very ____ (interest), and many people like it.",
+  "accepts": [
+   "interesting"
+  ],
+  "point": "现在分词作形容词",
+  "explain": "修饰事物 this movie 具有令人感兴趣的特质，用 interesting。"
+ },
+ {
+  "id": "gf-21",
+  "sentence": "Please check your test paper ____ (careful) before handing it in.",
+  "accepts": [
+   "carefully"
+  ],
+  "point": "副词修饰动词",
+  "explain": "修饰动词 check 应用副词 carefully。"
+ },
+ {
+  "id": "gf-22",
+  "sentence": "Eating fresh vegetables and fruit is good for your ____ (healthy).",
+  "accepts": [
+   "healthy"
+  ],
+  "point": "形容词变名词",
+  "explain": "your 后接名词，healthy 的名词形式是 health。"
+ },
+ {
+  "id": "gf-23",
+  "sentence": "Many ____ (child) are flying kites in the park today.",
+  "accepts": [
+   "children"
+  ],
+  "point": "名词复数",
+  "explain": "many 修饰可数名词复数，child 的不规则复数是 children。"
+ },
+ {
+  "id": "gf-24",
+  "sentence": "The yellow car is much ____ (cheap) than the black one.",
+  "accepts": [
+   "cheaper"
+  ],
+  "point": "形容词比较级",
+  "explain": "than 提示比较级，cheap 的比较级为 cheaper。"
+ },
+ {
+  "id": "gf-25",
+  "sentence": "Mount Qomolangma is the ____ (high) mountain in the world.",
+  "accepts": [
+   "highest"
+  ],
+  "point": "形容词最高级",
+  "explain": "范围 in the world 提示最高级，the 后填 highest。"
+ },
+ {
+  "id": "gf-26",
+  "sentence": "Practice more, and your spoken English will become much ____ (good).",
+  "accepts": [
+   "better"
+  ],
+  "point": "不规则比较级",
+  "explain": "much 修饰比较级，good 的比较级为 better。"
+ },
+ {
+  "id": "gf-27",
+  "sentence": "Jack took off ____ (he) coat because it was too warm inside.",
+  "accepts": [
+   "his"
+  ],
+  "point": "形容词性物主代词",
+  "explain": "修饰名词 coat 需用形容词性物主代词 his。"
+ },
+ {
+  "id": "gf-28",
+  "sentence": "The little girl is able to dress ____ (her) now.",
+  "accepts": [
+   "herself"
+  ],
+  "point": "反身代词",
+  "explain": "主语为 girl，dress oneself 表示自己穿衣，填 herself。"
+ },
+ {
+  "id": "gf-29",
+  "sentence": "Give ____ a bottle of water, please. I am very thirsty.",
+  "accepts": [
+   "me"
+  ],
+  "point": "人称代词宾格",
+  "explain": "give 为动词，结合后句 I 可知此处用第一人称宾格 me。"
+ },
+ {
+  "id": "gf-30",
+  "sentence": "David wants to be ____ engineer when he grows up.",
+  "accepts": [
+   "an"
+  ],
+  "point": "不定冠词",
+  "explain": "engineer 以元音音素开头，表示“一名”用 an。"
+ },
+ {
+  "id": "gf-31",
+  "sentence": "She bought ____ useful dictionary in the bookstore yesterday.",
+  "accepts": [
+   "a"
+  ],
+  "point": "不定冠词",
+  "explain": "useful 以辅音音素 /j/ 开头，泛指单数名词用 a。"
+ },
+ {
+  "id": "gf-32",
+  "sentence": "The sun rises in ____ east and sets in the west.",
+  "accepts": [
+   "the"
+  ],
+  "point": "定冠词",
+  "explain": "方位词 east 前通常加定冠词 the。"
+ },
+ {
+  "id": "gf-33",
+  "sentence": "Our school sports meeting will be held ____ October 15th.",
+  "accepts": [
+   "on"
+  ],
+  "point": "时间介词",
+  "explain": "具体到某一天的时间前面介词用 on。"
+ },
+ {
+  "id": "gf-34",
+  "sentence": "He is very confident and proud ____ his achievements.",
+  "accepts": [
+   "of"
+  ],
+  "point": "介词固定搭配",
+  "explain": "be proud of 为固定短语，意为“为……感到骄傲”。"
+ },
+ {
+  "id": "gf-35",
+  "sentence": "Many students in our city go to school ____ bus every day.",
+  "accepts": [
+   "by"
+  ],
+  "point": "方式介词",
+  "explain": "by bus 为固定搭配，表示“乘公共汽车”。"
+ },
+ {
+  "id": "gf-36",
+  "sentence": "Hurry up, ____ you will miss the beginning of the movie.",
+  "accepts": [
+   "or",
+   "otherwise"
+  ],
+  "point": "并列连词",
+  "explain": "“祈使句 + or + 陈述句”，or 表示“否则”。"
+ },
+ {
+  "id": "gf-37",
+  "sentence": "____ it was raining heavily, the postman still delivered the letters on time.",
+  "accepts": [
+   "although",
+   "though"
+  ],
+  "point": "让步状语从句连词",
+  "explain": "前后句为让步转折关系，句首用 Although 或 Though。"
+ },
+ {
+  "id": "gf-38",
+  "sentence": "The woman ____ is talking with our teacher is Mary's mother.",
+  "accepts": [
+   "who",
+   "that"
+  ],
+  "point": "定语从句关系代词",
+  "explain": "先行词 The woman 指人且在从句中作主语，填 who 或 that。"
+ },
+ {
+  "id": "gf-39",
+  "sentence": "I really like the present ____ my best friend gave me.",
+  "accepts": [
+   "which",
+   "that"
+  ],
+  "point": "定语从句关系代词",
+  "explain": "先行词 the present 指物且在从句中作宾语，填 which 或 that。"
+ },
+ {
+  "id": "gf-40",
+  "sentence": "He told me ____ he would study abroad next year.",
+  "accepts": [
+   "that"
+  ],
+  "point": "宾语从句连接词",
+  "explain": "从句句意和成分完整，起连接作用且无实际词义用 that。"
+ }
+]

@@ -1,0 +1,340 @@
+[
+  {
+    "id": "cs-01",
+    "sentence": "____（你一回到家）, please send me an e-mail.",
+    "accepts": [
+      "As soon as you get home",
+      "As soon as you get back home",
+      "As soon as you return home",
+      "As soon as you arrive home",
+      "Once you get home"
+    ],
+    "point": "as soon as 引导时间状语从句",
+    "explain": "as soon as 意为“一……就……”，从句遵循主祈从现。"
+  },
+  {
+    "id": "cs-02",
+    "sentence": "The box is ____（太重了以至于搬不动）for the little girl.",
+    "accepts": [
+      "too heavy to carry",
+      "too heavy to be carried",
+      "too heavy to lift"
+    ],
+    "point": "too...to... 句型",
+    "explain": "too...to... 表示“太……而不能……”，后接动词原形。"
+  },
+  {
+    "id": "cs-03",
+    "sentence": "He ran ____（如此快以至于）nobody could catch up with him.",
+    "accepts": [
+      "so fast that",
+      "so quickly that"
+    ],
+    "point": "so...that 结果状语从句",
+    "explain": "so+副词+that 引导结果状语从句，意为“如此……以至于……”。"
+  },
+  {
+    "id": "cs-04",
+    "sentence": "____（花了我们两小时）to finish the English test yesterday.",
+    "accepts": [
+      "It took us two hours",
+      "It took us 2 hours"
+    ],
+    "point": "it takes sb. some time to do sth. 句型",
+    "explain": "it takes sb. time to do 表示“做某事花费某人多长时间”，过去式用 took。"
+  },
+  {
+    "id": "cs-05",
+    "sentence": "He ____（不仅喜欢音乐而且喜欢）sports.",
+    "accepts": [
+      "not only likes music but also",
+      "likes not only music but also"
+    ],
+    "point": "not only...but also... 并列结构",
+    "explain": "not only...but also... 连接并列宾语，意为“不仅……而且……”。"
+  },
+  {
+    "id": "cs-06",
+    "sentence": "We will go camping tomorrow ____（如果不下雨的话）.",
+    "accepts": [
+      "if it doesn't rain",
+      "if it does not rain",
+      "unless it rains"
+    ],
+    "point": "条件状语从句（主将从现）",
+    "explain": "if/unless 引导条件状语从句，主将从现，从句用一般现在时。",
+    "prompt": "We will go camping ____（如果不下雨的话）tomorrow."
+  },
+  {
+    "id": "cs-07",
+    "sentence": "____（尽管他很累）, he still went on working.",
+    "accepts": [
+      "Although he was tired",
+      "Though he was tired",
+      "Even though he was tired",
+      "Although he was very tired",
+      "Though he was very tired"
+    ],
+    "point": "让步状语从句",
+    "explain": "although/though 引导让步从句，且不能与 but 连用。"
+  },
+  {
+    "id": "cs-08",
+    "sentence": "My uncle ____（已经住在这里）for more than ten years.",
+    "accepts": [
+      "has lived here",
+      "has stayed here",
+      "has been living here"
+    ],
+    "point": "现在完成时",
+    "explain": "根据 for+时间段 可知用现在完成时，主语单数用 has lived。"
+  },
+  {
+    "id": "cs-09",
+    "sentence": "The new bridge over the river ____（是去年建成的）.",
+    "accepts": [
+      "was built last year",
+      "was completed last year"
+    ],
+    "point": "一般过去时的被动语态",
+    "explain": "bridge 与 build 是被动关系，根据 last year 用 was built。",
+    "prompt": "The new bridge over the river ____（是去年建成的）."
+  },
+  {
+    "id": "cs-10",
+    "sentence": "Jack is ____（和……一样高）his father now.",
+    "accepts": [
+      "as tall as"
+    ],
+    "point": "同级比较 as...as",
+    "explain": "as+形容词原级+as 表示“和……一样”，肯定句用 as...as。"
+  },
+  {
+    "id": "cs-11",
+    "sentence": "The harder you study, ____（你就会越进步）in the exam.",
+    "accepts": [
+      "the more progress you will make",
+      "the more progress you make",
+      "the better you will do",
+      "the more progress you'll make",
+      "the better you'll do"
+    ],
+    "point": "the more...the more 句型",
+    "explain": "“the+比较级..., the+比较级...”表示“越……就越……”。"
+  },
+  {
+    "id": "cs-12",
+    "sentence": "We are all ____（期盼着收到）your reply soon.",
+    "accepts": [
+      "looking forward to receiving",
+      "looking forward to getting"
+    ],
+    "point": "look forward to doing sth. 短语",
+    "explain": "look forward to 中的 to 是介词，后接动名词形式。"
+  },
+  {
+    "id": "cs-13",
+    "sentence": "She ____（擅长弹钢琴）when she was a child.",
+    "accepts": [
+      "was good at playing the piano",
+      "did well in playing the piano",
+      "was good at playing piano"
+    ],
+    "point": "be good at 短语及过去时",
+    "explain": "be good at doing 表示“擅长做某事”，根据 was 可知用 was good at。"
+  },
+  {
+    "id": "cs-14",
+    "sentence": "You should ____（好好照顾你的妹妹）at home.",
+    "accepts": [
+      "take good care of your sister",
+      "look after your sister well",
+      "take good care of your younger sister",
+      "take good care of your little sister",
+      "look after your younger sister well",
+      "look after your little sister well"
+    ],
+    "point": "take good care of 短语",
+    "explain": "take good care of 意为“好好照顾”，情态动词 should 后用原形。"
+  },
+  {
+    "id": "cs-15",
+    "sentence": "The doctor advised him to ____（戒烟）for his health.",
+    "accepts": [
+      "give up smoking",
+      "stop smoking"
+    ],
+    "point": "give up doing 搭配",
+    "explain": "advise sb. to do sth.，且 give up/stop 后接动名词表示戒掉。"
+  },
+  {
+    "id": "cs-16",
+    "sentence": "This is the teacher ____（教我们英语的）in our school.",
+    "accepts": [
+      "who teaches us English",
+      "that teaches us English"
+    ],
+    "point": "定语从句先行词为人",
+    "explain": "先行词 teacher 为人，关系代词用 who/that，从句谓语用单三式。"
+  },
+  {
+    "id": "cs-17",
+    "sentence": "I don't know ____（他是否会来）to the party tonight.",
+    "accepts": [
+      "whether he will come",
+      "if he will come"
+    ],
+    "point": "宾语从句引导词",
+    "explain": "whether/if 引导宾语从句表示“是否”，从句用陈述语序和将来时。"
+  },
+  {
+    "id": "cs-18",
+    "sentence": "Can you tell me ____（火车站怎么走）?",
+    "accepts": [
+      "how to get to the railway station",
+      "the way to the railway station",
+      "how I can get to the railway station",
+      "how to go to the railway station"
+    ],
+    "point": "疑问词+不定式/宾语从句",
+    "explain": "how to get to 表示“如何到达”，get to the railway station 为固定搭配。"
+  },
+  {
+    "id": "cs-19",
+    "sentence": "He was tired, so he stopped ____（喝杯水）by the road.",
+    "accepts": [
+      "to drink some water",
+      "to drink a cup of water",
+      "to drink a glass of water",
+      "to have a drink of water"
+    ],
+    "point": "stop to do sth. 搭配",
+    "explain": "stop to do sth. 表示“停下来去做另一件事”。"
+  },
+  {
+    "id": "cs-20",
+    "sentence": "Chinese ____（被广泛使用）by millions of people today.",
+    "accepts": [
+      "is widely used",
+      "is spoken widely",
+      "is widely spoken"
+    ],
+    "point": "一般现在时的被动语态",
+    "explain": "客观事实用一般现在时，be widely used 意为“被广泛使用”。"
+  },
+  {
+    "id": "cs-21",
+    "sentence": "I didn't notice ____（你在说什么）just now.",
+    "accepts": [
+      "what you were saying",
+      "what you said"
+    ],
+    "point": "what 引导宾语从句",
+    "explain": "what 引导宾语从句并充当宾语，根据 just now 从句用过去时态。"
+  },
+  {
+    "id": "cs-22",
+    "sentence": "Grandpa ____（习惯于早起）every morning.",
+    "accepts": [
+      "is used to getting up early",
+      "is accustomed to getting up early"
+    ],
+    "point": "be used to doing sth. 短语",
+    "explain": "be used to doing sth. 意为“习惯于做某事”，to 为介词后接动名词。"
+  },
+  {
+    "id": "cs-23",
+    "sentence": "She ____（花了很多钱在衣服上）last weekend.",
+    "accepts": [
+      "spent a lot of money on clothes",
+      "spent much money on clothes",
+      "spent lots of money on clothes"
+    ],
+    "point": "spend...on sth. 结构",
+    "explain": "spend money on sth. 表示“在某物上花钱”，过去式为 spent。"
+  },
+  {
+    "id": "cs-24",
+    "sentence": "The book ____（他在读的）is very interesting.",
+    "accepts": [
+      "which he is reading",
+      "that he is reading",
+      "he is reading"
+    ],
+    "point": "定语从句先行词为物",
+    "explain": "先行词 book 为物，关系代词用 that/which，在从句中作宾语也可省略。"
+  },
+  {
+    "id": "cs-25",
+    "sentence": "We ____（直到昨晚才完成期末项目）.",
+    "accepts": [
+      "didn't finish the final project until last night",
+      "did not finish the final project until last night",
+      "didn't complete the final project until last night",
+      "did not complete the final project until last night"
+    ],
+    "point": "not...until 结构",
+    "explain": "not...until 表示“直到……才……”，主句用否定，until 后接时间。",
+    "prompt": "We ____（直到昨晚才完成期末项目）."
+  },
+  {
+    "id": "cs-26",
+    "sentence": "This computer is ____（比那台昂贵得多）.",
+    "accepts": [
+      "much more expensive than that one",
+      "much more expensive than that",
+      "far more expensive than that one",
+      "far more expensive than that"
+    ],
+    "point": "比较级修饰语及比较结构",
+    "explain": "expensive 比较级为 more expensive，much 用于修饰比较级表示程度大。"
+  },
+  {
+    "id": "cs-27",
+    "sentence": "Don't forget ____（关掉电灯）before you leave the classroom.",
+    "accepts": [
+      "to turn off the lights",
+      "to turn off the light",
+      "to switch off the lights",
+      "to switch off the light"
+    ],
+    "point": "forget to do sth. 搭配",
+    "explain": "forget to do sth. 表示“记得去做（未做的事）”，turn off 意为关掉。"
+  },
+  {
+    "id": "cs-28",
+    "sentence": "____（学好一门外语是重要的）for your future work.",
+    "accepts": [
+      "It is important to learn a foreign language well",
+      "It's important to learn a foreign language well",
+      "It is important to study a foreign language well",
+      "It's important to study a foreign language well"
+    ],
+    "point": "it is+adj.+to do sth. 句型",
+    "explain": "it 充当形式主语，真正的主语是不定式短语 to learn..."
+  },
+  {
+    "id": "cs-29",
+    "sentence": "I don't know ____（桌上这本书属于谁）.",
+    "accepts": [
+      "who this book belongs to",
+      "whom this book belongs to",
+      "to whom this book belongs",
+      "who owns this book",
+      "whose book this is"
+    ],
+    "point": "宾语从句及 belong to 搭配",
+    "explain": "宾语从句用陈述语序，belong to 意为“属于”，主语是单数用 belongs。",
+    "prompt": "Do you know ____（这本书属于谁）?"
+  },
+  {
+    "id": "cs-30",
+    "sentence": "____（在回家的路上）, I met my primary school teacher.",
+    "accepts": [
+      "On my way home",
+      "On the way home"
+    ],
+    "point": "on one's way home 介词短语",
+    "explain": "on one's/the way home 意为“在回家路上”，home 为副词前不加 to。"
+  }
+]

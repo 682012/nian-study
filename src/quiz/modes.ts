@@ -50,5 +50,11 @@ export const MATH_TOPIC_MODES: ModeMeta[] = [FILL_MODE, DICTATION_MODE, ...MATH_
   id: g.id, seal: g.seal, title: g.title, note: '按考纲考点无限仿真出题', count: 10, tone: 'gold', subject: 'math',
 }))];
 
-export const ALL_MODES = [...MODES, ...PRESET_MODES, ...MATH_TOPIC_MODES, SCAN_MODE];
+// 英语考纲专项：Ⅴ 语法填空 15 分 / Ⅵ 完成句子 15 分
+export const ENGLISH_FILL_MODES: ModeMeta[] = [
+  { id: 'grammar-fill', seal: '语', title: '语法填空专项', note: '考纲Ⅴ · 时态语态、非谓语、词性转换、冠介连代', count: 10, tone: 'jade', subject: 'english' },
+  { id: 'complete-sentence', seal: '补', title: '完成句子专项', note: '考纲Ⅵ · 汉译英补全句子，多种译法都算对', count: 8, tone: 'blue', subject: 'english' },
+];
+
+export const ALL_MODES = [...MODES, ...ENGLISH_FILL_MODES, ...PRESET_MODES, ...MATH_TOPIC_MODES, SCAN_MODE];
 export const FULL_MODE_MAP: Record<string, ModeMeta> = Object.fromEntries(ALL_MODES.map((m) => [m.id, m]));
