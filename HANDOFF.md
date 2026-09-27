@@ -47,11 +47,16 @@ rsync -a --delete --exclude .git --exclude node_modules --exclude dist --exclude
   /workspace/nian-v10/app/ /workspace/nian-git/
 cd /workspace/nian-git && git add -A && git commit -m "说明"
 GH_TOKEN=$(cat /workspace/.secrets/gh_token) COMMIT_MSG="说明" \
-  node /workspace/.toolchain/gh-push.mjs
+  node /workspace/.toolchain/gh-push-delta.mjs   # 增量：只传变更文件；先加 DRY=1 看清单
+# 旧全量脚本 gh-push.mjs 每次重传全部文件，慢网必超时，仅作兜底
 ```
 源码仓库 /workspace/nian-v10/app 也正常 git commit 留痕。
 
-## 4. 当前进度（截至 2026-09-20 深夜，132 单测绿）
+## 4. 当前进度（截至 2026-09-27，145 单测绿）
+- **2026-09-27 英语考纲Ⅴ/Ⅵ上线**：`src/quiz/english-fill.ts` + 题库 `content/grammar-fill.json`（40 题，时态语态/非谓语/词性/比较级/代词/冠介连/关系词）与 `content/complete-sentence.json`（30 题，汉译英补全，多译法）。题型走 `blank`，但 `checkAnswer` 按 `EN_FILL_KINDS` 分流到 `gradeEnglish`（NFKC、大小写、弯引号、标点、缩写 can't/doesn't/it's 展开、多��格）。模式 `grammar-fill`(10 题)/`complete-sentence`(8 题)，练习页新分区「英语考纲专项」，`adaptiveCycle` 英语池已纳入。测试 `english-fill.test.ts`。
+- **2026-09-27 数学数值修复**：球体积改分数显示（32/3π），勾股题成对取勾股数；`math-sweep.test.ts` 每个生成器 200 组扫描乱码小数/重复选项/越界答案。
+- 线上版本 `73c12fb0`（bundle md5 与本地一致，US 节点验证）；GitHub `8e544f62`。
+- 网络坑：workers.dev 从工作区/HB/手机直连均超时，线上验证走 US 节点 curl。
 - **组卷去重**：`src/quiz/queue.ts`（`uniqueFill`/`dedupeQueue`/`dedupeKey`，题库题按 id、程序化题按题干+选项指纹）；session-store 所有模式接入，同一张卷内不再出现重复题。
 - **数学考点专项 bug 修复**：`mt-*` 六个模式原来落到 `questionForType('mt-trig')`（无此 case，队列全是 undefined，点进去必崩）；现在按 `MATH_TOPIC_GROUPS` 的 topic 走 `mathQuestion(rng, topic)`。
 - **卷子扫描**：Worker 新端点 `/api/nian/ai/scan`（多模态 image_url，body 上限 6MB，超时 45s，模型取 用户设置 model → `env.AI_SCAN_MODEL` → `env.AI_MODEL` → gpt-4o-mini；遇到上游 image/vision 报错返回 `UPSTREAM_SCAN_UNSUPPORTED`）；前端 `src/components/ScanModal.tsx`（拍照/选图→canvas 压缩→识别→逐题可校对→入库）；个人题库 key **`nian-scan-bank-v1`**（localStorage，上限 300 条，不动 `nian-study-progress-v2`）；练习模式 `scan-bank`「我的卷子」。
@@ -66,7 +71,7 @@ GH_TOKEN=$(cat /workspace/.secrets/gh_token) COMMIT_MSG="说明" \
 - FSRS 调度、822 词迁移、Worker AI 反代（SSE/403换渠道/本地兜底）、TTS 三路降级均已在线。
 
 ## 5. 待办（按提分性价比排序）
-1. 英语语法填空 + 完成句子（新题型，仿 math-fill 的 blank 机制 + 专用判分）。
+1. ~~英语语法填空 + 完成句子~~（09-27 完成；后续可扩到每类 60+ 题，并做成短文多空的真题形态）。
 2. 数学解答题：分步提示 + 采分点 + AI 批改（占 50 分，最大头）。
 3. 语文/英语作文：AI 批改（要点覆盖、格式、语言，先保及格再优化）。
 4. 历年真题 PDF 结构化成精编题库；日常扩容主力已切到「扫卷入库」（用户拍卷→我的卷子），扫描识别质量可继续打磨（手写/公式题）。
